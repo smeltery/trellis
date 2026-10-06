@@ -3,7 +3,8 @@
 The automatic release workflow follows `smeltery/hab`: after successful CI on a
 push to `main`, find the newest stable semantic tag, increment its patch version,
 create the tag, and explicitly dispatch the release build. Prerelease tags are
-excluded. The tag points to the exact tested commit, not a newer main HEAD.
+excluded. With no fork release tags, the initial version comes from the desktop
+package manifest, keeping it above the inherited compatibility floor. The tag points to the exact tested commit, not a newer main HEAD.
 Re-running dispatch for an existing tag supports recovery from a failed build.
 
 ```mermaid

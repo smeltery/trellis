@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -30,6 +30,8 @@ function fixture(run) {
     git("config", "tag.gpgsign", "false");
     git("remote", "add", "origin", join(root, "remote"));
     git("commit", "--allow-empty", "-m", "initial");
+    mkdirSync(join(cwd, "apps/desktop"), { recursive: true });
+    writeFileSync(join(cwd, "apps/desktop/package.json"), JSON.stringify({ version: "1.0.0" }));
     run({
       git,
       execute: () => {
@@ -49,8 +51,8 @@ function fixture(run) {
 test("auto-release bootstraps a fork without publishing inherited tags", () =>
   fixture(({ git, execute }) => {
     git("tag", "upstream/v9.0.0");
-    assert.match(execute(), /tag=v0.1.0\ncreated=true/);
-    assert.equal(git("rev-parse", "v0.1.0"), git("rev-parse", "HEAD"));
+    assert.match(execute(), /tag=v1.0.0\ncreated=true/);
+    assert.equal(git("rev-parse", "v1.0.0"), git("rev-parse", "HEAD"));
   }));
 test("auto-release increments only stable tags", () =>
   fixture(({ git, execute }) => {
