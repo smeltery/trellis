@@ -1,6 +1,6 @@
-import type { ServerConsumeCodexResetCreditInput } from "@synara/contracts";
+import type { ServerConsumeCodexResetCreditInput } from "@trellis/contracts";
 
-const storageKey = (accountId: string) => `synara:codex-reset-attempt:${accountId}`;
+const storageKey = (accountId: string) => `trellis:codex-reset-attempt:${accountId}`;
 
 /** An uncertain redemption survives popover unmounts, reconnects and page reloads. */
 export function readCodexResetAttempt(

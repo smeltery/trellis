@@ -7,7 +7,7 @@ import type {
   PullRequestDiffResult,
   PullRequestSetPinnedInput,
   PullRequestSetPinnedResult,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { ServiceMap } from "effect";
 import type { Effect } from "effect";
 
@@ -30,4 +30,4 @@ export interface PullRequestServiceShape {
 export class PullRequestService extends ServiceMap.Service<
   PullRequestService,
   PullRequestServiceShape
->()("synara/pullRequests/Services/PullRequestService/PullRequestService") {}
+>()("trellis/pullRequests/Services/PullRequestService/PullRequestService") {}

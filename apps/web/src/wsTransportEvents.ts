@@ -3,12 +3,12 @@
 // Layer: Web transport utility
 // Exports: event helpers used by wsNativeApi and terminal runtime recovery.
 
-import type { ThreadId, WsCompatibilityError } from "@synara/contracts";
+import type { ThreadId, WsCompatibilityError } from "@trellis/contracts";
 
 export type WsTransportState = "connecting" | "open" | "closed" | "incompatible" | "disposed";
 
-export const SYNARA_WS_TRANSPORT_STATE_EVENT = "synara:ws-transport-state";
-export const SYNARA_WS_COMPATIBILITY_ISSUE_EVENT = "synara:ws-compatibility-issue";
+export const TRELLIS_WS_TRANSPORT_STATE_EVENT = "trellis:ws-transport-state";
+export const TRELLIS_WS_COMPATIBILITY_ISSUE_EVENT = "trellis:ws-compatibility-issue";
 
 let latestCompatibilityIssue: WsCompatibilityError | null = null;
 let latestTransportState: WsTransportState | null = null;
@@ -68,7 +68,7 @@ export function emitWsTransportState(state: WsTransportState): void {
   }
 
   window.dispatchEvent(
-    new CustomEvent<WsTransportStateEventDetail>(SYNARA_WS_TRANSPORT_STATE_EVENT, {
+    new CustomEvent<WsTransportStateEventDetail>(TRELLIS_WS_TRANSPORT_STATE_EVENT, {
       detail: { state },
     }),
   );
@@ -92,9 +92,9 @@ export function addWsTransportStateListener(
     listener(detail.state);
   };
 
-  window.addEventListener(SYNARA_WS_TRANSPORT_STATE_EVENT, handleStateChange);
+  window.addEventListener(TRELLIS_WS_TRANSPORT_STATE_EVENT, handleStateChange);
   return () => {
-    window.removeEventListener(SYNARA_WS_TRANSPORT_STATE_EVENT, handleStateChange);
+    window.removeEventListener(TRELLIS_WS_TRANSPORT_STATE_EVENT, handleStateChange);
   };
 }
 
@@ -112,7 +112,7 @@ export function emitWsCompatibilityIssue(issue: WsCompatibilityError | null): vo
     return;
   }
   window.dispatchEvent(
-    new CustomEvent<WsCompatibilityIssueEventDetail>(SYNARA_WS_COMPATIBILITY_ISSUE_EVENT, {
+    new CustomEvent<WsCompatibilityIssueEventDetail>(TRELLIS_WS_COMPATIBILITY_ISSUE_EVENT, {
       detail: { issue },
     }),
   );
@@ -131,8 +131,8 @@ export function addWsCompatibilityIssueListener(
     if (!detail) return;
     listener(detail.issue);
   };
-  window.addEventListener(SYNARA_WS_COMPATIBILITY_ISSUE_EVENT, handleIssue);
+  window.addEventListener(TRELLIS_WS_COMPATIBILITY_ISSUE_EVENT, handleIssue);
   return () => {
-    window.removeEventListener(SYNARA_WS_COMPATIBILITY_ISSUE_EVENT, handleIssue);
+    window.removeEventListener(TRELLIS_WS_COMPATIBILITY_ISSUE_EVENT, handleIssue);
   };
 }

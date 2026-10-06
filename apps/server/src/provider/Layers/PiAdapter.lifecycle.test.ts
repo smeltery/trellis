@@ -16,14 +16,14 @@ import type {
   InlineExtension,
 } from "@earendil-works/pi-coding-agent";
 import { Effect, Layer, Schema, Stream } from "effect";
-import { ApprovalRequestId, ThreadId, ProviderRuntimeEvent, type TurnId } from "@synara/contracts";
+import { ApprovalRequestId, ThreadId, ProviderRuntimeEvent, type TurnId } from "@trellis/contracts";
 import { afterEach, expect, it, vi } from "vitest";
 import {
   AgentGatewayCredentials,
   type AgentGatewayCredentialsShape,
 } from "../../agentGateway/Services/AgentGatewayCredentials.ts";
 import type { AgentGatewayMcpFetch } from "../../agentGateway/mcpInjection.ts";
-import { SYNARA_COMPUTER_TOOL_NAMES } from "../../agentGateway/computerToolPermission.ts";
+import { TRELLIS_COMPUTER_TOOL_NAMES } from "../../agentGateway/computerToolPermission.ts";
 import { ServerConfig } from "../../config.ts";
 import { PiAdapter, type PiAdapterShape } from "../Services/PiAdapter.ts";
 import { makePiAdapterLive } from "./PiAdapter.ts";
@@ -158,7 +158,7 @@ async function withAdapter(
   gatewayFetchOverride?: AgentGatewayMcpFetch,
 ) {
   vi.stubEnv("PI_OFFLINE", "1");
-  const cwd = mkdtempSync(path.join(tmpdir(), "synara-pi-lifecycle-"));
+  const cwd = mkdtempSync(path.join(tmpdir(), "trellis-pi-lifecycle-"));
   dirs.push(cwd);
   writeFileSync(
     path.join(cwd, "auth.json"),
@@ -178,7 +178,7 @@ async function withAdapter(
       result: {
         tools: [
           {
-            name: "synara_list_threads",
+            name: "trellis_list_threads",
             description: "List threads",
             inputSchema: { type: "object", properties: {} },
           },
@@ -998,7 +998,7 @@ it.each(["request failure", "empty catalog", "ordinary-only catalog"] as const)(
               ? []
               : [
                   {
-                    name: "synara_list_threads",
+                    name: "trellis_list_threads",
                     description: "List threads",
                     inputSchema: { type: "object", properties: {} },
                   },
@@ -1038,7 +1038,7 @@ it("rejects enabled Computer startup when no gateway credentials are available",
   const modelCalls = responses("success");
   await expect(
     withAdapter(async () => undefined, 1, undefined, { enableComputerControl: true }),
-  ).rejects.toThrow("Pi did not receive a thread-scoped Synara gateway connection");
+  ).rejects.toThrow("Pi did not receive a thread-scoped Trellis gateway connection");
   expect(captured.sessions).toHaveLength(0);
   expect(modelCalls()).toBe(0);
 });
@@ -1203,7 +1203,7 @@ it("keeps Computer schemas out of idle model requests and refreshes them on resu
       result: {
         tools: [
           {
-            name: "synara_list_threads",
+            name: "trellis_list_threads",
             description: "List threads",
             inputSchema: { type: "object", properties: {} },
           },
@@ -1252,7 +1252,7 @@ it("keeps Computer schemas out of idle model requests and refreshes them on resu
           enabled
             ? [
                 ...requiredComputerTools.map((tool) => tool.name),
-                ...SYNARA_COMPUTER_TOOL_NAMES.filter(
+                ...TRELLIS_COMPUTER_TOOL_NAMES.filter(
                   (name) => !requiredComputerTools.some((tool) => tool.name === name),
                 ),
               ]
@@ -1264,7 +1264,7 @@ it("keeps Computer schemas out of idle model requests and refreshes them on resu
         } else {
           expect(descriptorCharacters).toBe(0);
         }
-        expect(modelTools.some((tool) => tool.name === "synara_list_threads")).toBe(true);
+        expect(modelTools.some((tool) => tool.name === "trellis_list_threads")).toBe(true);
       }
       expect(captured.sessions).toHaveLength(3);
       expect(events.filter((event) => event.type === "runtime.error")).toHaveLength(0);

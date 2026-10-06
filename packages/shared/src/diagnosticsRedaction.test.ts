@@ -12,7 +12,7 @@ describe("redactDiagnosticText", () => {
   it.each([
     [
       "home directory collapses to ~ then basename",
-      "crash at /Users/kartik/.synara-beta/logs/x.log",
+      "crash at /Users/kartik/.trellis-beta/logs/x.log",
       "~/…/x.log",
       "/Users/kartik",
     ],
@@ -175,12 +175,12 @@ describe("redactDiagnosticText", () => {
   it("keeps local-scheme stack frames and relative paths readable", () => {
     const out = redact(
       [
-        "at render (synara-beta://app/assets/index-abc123.js:10:5)",
-        "at load (file:///Applications/Synara%20Beta.app/Contents/Resources/app.asar/dist/main.js:88:1)",
+        "at render (trellis-beta://app/assets/index-abc123.js:10:5)",
+        "at load (file:///Applications/Trellis%20Beta.app/Contents/Resources/app.asar/dist/main.js:88:1)",
         "at run (node_modules/effect/dist/internal/fiberRuntime.js:1:2)",
       ].join("\n"),
     );
-    expect(out).toContain("synara-beta://app/assets/index-abc123.js:10:5");
+    expect(out).toContain("trellis-beta://app/assets/index-abc123.js:10:5");
     expect(out).toContain("app.asar/dist/main.js:88:1");
     expect(out).toContain("node_modules/effect/dist/internal/fiberRuntime.js");
   });

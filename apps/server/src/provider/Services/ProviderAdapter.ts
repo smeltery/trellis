@@ -43,7 +43,7 @@ import type {
   ThreadId,
   ProviderTurnStartResult,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import type { Deferred, Effect } from "effect";
 import type { Stream } from "effect";
 

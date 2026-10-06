@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   WORKTREE_BRANCH_PREFIX,
-  buildSynaraBranchName,
+  buildTrellisBranchName,
   buildTemporaryWorktreeBranchName,
   isTemporaryWorktreeBranch,
-  resolveUniqueSynaraBranchName,
+  resolveUniqueTrellisBranchName,
   resolveThreadBranchRegressionGuard,
 } from "./git";
 
@@ -70,37 +70,37 @@ describe("resolveThreadBranchRegressionGuard", () => {
   });
 });
 
-describe("buildSynaraBranchName", () => {
-  it("uses synara as the branch namespace", () => {
-    expect(buildSynaraBranchName("fix toast copy")).toBe("synara/fix-toast-copy");
+describe("buildTrellisBranchName", () => {
+  it("uses trellis as the branch namespace", () => {
+    expect(buildTrellisBranchName("fix toast copy")).toBe("trellis/fix-toast-copy");
   });
 
-  it("keeps non-Synara namespaces inside the Synara branch", () => {
-    expect(buildSynaraBranchName("feature/refine-toolbar-actions")).toBe(
-      "synara/feature/refine-toolbar-actions",
+  it("keeps non-Trellis namespaces inside the Trellis branch", () => {
+    expect(buildTrellisBranchName("feature/refine-toolbar-actions")).toBe(
+      "trellis/feature/refine-toolbar-actions",
     );
   });
 
   it("normalizes legacy prefixes before rebuilding the branch", () => {
     for (const namespace of PRE_CUTOVER_NAMESPACE_FIXTURES) {
-      expect(buildSynaraBranchName(`${namespace}/refine toolbar actions`)).toBe(
-        "synara/refine-toolbar-actions",
+      expect(buildTrellisBranchName(`${namespace}/refine toolbar actions`)).toBe(
+        "trellis/refine-toolbar-actions",
       );
     }
   });
 
-  it("falls back to synara/update when no preferred name is provided", () => {
-    expect(buildSynaraBranchName()).toBe("synara/update");
+  it("falls back to trellis/update when no preferred name is provided", () => {
+    expect(buildTrellisBranchName()).toBe("trellis/update");
   });
 });
 
-describe("resolveUniqueSynaraBranchName", () => {
-  it("increments suffix when the Synara branch already exists", () => {
+describe("resolveUniqueTrellisBranchName", () => {
+  it("increments suffix when the Trellis branch already exists", () => {
     expect(
-      resolveUniqueSynaraBranchName(
-        ["main", "synara/fix-toast-copy", "synara/fix-toast-copy-2"],
+      resolveUniqueTrellisBranchName(
+        ["main", "trellis/fix-toast-copy", "trellis/fix-toast-copy-2"],
         "fix toast copy",
       ),
-    ).toBe("synara/fix-toast-copy-3");
+    ).toBe("trellis/fix-toast-copy-3");
   });
 });

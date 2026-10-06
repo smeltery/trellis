@@ -1,5 +1,5 @@
 // FILE: betaDiagnostics.ts
-// Purpose: Beta-only diagnostics queue for Synara Beta desktop builds.
+// Purpose: Beta-only diagnostics queue for Trellis Beta desktop builds.
 // Layer: Desktop telemetry (runs only when the baked build flavor is "beta").
 //
 // Privacy contract (also documented in docs/diagnostics.md):
@@ -44,13 +44,13 @@ import {
   type DesktopDiagnosticReportStatus,
   LEGACY_PROVIDER_MIGRATIONS,
   ProviderKind,
-} from "@synara/contracts";
-import { redactDiagnosticText } from "@synara/shared/diagnosticsRedaction";
+} from "@trellis/contracts";
+import { redactDiagnosticText } from "@trellis/shared/diagnosticsRedaction";
 import { Schema } from "effect";
 
 /** Override point for self-hosted / dev ingestion; production default ships in the binary. */
-export const BETA_DIAGNOSTICS_ENDPOINT = "https://synara-beta-diagnostics.kartik-9f9.workers.dev";
-export const BETA_DIAGNOSTICS_ENDPOINT_ENV = "SYNARA_BETA_DIAGNOSTICS_URL";
+export const BETA_DIAGNOSTICS_ENDPOINT = "";
+export const BETA_DIAGNOSTICS_ENDPOINT_ENV = "TRELLIS_BETA_DIAGNOSTICS_URL";
 
 const FLUSH_INTERVAL_MS = 5 * 60 * 1000;
 // Crash events can carry a ~16 KiB log tail, so the queue gets headroom for a
@@ -899,6 +899,7 @@ export class BetaDiagnostics {
       if (batch.length === 0) return;
 
       const body = `${batch.join("\n")}\n`;
+      if (!this.endpoint) return;
       const response = await fetch(`${this.endpoint}/v1/events`, {
         method: "POST",
         headers: { "content-type": "application/x-ndjson" },

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DesktopAppSnapCapture } from "@synara/contracts";
+import type { DesktopAppSnapCapture } from "@trellis/contracts";
 
 import { insertAppSnapCaptureIntoDraft } from "./appSnapIntake";
 import { useComposerDraftStore } from "./composerDraftStore";

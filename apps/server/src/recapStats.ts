@@ -1,5 +1,5 @@
 // FILE: recapStats.ts
-// Purpose: Time-window recap for the Inbox from Synara's local projection DB:
+// Purpose: Time-window recap for the Inbox from Trellis's local projection DB:
 // prompts, chats, turns, agent run time and token deltas per slot, plus the
 // window's top projects and models. Shares the token SQL with profileStats.ts.
 // Layer: server stats query service (SqlClient). Available in Stable and Beta.
@@ -14,9 +14,9 @@ import {
   type StatsRecapSlot,
   type StatsRecapTokens,
   WsRpcError,
-} from "@synara/contracts";
-import { INBOX_BETA_FEATURE } from "@synara/shared/betaFeatures";
-import { normalizeModelSlug, stripClaudeContextWindowSuffix } from "@synara/shared/model";
+} from "@trellis/contracts";
+import { INBOX_BETA_FEATURE } from "@trellis/shared/betaFeatures";
+import { normalizeModelSlug, stripClaudeContextWindowSuffix } from "@trellis/shared/model";
 import { Effect, Layer, ServiceMap } from "effect";
 import * as SqlClient from "effect/unstable/sql/SqlClient";
 
@@ -321,7 +321,7 @@ export interface RecapStatsQueryShape {
 }
 
 export class RecapStatsQuery extends ServiceMap.Service<RecapStatsQuery, RecapStatsQueryShape>()(
-  "synara/recapStats/RecapStatsQuery",
+  "trellis/recapStats/RecapStatsQuery",
 ) {}
 
 export const makeRecapStatsQuery = (

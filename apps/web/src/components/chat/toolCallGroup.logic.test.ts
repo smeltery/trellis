@@ -86,7 +86,7 @@ describe("isSummarizableToolCallEntry", () => {
       isSummarizableToolCallEntry(
         workEntry({
           id: "threads",
-          synaraThreadCreation: {
+          trellisThreadCreation: {
             operationId: "op",
             requestedCount: 1,
             createdCount: 1,

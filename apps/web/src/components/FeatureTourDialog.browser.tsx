@@ -1,7 +1,7 @@
 import "../index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { isBetaFeatureEnabled } from "@synara/shared/betaFeatures";
+import { isBetaFeatureEnabled } from "@trellis/shared/betaFeatures";
 import { useState } from "react";
 import { page, userEvent } from "vitest/browser";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -31,8 +31,8 @@ vi.mock("../betaFeatures", () => ({
 }));
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
 
-const tourKey = "synara:feature-tour:since-0.9.2:v1";
-const importKey = "synara:project-import-announcement:v1";
+const tourKey = "trellis:feature-tour:since-0.9.2:v1";
+const importKey = "trellis:project-import-announcement:v1";
 const clients: QueryClient[] = [];
 const screens: Awaited<ReturnType<typeof render>>[] = [];
 const originalBridge = window.desktopBridge;
@@ -43,7 +43,7 @@ beforeEach(async () => {
   flavor = "production";
   localStorage.removeItem(tourKey);
   localStorage.setItem(importKey, JSON.stringify([installation]));
-  localStorage.removeItem("synara:appsnap-welcome:v1");
+  localStorage.removeItem("trellis:appsnap-welcome:v1");
   useOnboardingDialogStore.setState({
     isOpen: false,
     startupGateSettled: true,
@@ -60,7 +60,7 @@ afterEach(async () => {
   else delete window.desktopBridge;
   localStorage.removeItem(tourKey);
   localStorage.removeItem(importKey);
-  localStorage.removeItem("synara:appsnap-welcome:v1");
+  localStorage.removeItem("trellis:appsnap-welcome:v1");
 });
 async function show(children = <FeatureTourDialog />) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -187,7 +187,7 @@ it("does not jump ahead of a slow AppSnap probe and then waits for its dismissal
   expect(document.querySelectorAll('[role="dialog"]').length).toBe(0);
   resolveProbe({ supported: true });
   await expect
-    .element(page.getByRole("dialog", { name: "Synara AppSnaps are live!" }))
+    .element(page.getByRole("dialog", { name: "Trellis AppSnaps are live!" }))
     .toBeVisible();
   await page.getByRole("button", { name: "Not now" }).click();
   await expect

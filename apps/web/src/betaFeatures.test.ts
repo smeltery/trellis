@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { PROVIDER_DESCRIPTORS } from "@synara/shared/providerMetadata";
-import { isBetaFeatureEnabled } from "@synara/shared/betaFeatures";
+import { PROVIDER_DESCRIPTORS } from "@trellis/shared/providerMetadata";
+import { isBetaFeatureEnabled } from "@trellis/shared/betaFeatures";
 
 import { visibleProviderDescriptors } from "./betaFeatures";
 

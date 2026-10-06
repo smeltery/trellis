@@ -13,7 +13,7 @@ import type {
   GitHubIssueStateReason,
   GitPullRequestMergeability,
   PullRequestState,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import { cn } from "~/lib/utils";
 import {

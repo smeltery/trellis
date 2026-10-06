@@ -7,8 +7,8 @@
  *
  * @module ProviderAdapterRegistryLive
  */
-import type { ProviderInstanceId, ProviderRuntimeEvent, ProviderSession } from "@synara/contracts";
-import { deriveProviderInstances } from "@synara/shared/providerInstances";
+import type { ProviderInstanceId, ProviderRuntimeEvent, ProviderSession } from "@trellis/contracts";
+import { deriveProviderInstances } from "@trellis/shared/providerInstances";
 import { Effect, Layer, Stream } from "effect";
 
 import { ProviderUnsupportedError, type ProviderAdapterError } from "../Errors.ts";

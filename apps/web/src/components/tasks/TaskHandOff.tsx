@@ -8,8 +8,8 @@
 // Layer: Tasks UI component
 // Exports: TaskHandOff
 
-import type { Todo, TodoUpdateInput } from "@synara/contracts";
-import { applyClaudePromptEffortPrefix, isClaudeUltrathinkPrompt } from "@synara/shared/model";
+import type { Todo, TodoUpdateInput } from "@trellis/contracts";
+import { applyClaudePromptEffortPrefix, isClaudeUltrathinkPrompt } from "@trellis/shared/model";
 import { useQuery } from "@tanstack/react-query";
 import { type RefObject, useEffect, useState } from "react";
 

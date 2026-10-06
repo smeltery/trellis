@@ -6,13 +6,13 @@ import {
   type AutomationSchedule,
   type ModelSelection,
   type ProviderStartOptions,
-} from "@synara/contracts";
-import { automationRequiresTargetThread } from "@synara/shared/automationMode";
+} from "@trellis/contracts";
+import { automationRequiresTargetThread } from "@trellis/shared/automationMode";
 import {
   GENERIC_CHAT_THREAD_TITLE,
   buildPromptThreadTitleFallback,
-} from "@synara/shared/chatThreads";
-import { deriveAssociatedWorktreeMetadata } from "@synara/shared/threadWorkspace";
+} from "@trellis/shared/chatThreads";
+import { deriveAssociatedWorktreeMetadata } from "@trellis/shared/threadWorkspace";
 import type { QueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { promoteThreadCreate } from "~/lib/threadCreatePromotion";
@@ -194,7 +194,7 @@ export function useChatAutomationCreation({
                 type: "warning",
                 title: "Thread note not added",
                 description:
-                  "The automation was created, but Synara could not add the activity note.",
+                  "The automation was created, but Trellis could not add the activity note.",
               });
             }
           })();
@@ -214,7 +214,7 @@ export function useChatAutomationCreation({
             type: "error",
             title: "Could not create automation",
             description:
-              error instanceof Error ? error.message : "Synara could not save the automation.",
+              error instanceof Error ? error.message : "Trellis could not save the automation.",
           });
           return false;
         })
@@ -288,7 +288,7 @@ export function useChatAutomationCreation({
           toastManager.add({
             type: "error",
             title: "Could not create chat",
-            description: "Synara could not promote this draft before saving the automation.",
+            description: "Trellis could not promote this draft before saving the automation.",
           });
           return null;
         }
@@ -315,7 +315,7 @@ export function useChatAutomationCreation({
           description:
             error instanceof Error
               ? error.message
-              : "Synara could not promote this draft before saving the automation.",
+              : "Trellis could not promote this draft before saving the automation.",
         });
         return null;
       }

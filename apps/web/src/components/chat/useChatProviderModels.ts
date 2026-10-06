@@ -4,8 +4,8 @@ import {
   type ProviderInstanceId,
   type ProviderKind,
   type ServerProviderStatus,
-} from "@synara/contracts";
-import { normalizeModelSlug } from "@synara/shared/model";
+} from "@trellis/contracts";
+import { normalizeModelSlug } from "@trellis/shared/model";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useProviderStatusesForLocalConfig } from "~/hooks/useProviderStatusesForLocalConfig";

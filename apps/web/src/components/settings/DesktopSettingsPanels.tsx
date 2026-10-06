@@ -9,8 +9,8 @@ import {
   type DesktopBetaActionResult,
   type DesktopBetaChannelState,
   type ResolvedKeybindingsConfig,
-} from "@synara/contracts";
-import { appSnapShortcutLabels } from "@synara/shared/appSnapShortcut";
+} from "@trellis/contracts";
+import { appSnapShortcutLabels } from "@trellis/shared/appSnapShortcut";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -56,7 +56,7 @@ import { toastManager } from "~/components/ui/toast";
 import { serverConfigQueryOptions } from "~/lib/serverReactQuery";
 
 function appSnapStatusText(state: DesktopAppSnapState | null): string {
-  if (!state) return "Available in the Synara desktop app";
+  if (!state) return "Available in the Trellis desktop app";
   if (!state.supported) return state.message ?? "Available on macOS only";
   if (state.status === "ready") {
     const shortcut = state.shortcut;
@@ -141,7 +141,7 @@ export function NotificationsSettingsPanel({
       return;
     }
 
-    const notification = new Notification(title, { body, tag: "synara:test-notification" });
+    const notification = new Notification(title, { body, tag: "trellis:test-notification" });
     notification.addEventListener("click", () => {
       window.focus();
     });
@@ -298,7 +298,7 @@ export function AppSnapSettingsPanel({
       toastManager.add({
         type: "warning",
         title: "AppSnap unavailable",
-        description: "AppSnap requires the Synara desktop app on macOS.",
+        description: "AppSnap requires the Trellis desktop app on macOS.",
       });
       return;
     }
@@ -354,7 +354,7 @@ export function AppSnapSettingsPanel({
             Take an AppSnap to show your agent another app's window
           </p>
           <p className={SETTINGS_CARD_ROW_DESCRIPTION_CLASS_NAME}>
-            Press your two-key shortcut while any app is frontmost. Synara captures that window as
+            Press your two-key shortcut while any app is frontmost. Trellis captures that window as
             an image, brings itself forward, and attaches the snap to a task composer — the capture
             stays on this device until you send the message.
           </p>
@@ -362,7 +362,7 @@ export function AppSnapSettingsPanel({
             <p className={cn(SETTINGS_CARD_ROW_DESCRIPTION_CLASS_NAME, "pt-0.5")}>
               {appSnapState
                 ? (appSnapState.message ?? "AppSnap is available only in the macOS desktop app.")
-                : "AppSnap requires the Synara desktop app on macOS."}
+                : "AppSnap requires the Trellis desktop app on macOS."}
             </p>
           ) : null}
         </div>
@@ -371,7 +371,7 @@ export function AppSnapSettingsPanel({
       <SettingsSection title="Capture">
         <SettingsRow
           title="Enable AppSnap"
-          description="Run the capture listener in the background while Synara is open."
+          description="Run the capture listener in the background while Trellis is open."
           status={appSnapStatusText(appSnapState)}
           resetAction={
             settings.enableAppSnap !== defaults.enableAppSnap ? (
@@ -393,7 +393,7 @@ export function AppSnapSettingsPanel({
 
         <SettingsRow
           title="Shortcut"
-          description="Choose exactly two keys: one modifier and one other key. Synara checks its own bindings and asks macOS whether another app already owns the shortcut before saving it."
+          description="Choose exactly two keys: one modifier and one other key. Trellis checks its own bindings and asks macOS whether another app already owns the shortcut before saving it."
           control={
             <AppSnapShortcutControl
               key={
@@ -415,7 +415,7 @@ export function AppSnapSettingsPanel({
 
         <SettingsRow
           title="Destination"
-          description="Snaps join the task you interacted with in the last minute, and consecutive snaps stay together. Otherwise Synara opens a fresh task with the capture attached."
+          description="Snaps join the task you interacted with in the last minute, and consecutive snaps stay together. Otherwise Trellis opens a fresh task with the capture attached."
           control={
             <span className="text-ui leading-snug font-medium text-muted-foreground">
               Automatic
@@ -466,7 +466,7 @@ export function AppSnapSettingsPanel({
 }
 
 /**
- * Beta → stable: opens stable Synara and quits beta. Beta data is never copied
+ * Beta → stable: opens stable Trellis and quits beta. Beta data is never copied
  * back because beta can hold data for features stable does not have yet.
  */
 function LeaveBetaDialog({
@@ -496,8 +496,8 @@ function LeaveBetaDialog({
       if (!result.ok) {
         toastManager.add({
           type: "warning",
-          title: "Could not switch back to Synara",
-          description: result.message ?? "Open Synara from your Applications folder.",
+          title: "Could not switch back to Trellis",
+          description: result.message ?? "Open Trellis from your Applications folder.",
         });
         onOpenChange(false);
       }
@@ -510,14 +510,14 @@ function LeaveBetaDialog({
     <AlertDialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
       <AlertDialogPopup>
         <AlertDialogHeader>
-          <AlertDialogTitle>Switch back to Synara?</AlertDialogTitle>
+          <AlertDialogTitle>Switch back to Trellis?</AlertDialogTitle>
           <AlertDialogDescription>
-            Synara opens with the chats and settings it had before you tried Beta. Beta closes, and
+            Trellis opens with the chats and settings it had before you tried Beta. Beta closes, and
             any chats still running in Beta stop.
           </AlertDialogDescription>
           <AlertDialogDescription>
-            Anything you did in Beta stays in Beta. It can't be moved into Synara, because Beta can
-            include features Synara doesn't have yet.
+            Anything you did in Beta stays in Beta. It can't be moved into Trellis, because Beta can
+            include features Trellis doesn't have yet.
           </AlertDialogDescription>
           {canMoveToTrash ? (
             <label
@@ -532,7 +532,7 @@ function LeaveBetaDialog({
                 onCheckedChange={(checked) => setMoveToTrash(checked === true)}
               />
               <span className="space-y-0.5">
-                <span className="block">Move Synara Beta to the Trash</span>
+                <span className="block">Move Trellis Beta to the Trash</span>
                 <span className="block text-ui-sm text-muted-foreground">
                   Your Beta data is kept, so you can pick up where you left off if you come back.
                 </span>
@@ -545,7 +545,7 @@ function LeaveBetaDialog({
             Stay on Beta
           </AlertDialogClose>
           <Button size="sm" disabled={pending} onClick={() => void leave()}>
-            {pending ? "Switching…" : "Switch to Synara"}
+            {pending ? "Switching…" : "Switch to Trellis"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogPopup>
@@ -557,14 +557,14 @@ function BetaChannelMark() {
   return (
     <img
       src="/app-icons/beta.png"
-      alt="Synara Beta"
+      alt="Trellis Beta"
       className="mt-0.5 size-9 shrink-0 rounded-xl"
     />
   );
 }
 
 /**
- * Stable → Synara Beta handoff. Rendered inside General settings; visible only
+ * Stable → Trellis Beta handoff. Rendered inside General settings; visible only
  * on desktop builds, with the full action card on production and a status card
  * (plus diagnostics disclosure) on beta.
  */
@@ -602,7 +602,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
       }
       toastManager.add({
         type: "success",
-        title: "Opening Synara Beta",
+        title: "Opening Trellis Beta",
         description:
           "Beta is copying your projects, settings, and provider sign-ins from stable on first launch.",
       });
@@ -619,7 +619,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
       if (!result.ok) {
         toastManager.add({
           type: "warning",
-          title: "Could not open Synara Beta",
+          title: "Could not open Trellis Beta",
           description: result.message ?? "The beta install was not found.",
         });
       }
@@ -636,7 +636,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
       if (!result.ok) {
         toastManager.add({
           type: "warning",
-          title: "Could not install Synara Beta",
+          title: "Could not install Trellis Beta",
           description: result.message ?? "Try again from Settings → General.",
         });
       }
@@ -663,7 +663,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
       <SettingsCard divided={false} className="flex items-start gap-3 px-4 py-3.5">
         <BetaChannelMark />
         <div className="min-w-0 flex-1 space-y-1">
-          <p className={SETTINGS_CARD_ROW_TITLE_CLASS_NAME}>You're on Synara Beta</p>
+          <p className={SETTINGS_CARD_ROW_TITLE_CLASS_NAME}>You're on Trellis Beta</p>
           <p className={SETTINGS_CARD_ROW_DESCRIPTION_CLASS_NAME}>
             To help us fix problems, Beta shares crash reports, app errors, and anonymous usage
             counts. Crash reports may include private information.
@@ -712,11 +712,11 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
           <div className="flex flex-wrap items-center gap-2 pt-1.5">
             {state.stableInstalled ? (
               <Button size="xs" variant="outline" onClick={() => setLeaveDialogOpen(true)}>
-                Switch back to Synara
+                Switch back to Trellis
               </Button>
             ) : (
               <Button size="xs" variant="outline" onClick={() => void openStableDownloadPage()}>
-                Get Synara
+                Get Trellis
               </Button>
             )}
           </div>
@@ -739,7 +739,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
         <BetaChannelMark />
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2">
-            <p className={SETTINGS_CARD_ROW_TITLE_CLASS_NAME}>Synara Beta</p>
+            <p className={SETTINGS_CARD_ROW_TITLE_CLASS_NAME}>Trellis Beta</p>
             <span className="inline-flex items-center rounded-full bg-[var(--beta-pill)] px-1.5 py-0.5 text-ui-xs font-semibold leading-none text-[var(--beta-pill-ink)]">
               Beta
             </span>
@@ -751,8 +751,8 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
           </div>
           <p className={SETTINGS_CARD_ROW_DESCRIPTION_CLASS_NAME}>
             {state.installed
-              ? "Beta runs next to Synara with its own data, so nothing here changes. Copy your data to bring over projects, settings, and provider sign-ins. Beta shares crash reports and anonymous usage stats."
-              : "Try new features before everyone else. Synara Beta is a separate app with its own data, and this app stays exactly as it is. Beta shares crash reports and anonymous usage stats to help us improve it."}
+              ? "Beta runs next to Trellis with its own data, so nothing here changes. Copy your data to bring over projects, settings, and provider sign-ins. Beta shares crash reports and anonymous usage stats."
+              : "Try new features before everyone else. Trellis Beta is a separate app with its own data, and this app stays exactly as it is. Beta shares crash reports and anonymous usage stats to help us improve it."}
           </p>
           {state.lastImportAt ? (
             <p className="text-ui-xs text-muted-foreground">
@@ -771,12 +771,12 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
           ) : state.install ? (
             <p className="text-ui-xs text-muted-foreground">
               {state.install.phase === "downloading"
-                ? `Downloading Synara Beta${state.install.percent !== null ? ` — ${state.install.percent}%` : "…"}`
+                ? `Downloading Trellis Beta${state.install.percent !== null ? ` — ${state.install.percent}%` : "…"}`
                 : state.install.phase === "verifying"
                   ? "Verifying the download…"
                   : state.install.phase === "installing"
-                    ? "Installing Synara Beta…"
-                    : "Opening Synara Beta…"}
+                    ? "Installing Trellis Beta…"
+                    : "Opening Trellis Beta…"}
             </p>
           ) : null}
           <div className="flex flex-wrap items-center gap-2 pt-1.5">
@@ -788,7 +788,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
                     disabled={actionPending !== null}
                     onClick={() => void installBeta()}
                   >
-                    {actionPending === "install" ? "Installing…" : "Install Synara Beta"}
+                    {actionPending === "install" ? "Installing…" : "Install Trellis Beta"}
                   </Button>
                   <Button
                     size="xs"
@@ -809,7 +809,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
                 </>
               ) : (
                 <Button size="xs" onClick={() => void openDownloadPage()}>
-                  Get Synara Beta
+                  Get Trellis Beta
                 </Button>
               )
             ) : (
@@ -820,7 +820,7 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
                   disabled={actionPending !== null || state.running}
                   title={
                     state.running
-                      ? "Quit Synara Beta first so it can pick up the import on its next launch."
+                      ? "Quit Trellis Beta first so it can pick up the import on its next launch."
                       : undefined
                   }
                   onClick={() => setCopyDialogOpen(true)}
@@ -847,11 +847,11 @@ export function BetaChannelSettingsPanel({ active }: { readonly active: boolean 
       <AlertDialog open={copyDialogOpen} onOpenChange={setCopyDialogOpen}>
         <AlertDialogPopup>
           <AlertDialogHeader>
-            <AlertDialogTitle>Replace Synara Beta data?</AlertDialogTitle>
+            <AlertDialogTitle>Replace Trellis Beta data?</AlertDialogTitle>
             <AlertDialogDescription>
-              Copying from Synara replaces Beta chats and projects. Chats and projects created only
+              Copying from Trellis replaces Beta chats and projects. Chats and projects created only
               in Beta will be lost. Matching settings and provider sign-ins are overwritten, but
-              Beta-only sign-ins may remain. Your data in Synara will not change.
+              Beta-only sign-ins may remain. Your data in Trellis will not change.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

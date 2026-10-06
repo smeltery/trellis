@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { ComputerSpaceInventory } from "@synara/contracts";
+import { ComputerSpaceInventory } from "@trellis/contracts";
 
 import { ComputerSpaceError } from "./ComputerSpaceBroker.ts";
 

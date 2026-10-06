@@ -7,7 +7,7 @@ import {
   type ProviderKind,
   type ProviderPluginDescriptor,
   type ProviderSkillDescriptor,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { type ReactNode } from "react";
 import { type ComposerTriggerKind } from "../../composer-logic";
 import { type ComposerSlashCommand } from "../../composerSlashCommands";
@@ -75,7 +75,7 @@ function commandMenuTitle(
     case "subagents":
       return "Subagents";
     case "feedback":
-      return "Feedback Synara";
+      return "Feedback Trellis";
     default:
       return humanizeProviderCommandName(item.command);
   }

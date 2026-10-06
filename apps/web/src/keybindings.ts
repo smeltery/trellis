@@ -8,9 +8,9 @@ import {
   type SpaceJumpKeybindingCommand,
   THREAD_JUMP_KEYBINDING_COMMANDS,
   type ThreadJumpKeybindingCommand,
-} from "@synara/contracts";
-import { isKeyboardShortcutsHelpChord } from "@synara/shared/browserShortcuts";
-import { isUnassignedKeybindingShortcut } from "@synara/shared/keybindingRules";
+} from "@trellis/contracts";
+import { isKeyboardShortcutsHelpChord } from "@trellis/shared/browserShortcuts";
+import { isUnassignedKeybindingShortcut } from "@trellis/shared/keybindingRules";
 import { isMacPlatform, isWindowsPlatform } from "./lib/utils";
 
 export interface ShortcutEventLike {

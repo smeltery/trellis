@@ -7,7 +7,7 @@ import {
   type ProviderInstanceId,
   type ProviderKind,
   type ServerProviderStatus,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { memo, useCallback, useMemo, useState } from "react";
 
 import { SettingsIcon, UserIcon } from "~/lib/icons";

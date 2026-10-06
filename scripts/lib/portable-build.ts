@@ -17,9 +17,9 @@ const required = [
 ];
 const buildVariables = [
   "AZURE_TRUSTED_SIGNING_SUBJECT_DN",
-  "SYNARA_WEB_SOURCEMAP",
-  "SYNARA_SERVER_SOURCEMAP",
-  "SYNARA_DESKTOP_SOURCEMAP",
+  "TRELLIS_WEB_SOURCEMAP",
+  "TRELLIS_SERVER_SOURCEMAP",
+  "TRELLIS_DESKTOP_SOURCEMAP",
   "VITE_WS_URL",
 ];
 export const sha256 = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");

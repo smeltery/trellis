@@ -6,8 +6,8 @@ import {
   type ProviderRuntimeEvent,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
-import { nonEmptyTrimmed } from "@synara/shared/text";
+} from "@trellis/contracts";
+import { nonEmptyTrimmed } from "@trellis/shared/text";
 
 import {
   isSensitiveKey,
@@ -24,7 +24,7 @@ const MAX_ACTIVITY_DATA_STRING_CHARS = 2_000;
 const MAX_REASONING_DETAIL_CHARS = 8_000;
 const MAX_ACTIVITY_DATA_ARRAY_ITEMS = 24;
 const MAX_ACTIVITY_DATA_OBJECT_KEYS = 64;
-const ACTIVITY_DATA_TRUNCATION_MARKER = "__synaraTruncated";
+const ACTIVITY_DATA_TRUNCATION_MARKER = "__trellisTruncated";
 
 type ActivityPayload = OrchestrationThreadActivity["payload"];
 

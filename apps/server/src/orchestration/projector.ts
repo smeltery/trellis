@@ -1,4 +1,4 @@
-import type { OrchestrationEvent, OrchestrationReadModel, ThreadId } from "@synara/contracts";
+import type { OrchestrationEvent, OrchestrationReadModel, ThreadId } from "@trellis/contracts";
 import {
   OrchestrationCheckpointSummary,
   OrchestrationMessage,
@@ -7,18 +7,18 @@ import {
   ThreadAsyncUserInputAnsweredPayload,
   ThreadClaudeCacheSetPayload,
   type OrchestrationMessageTextSegment,
-} from "@synara/contracts";
-import { clearRemovedAsyncUserInputResponses } from "@synara/shared/asyncUserInput";
-import { isGroupContainerKind } from "@synara/shared/projectContainers";
-import { isSidechatThread } from "@synara/shared/sidechatThread";
+} from "@trellis/contracts";
+import { clearRemovedAsyncUserInputResponses } from "@trellis/shared/asyncUserInput";
+import { isGroupContainerKind } from "@trellis/shared/projectContainers";
+import { isSidechatThread } from "@trellis/shared/sidechatThread";
 import {
   addPinnedMessage,
   removePinnedMessage,
   setPinnedMessageDone,
   setPinnedMessageLabel,
-} from "@synara/shared/pinnedMessages";
+} from "@trellis/shared/pinnedMessages";
 import { Effect, Schema } from "effect";
-import { resolveModelSelectionInstanceId } from "@synara/shared/providerInstances";
+import { resolveModelSelectionInstanceId } from "@trellis/shared/providerInstances";
 
 import { toProjectorDecodeError, type OrchestrationProjectorDecodeError } from "./Errors.ts";
 import {

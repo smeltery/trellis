@@ -19,7 +19,7 @@ describe("openCodeBinarySearchDirectories", () => {
     ["Library", "Application Support", "fnm", "node-versions", "v24.13.1", "installation", "bin"],
     [".local", "share", "fnm", "node-versions", "v24.13.1", "installation", "bin"],
   ])("discovers a new version-manager install after an earlier lookup (%j)", (...segments) => {
-    const home = mkdtempSync(join(tmpdir(), "synara-opencode-refresh-"));
+    const home = mkdtempSync(join(tmpdir(), "trellis-opencode-refresh-"));
     const env = { HOME: home, PATH: "/usr/bin:/bin" };
     const binDirectory = join(home, ...segments);
     try {

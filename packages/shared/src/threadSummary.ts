@@ -4,7 +4,7 @@ import type {
   OrchestrationPendingInteraction,
   OrchestrationProposedPlan,
   OrchestrationThreadActivity,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 export interface ThreadSummaryMetadata {
   latestUserMessageAt: string | null;

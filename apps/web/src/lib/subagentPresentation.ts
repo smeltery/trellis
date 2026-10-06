@@ -7,8 +7,8 @@ import {
   extractSubagentIdentityHints as extractParsedSubagentIdentityHints,
   isWorkerTierSubagentRole,
   resolveSubagentIdentityFromDirectory,
-} from "@synara/shared/subagents";
-import { formatModelDisplayName } from "@synara/shared/model";
+} from "@trellis/shared/subagents";
+import { formatModelDisplayName } from "@trellis/shared/model";
 
 const SUBAGENT_ACCENT_PALETTE = [
   "#b84e44",

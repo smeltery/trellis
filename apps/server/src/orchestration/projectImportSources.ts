@@ -12,12 +12,12 @@ import type {
   ProviderInstanceId,
   ProviderStartOptions,
   ServerSettings,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   deriveProviderInstances,
   providerStartOptionsFromInstance,
   type ResolvedProviderInstance,
-} from "@synara/shared/providerInstances";
+} from "@trellis/shared/providerInstances";
 
 import { claudeHistoricalSessionEnvironment } from "./importThreadRoute";
 import { canonicalImportPath } from "./projectImportPaths";

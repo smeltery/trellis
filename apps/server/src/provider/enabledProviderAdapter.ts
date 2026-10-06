@@ -5,7 +5,7 @@
  * prevent either the WebSocket fallback or the primary HTTP upload path from
  * bypassing provider disablement.
  */
-import { PROVIDER_DISPLAY_NAMES, type ProviderKind } from "@synara/contracts";
+import { PROVIDER_DISPLAY_NAMES, type ProviderKind } from "@trellis/contracts";
 import { Effect } from "effect";
 
 import { isServerBetaFeatureEnabled } from "../betaFeatureGate";
@@ -22,7 +22,7 @@ export function providerDisabledSettingsMessage(
 ): string {
   return isEnabled(provider)
     ? `${PROVIDER_DISPLAY_NAMES[provider]} is disabled in Settings > Providers.`
-    : `${PROVIDER_DISPLAY_NAMES[provider]} is available in Synara Beta.`;
+    : `${PROVIDER_DISPLAY_NAMES[provider]} is available in Trellis Beta.`;
 }
 
 export function ensureProviderEnabled(provider: ProviderKind, serverSettings: ServerSettingsShape) {

@@ -5,7 +5,7 @@
 
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import type * as Acp from "@agentclientprotocol/sdk";
-import { ThreadId, TurnId } from "@synara/contracts";
+import { ThreadId, TurnId } from "@trellis/contracts";
 import {
   Cause,
   Deferred,
@@ -285,7 +285,7 @@ const SPAWN_READY_LINE =
   "2026-09-02T04:43:31.297623Z  INFO toolbox::tools::exec::session_manager: session_id=abc123 [create_session] waiting for shell ready";
 
 const stripHarnessPrefix = (text: string): string =>
-  text.replace(/^<synara_host_context>[\s\S]*?<\/synara_host_context>/, "");
+  text.replace(/^<trellis_host_context>[\s\S]*?<\/trellis_host_context>/, "");
 
 /** Advance past the supervisor tick, the fuse, and the recovery's resume-replay gate. */
 function advanceThroughRecovery(): Effect.Effect<void> {
@@ -313,8 +313,8 @@ describe("resolveDevinAdapterTimeouts", () => {
   it("uses valid environment overrides", () => {
     expect(
       resolveDevinAdapterTimeouts({
-        SYNARA_DEVIN_TURN_IDLE_TIMEOUT_MS: "1234",
-        SYNARA_DEVIN_TOOL_IDLE_TIMEOUT_MS: "5678",
+        TRELLIS_DEVIN_TURN_IDLE_TIMEOUT_MS: "1234",
+        TRELLIS_DEVIN_TOOL_IDLE_TIMEOUT_MS: "5678",
       }),
     ).toEqual({ turnIdleMs: 1234, toolIdleMs: 5678 });
   });
@@ -486,7 +486,7 @@ describe("Devin wedge auto-recovery", () => {
               event.turnId === String(wedgedTurn.turnId) &&
               event.payload?.state === "cancelled",
           );
-          expect(settled?.payload?.stopReason).toBe("synara.devin.wedge-recovery");
+          expect(settled?.payload?.stopReason).toBe("trellis.smeltery.devin.wedge-recovery");
         }).pipe(Effect.scoped, Effect.provide(makeWedgeTestLayer(factory))),
       );
     },
@@ -808,7 +808,7 @@ describe("Devin wedge auto-recovery", () => {
             turnId: turn.turnId,
             payload: expect.objectContaining({
               message: expect.stringContaining("start failed"),
-              detail: { reason: "synara.devin.wedge-recovery" },
+              detail: { reason: "trellis.smeltery.devin.wedge-recovery" },
             }),
           }),
         ]);
@@ -2049,11 +2049,11 @@ describe("Devin permission requests", () => {
         });
         yield* adapter.sendTurn({ threadId, input: "work", attachments: [] });
         yield* handles.emitToolCall("call-1", "pending", {
-          title: "synara_list_threads",
+          title: "trellis_list_threads",
           kind: "other",
           data: {
             rawInput: {
-              _toolName: "synara_list_threads",
+              _toolName: "trellis_list_threads",
               arguments: { limit: 5 },
             },
           },
@@ -2068,9 +2068,9 @@ describe("Devin permission requests", () => {
         const opened = runtimeEvents.find((event) => event.type === "request.opened");
         expect(opened).toBeDefined();
         expect(opened?.payload?.requestType).toBe("tool_approval");
-        expect(opened?.payload?.detail).toBe('synara_list_threads: {"limit":5}');
+        expect(opened?.payload?.detail).toBe('trellis_list_threads: {"limit":5}');
         const openedArgs = opened?.payload?.args as Record<string, unknown> | undefined;
-        expect(openedArgs?.toolName).toBe("synara_list_threads");
+        expect(openedArgs?.toolName).toBe("trellis_list_threads");
         expect(openedArgs?.input).toEqual({ limit: 5 });
 
         yield* adapter.respondToRequest(threadId, opened!.requestId as never, "accept");
@@ -2387,7 +2387,7 @@ describe("Devin permission requests", () => {
     );
   });
 
-  it("auto-approves Synara gateway tools for coordinator threads only", async () => {
+  it("auto-approves Trellis gateway tools for coordinator threads only", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000);
     const handles = makePermissionRuntime();
@@ -2421,16 +2421,16 @@ describe("Devin permission requests", () => {
           threadId,
           runtimeMode: "approval-required",
           cwd: process.cwd(),
-          autoApproveSynaraTools: true,
+          autoApproveTrellisTools: true,
         });
         yield* adapter.sendTurn({ threadId, input: "coordinate", attachments: [] });
 
-        // A Synara gateway tool call resolves without ever surfacing a prompt.
+        // A Trellis gateway tool call resolves without ever surfacing a prompt.
         const gateway = yield* handles.requestPermission(
           makePermissionParams("call-gw", {
             kind: "other",
             rawInput: {
-              _toolName: "synara_list_threads",
+              _toolName: "trellis_list_threads",
               arguments: { limit: 3 },
             },
           }),
@@ -2502,7 +2502,7 @@ describe("Devin permission requests", () => {
           threadId,
           runtimeMode: "approval-required",
           cwd: process.cwd(),
-          autoApproveSynaraTools: true,
+          autoApproveTrellisTools: true,
         });
         yield* adapter.sendTurn({ threadId, input: "coordinate", attachments: [] });
 
@@ -2516,7 +2516,7 @@ describe("Devin permission requests", () => {
           // the kind alone must keep it off the auto-approve path.
           {
             toolCallId: "spoof-title-execute",
-            toolCall: { kind: "execute", title: "mcp__synara__x; rm -rf y" },
+            toolCall: { kind: "execute", title: "mcp__trellis__x; rm -rf y" },
           },
           // Even a real catalog name on an execute-kind request keeps the
           // normal prompt path.
@@ -2524,23 +2524,23 @@ describe("Devin permission requests", () => {
             toolCallId: "spoof-kind-execute",
             toolCall: {
               kind: "execute",
-              rawInput: { _toolName: "synara_list_threads", command: "rm -rf y" },
+              rawInput: { _toolName: "trellis_list_threads", command: "rm -rf y" },
             },
           },
-          // The mcp__synara__ prefix alone names nothing: the part after it
+          // The mcp__trellis__ prefix alone names nothing: the part after it
           // must be a real catalog tool.
           {
             toolCallId: "spoof-catalog",
             toolCall: {
               kind: "other",
-              rawInput: { _toolName: "mcp__synara__not_a_gateway_tool" },
+              rawInput: { _toolName: "mcp__trellis__not_a_gateway_tool" },
             },
           },
           // A gateway-looking title with no tool name in rawInput/metadata is
           // presentational text — it never authorizes anything.
           {
             toolCallId: "spoof-title-only",
-            toolCall: { kind: "other", title: "mcp__synara__synara_list_threads" },
+            toolCall: { kind: "other", title: "mcp__trellis__trellis_list_threads" },
           },
         ];
         for (const promptCase of promptCases) {
@@ -2560,7 +2560,7 @@ describe("Devin permission requests", () => {
         const gateway = yield* handles.requestPermission(
           makePermissionParams("call-gw", {
             kind: "other",
-            rawInput: { _toolName: "synara_list_threads", arguments: {} },
+            rawInput: { _toolName: "trellis_list_threads", arguments: {} },
           }),
         );
         expect(gateway).toEqual({
@@ -2578,7 +2578,7 @@ describe("Devin permission requests", () => {
     );
   });
 
-  it("still prompts for gateway tools when autoApproveSynaraTools is unset", async () => {
+  it("still prompts for gateway tools when autoApproveTrellisTools is unset", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000);
     const handles = makePermissionRuntime();
@@ -2620,7 +2620,7 @@ describe("Devin permission requests", () => {
             makePermissionParams("call-gw", {
               kind: "other",
               rawInput: {
-                _toolName: "synara_list_threads",
+                _toolName: "trellis_list_threads",
                 arguments: { limit: 3 },
               },
             }),

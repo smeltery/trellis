@@ -3,7 +3,7 @@ import {
   type ProviderKind,
   type ProviderStartOptions,
   type ServerProviderStatus,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   normalizeCustomBinaryPath,

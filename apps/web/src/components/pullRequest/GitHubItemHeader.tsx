@@ -11,7 +11,7 @@ import type {
   GitHubIssueDetail,
   GitPullRequestMergeability,
   PullRequestDetail,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import type { ReactNode } from "react";
 
 import { ComposerPickerMenuPopup } from "~/components/chat/ComposerPickerMenuPopup";

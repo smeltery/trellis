@@ -1,6 +1,6 @@
-import { TurnId } from "@synara/contracts";
+import { TurnId } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
-import { SYNARA_HARNESS_POLICY_MARKER } from "../../agentGateway/harnessPolicy.ts";
+import { TRELLIS_HARNESS_POLICY_MARKER } from "../../agentGateway/harnessPolicy.ts";
 
 import {
   classifyOmpPromptTurnCompletion,
@@ -10,16 +10,16 @@ import {
   scopeOmpRuntimeItemIdForTurn,
   scopeOmpToolCallStateForTurn,
   shouldIgnoreOmpInterrupt,
-  takeOmpSynaraHarnessPolicyTextPart,
+  takeOmpTrellisHarnessPolicyTextPart,
 } from "./OmpAdapter.ts";
 
-describe("OMP Synara harness policy", () => {
+describe("OMP Trellis harness policy", () => {
   it("delivers private scoped host context once", () => {
     const state: { harnessPolicyDelivered?: boolean } = {};
-    expect(takeOmpSynaraHarnessPolicyTextPart(state, true)?.text).toContain(
-      SYNARA_HARNESS_POLICY_MARKER,
+    expect(takeOmpTrellisHarnessPolicyTextPart(state, true)?.text).toContain(
+      TRELLIS_HARNESS_POLICY_MARKER,
     );
-    expect(takeOmpSynaraHarnessPolicyTextPart(state, true)).toBeNull();
+    expect(takeOmpTrellisHarnessPolicyTextPart(state, true)).toBeNull();
   });
 });
 

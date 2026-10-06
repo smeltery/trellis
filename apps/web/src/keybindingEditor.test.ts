@@ -3,7 +3,7 @@ import type {
   KeybindingShortcut,
   KeybindingWhenNode,
   ResolvedKeybindingRule,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import { fixedShortcutsForPlatform } from "./fixedShortcuts";
@@ -237,7 +237,7 @@ describe("evaluateRecordedShortcut", () => {
     ).toBe("ready");
   });
 
-  it("refuses the chords Synara handles before any binding", () => {
+  it("refuses the chords Trellis handles before any binding", () => {
     const source = sourceWith();
 
     expect(record(source, "terminal.toggle", shortcut("p", { modKey: true })).recording).toEqual({

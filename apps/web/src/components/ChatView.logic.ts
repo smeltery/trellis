@@ -20,12 +20,12 @@ import {
   type RuntimeMode,
   type ServerProviderAuthStatus,
   type ThreadId as ThreadIdType,
-} from "@synara/contracts";
-import { getDefaultModel, normalizeModelSlug } from "@synara/shared/model";
-import { approvalSessionGrantWidensSessionPolicy } from "@synara/shared/approvalSessionGrant";
-import { buildSynaraBranchName } from "@synara/shared/git";
-import { isGenericChatThreadTitle } from "@synara/shared/chatThreads";
-import { isGenericTerminalThreadTitle } from "@synara/shared/terminalThreads";
+} from "@trellis/contracts";
+import { getDefaultModel, normalizeModelSlug } from "@trellis/shared/model";
+import { approvalSessionGrantWidensSessionPolicy } from "@trellis/shared/approvalSessionGrant";
+import { buildTrellisBranchName } from "@trellis/shared/git";
+import { isGenericChatThreadTitle } from "@trellis/shared/chatThreads";
+import { isGenericTerminalThreadTitle } from "@trellis/shared/terminalThreads";
 import {
   type ChatMessage,
   type SessionPhase,
@@ -67,8 +67,8 @@ import {
 import { localSubagentThreadId } from "./ChatView.selectors";
 import { buildModelSelection, type ProviderModelOption } from "../providerModelOptions";
 
-export const LAST_INVOKED_SCRIPT_BY_PROJECT_KEY = "synara:last-invoked-script-by-project";
-export const DISMISSED_PROVIDER_HEALTH_BANNERS_KEY = "synara:dismissed-provider-health-banners";
+export const LAST_INVOKED_SCRIPT_BY_PROJECT_KEY = "trellis:last-invoked-script-by-project";
+export const DISMISSED_PROVIDER_HEALTH_BANNERS_KEY = "trellis:dismissed-provider-health-banners";
 export const PROMPT_HISTORY_MAX_ENTRIES = 100;
 
 export const LastInvokedScriptByProjectSchema = Schema.Record(ProjectId, Schema.String);
@@ -983,7 +983,7 @@ export function describeVoiceRecordingStartError(error: unknown): string {
   const errorName = typeof error.name === "string" ? error.name : "";
 
   if (errorName === "NotAllowedError" || errorName === "PermissionDeniedError") {
-    return "Microphone access was denied. Enable it in macOS Privacy & Security > Microphone for Synara, then try again.";
+    return "Microphone access was denied. Enable it in macOS Privacy & Security > Microphone for Trellis, then try again.";
   }
   if (errorName === "NotFoundError" || errorName === "DevicesNotFoundError") {
     return "No microphone was found. Connect one and try again.";
@@ -1682,7 +1682,7 @@ export function buildSuggestedWorktreeName(input: {
   associatedWorktreeBranch?: string | null;
   title?: string | null;
 }): string {
-  return buildSynaraBranchName(input.associatedWorktreeBranch ?? input.title);
+  return buildTrellisBranchName(input.associatedWorktreeBranch ?? input.title);
 }
 
 export function deriveComposerSendState(options: {

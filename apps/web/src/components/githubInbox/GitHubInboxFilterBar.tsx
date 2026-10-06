@@ -6,7 +6,7 @@
 // Layer: GitHub inbox presentation
 // Exports: GitHubInboxFilterBar
 
-import type { GitHubInboxSort, ProjectId } from "@synara/contracts";
+import type { GitHubInboxSort, ProjectId } from "@trellis/contracts";
 import type { ReactNode } from "react";
 
 import type {

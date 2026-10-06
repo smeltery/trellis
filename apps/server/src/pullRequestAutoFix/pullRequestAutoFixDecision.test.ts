@@ -3,7 +3,7 @@ import {
   TurnId,
   type GitPullRequestCheck,
   type PullRequestAutoFixState,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import {

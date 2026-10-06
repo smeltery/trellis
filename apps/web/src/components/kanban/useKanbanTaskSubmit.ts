@@ -14,7 +14,7 @@ import type {
   RuntimeMode,
   ServerProviderStatus,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 

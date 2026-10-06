@@ -1,4 +1,4 @@
-import type { ThreadId } from "@synara/contracts";
+import type { ThreadId } from "@trellis/contracts";
 
 import { IconButton } from "~/components/ui/icon-button";
 import { PlusIcon, SidechatIcon, TrashCanIcon } from "~/lib/icons";

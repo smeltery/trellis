@@ -15,8 +15,8 @@ import {
   type BrowserAnnotationMarker,
   type BrowserAnnotationSource,
   type BrowserAnnotationTheme,
-} from "@synara/contracts";
-import { sanitizeBrowserAnnotationPageTitle } from "@synara/shared/browserAnnotations";
+} from "@trellis/contracts";
+import { sanitizeBrowserAnnotationPageTitle } from "@trellis/shared/browserAnnotations";
 
 export const BROWSER_ANNOTATION_PROTOCOL_VERSION = 1 as const;
 

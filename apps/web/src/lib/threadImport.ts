@@ -6,7 +6,7 @@ import type {
   ProviderComposerCapabilities,
   ProviderInstanceId,
   ProviderKind,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import type { ProviderInstanceOption } from "../appSettings";
 

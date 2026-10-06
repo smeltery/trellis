@@ -2,10 +2,10 @@
 // Purpose: Stable Zustand selectors for entity lookups and lightweight sidebar projections.
 // Exports: Selector factories used by routes and sidebar-heavy components.
 
-import type { ProjectId, ThreadEnvironmentMode, ThreadId } from "@synara/contracts";
-import { isAutomationRunThread } from "@synara/shared/automationMode";
-import { isSidechatThread, sidechatContextMatchesGitHubItem } from "@synara/shared/sidechatThread";
-import { collectSubagentDescendants } from "@synara/shared/threadHierarchy";
+import type { ProjectId, ThreadEnvironmentMode, ThreadId } from "@trellis/contracts";
+import { isAutomationRunThread } from "@trellis/shared/automationMode";
+import { isSidechatThread, sidechatContextMatchesGitHubItem } from "@trellis/shared/sidechatThread";
+import { collectSubagentDescendants } from "@trellis/shared/threadHierarchy";
 
 import type { AppState } from "./storeState";
 import { ACCOUNT_RATE_LIMIT_ACTIVITY_KINDS } from "./lib/rateLimits";

@@ -29,7 +29,7 @@ import {
   TurnId,
   type ProviderSessionStartInput,
   type RuntimeMode,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   getDevinStaticModelVariants,
   getModelCapabilities,
@@ -38,7 +38,7 @@ import {
   normalizeModelSlug,
   resolveDevinModelVariant,
   trimOrNull,
-} from "@synara/shared/model";
+} from "@trellis/shared/model";
 import {
   Cause,
   DateTime,
@@ -60,8 +60,8 @@ import { makeEffectProcessCommand } from "../../platform/effectProcessRuntime.ts
 import type * as Acp from "@agentclientprotocol/sdk";
 
 import {
-  type SynaraHarnessPolicyDeliveryState,
-  takeSynaraHarnessPolicyTextPartForProviderSession,
+  type TrellisHarnessPolicyDeliveryState,
+  takeTrellisHarnessPolicyTextPartForProviderSession,
 } from "../../agentGateway/harnessPolicy.ts";
 import { AgentGatewayCredentials } from "../../agentGateway/Services/AgentGatewayCredentials.ts";
 import {
@@ -162,11 +162,11 @@ import { DevinAdapter, type DevinAdapterShape } from "../Services/DevinAdapter.t
 
 const PROVIDER = "devin" as const;
 
-export const takeDevinSynaraHarnessPolicyTextPart = (
-  state: SynaraHarnessPolicyDeliveryState,
+export const takeDevinTrellisHarnessPolicyTextPart = (
+  state: TrellisHarnessPolicyDeliveryState,
   scopedGatewayConnectionAvailable: boolean,
 ) =>
-  takeSynaraHarnessPolicyTextPartForProviderSession(state, {
+  takeTrellisHarnessPolicyTextPartForProviderSession(state, {
     provider: PROVIDER,
     scopedGatewayConnectionAvailable,
   });
@@ -174,7 +174,7 @@ export const takeDevinSynaraHarnessPolicyTextPart = (
 const DEVIN_RESUME_VERSION = 1 as const;
 
 const DEVIN_TURN_IDLE_TIMEOUT_MS = resolveAcpTurnIdleTimeoutMs({
-  envVar: "SYNARA_DEVIN_TURN_IDLE_TIMEOUT_MS",
+  envVar: "TRELLIS_DEVIN_TURN_IDLE_TIMEOUT_MS",
   defaultMs: 30 * 60 * 1000,
 });
 
@@ -228,12 +228,12 @@ function resolveDevinWedgeRecoveryOptions(
 ): DevinWedgeRecoveryOptions {
   return {
     stallFuseMs: resolveDevinOptionalTimeoutMs({
-      envVar: "SYNARA_DEVIN_STALL_FUSE_MS",
+      envVar: "TRELLIS_DEVIN_STALL_FUSE_MS",
       defaultMs: 90_000,
       env,
     }),
     spawnStallTimeoutMs: resolveDevinOptionalTimeoutMs({
-      envVar: "SYNARA_DEVIN_SPAWN_STALL_TIMEOUT_MS",
+      envVar: "TRELLIS_DEVIN_SPAWN_STALL_TIMEOUT_MS",
       defaultMs: 30_000,
       env,
     }),
@@ -297,7 +297,7 @@ const DEVIN_COMMAND_DISCOVERY_CACHE_MS = 5 * 60_000;
 const DEVIN_DISCOVERY_CACHE_MAX_ENTRIES = 16;
 const DEVIN_ACP_TRANSPORT_DEBUG_MARKER = "devin-acp-meta-stripper-v2";
 const DEVIN_ACP_LOG_PAYLOAD_LIMIT = 4_000;
-const DEVIN_ACP_DEBUG_ENV = "SYNARA_DEVIN_ACP_DEBUG";
+const DEVIN_ACP_DEBUG_ENV = "TRELLIS_DEVIN_ACP_DEBUG";
 const LEGACY_DEVIN_ACP_DEBUG_ENV = "DP_DEVIN_ACP_DEBUG";
 // On session/load, Devin can replay old ACP updates after the session reports
 // ready; suppression stays active until that stream goes quiet.
@@ -314,7 +314,7 @@ const DEVIN_RESUME_REPLAY_HARD_TIMEOUT_MS = 30_000;
 const DEVIN_TURN_SETTLE_DRAIN_MAX_WAIT_MS = 1_000;
 const DEVIN_TURN_SETTLE_DRAIN_POLL_MS = 25;
 // Reuses the turn idle timeout value as a generous ceiling (compactions stream
-// activity well under it); override it with SYNARA_DEVIN_TURN_IDLE_TIMEOUT_MS.
+// activity well under it); override it with TRELLIS_DEVIN_TURN_IDLE_TIMEOUT_MS.
 const DEVIN_COMPACT_TIMEOUT_MS = DEVIN_TURN_IDLE_TIMEOUT_MS;
 // After a timed-out /compact the cancel is only best-effort: the child may
 // still stream stale compaction updates for a moment. Hold new turns for this
@@ -351,12 +351,12 @@ export function resolveDevinAdapterTimeouts(
 ): DevinAdapterTimeouts {
   return {
     turnIdleMs: resolveAcpTurnIdleTimeoutMs({
-      envVar: "SYNARA_DEVIN_TURN_IDLE_TIMEOUT_MS",
+      envVar: "TRELLIS_DEVIN_TURN_IDLE_TIMEOUT_MS",
       defaultMs: 30 * 60 * 1000,
       env,
     }),
     toolIdleMs: resolveAcpTurnIdleTimeoutMs({
-      envVar: "SYNARA_DEVIN_TOOL_IDLE_TIMEOUT_MS",
+      envVar: "TRELLIS_DEVIN_TOOL_IDLE_TIMEOUT_MS",
       defaultMs: 60 * 60 * 1000,
       env,
     }),
@@ -381,7 +381,7 @@ interface PendingUserInput {
   readonly answers: Deferred.Deferred<ProviderUserInputAnswers>;
 }
 
-interface DevinSessionContext extends SynaraHarnessPolicyDeliveryState {
+interface DevinSessionContext extends TrellisHarnessPolicyDeliveryState {
   readonly threadId: ThreadId;
   readonly lifecycleGeneration: string | undefined;
   session: ProviderSession;
@@ -1171,7 +1171,7 @@ export function buildDevinPromptMeta(interactionMode: ProviderInteractionMode): 
 } {
   // Devin ACP reconciles its native Plan tracker from session/prompt `_meta.mode`.
   // This is idempotent, so reconnects cannot invert the provider state when
-  // Synara sends the desired mode again.
+  // Trellis sends the desired mode again.
   return { mode: interactionMode === "plan" ? "plan" : "agent" };
 }
 
@@ -1559,7 +1559,7 @@ export function makeDevinAdapter(
         childProcessSpawner,
         cwd: input.cwd,
         runtimeMode: "approval-required",
-        clientInfo: { name: "Synara Command Discovery", version: "0.0.0" },
+        clientInfo: { name: "Trellis Command Discovery", version: "0.0.0" },
       });
 
     const discoverDevinModelsUncached = (
@@ -1998,7 +1998,7 @@ export function makeDevinAdapter(
               if (!gatewaySessionLease || !agentGatewayCredentials) return undefined;
               const bootstrapToken = gatewaySessionLease.issueStdioBootstrapToken?.();
               if (!bootstrapToken)
-                throw new Error("Synara gateway bootstrap token was unavailable.");
+                throw new Error("Trellis gateway bootstrap token was unavailable.");
               return createDevinSessionConfig({
                 connection: gatewaySessionLease.connection,
                 stdioProxy: agentGatewayCredentials.stdioProxy,
@@ -2105,7 +2105,7 @@ export function makeDevinAdapter(
             childProcessSpawner,
             cwd,
             runtimeMode: input.runtimeMode,
-            clientInfo: { name: "Synara", version: "0.0.0" },
+            clientInfo: { name: "Trellis", version: "0.0.0" },
             clientCapabilities: { elicitation: { form: {} } },
             ...(resumeSessionId ? { resumeSessionId } : {}),
             ...(devinSessionConfig ? { sessionConfig: devinSessionConfig } : {}),
@@ -2143,7 +2143,7 @@ export function makeDevinAdapter(
                   options: params.options,
                   computerControlEnabled: ctx?.enableComputerControl === true,
                   activeTurn: ctx?.activeTurnId !== undefined,
-                  autoApproveSynaraTools: input.autoApproveSynaraTools === true,
+                  autoApproveTrellisTools: input.autoApproveTrellisTools === true,
                   gatewaySessionActive: gatewaySessionLease !== undefined,
                   toolCall: {
                     kind: permissionRequest.kind,
@@ -2902,7 +2902,7 @@ export function makeDevinAdapter(
                 payload: {
                   message: detail,
                   class: "transport_error",
-                  detail: { reason: "synara.devin.wedge-recovery" },
+                  detail: { reason: "trellis.smeltery.devin.wedge-recovery" },
                 },
               });
             }),
@@ -3051,7 +3051,7 @@ export function makeDevinAdapter(
           });
         }
 
-        const harnessPolicy = takeDevinSynaraHarnessPolicyTextPart(
+        const harnessPolicy = takeDevinTrellisHarnessPolicyTextPart(
           ctx,
           ctx.devinSessionConfig?.installed === true,
         );
@@ -3217,7 +3217,7 @@ export function makeDevinAdapter(
                     stopReason:
                       completion.state === "cancelled" &&
                       wedgeRecoveries.get(input.threadId)?.turnId === turnId
-                        ? "synara.devin.wedge-recovery"
+                        ? "trellis.smeltery.devin.wedge-recovery"
                         : (result.stopReason ?? null),
                     ...(completion.errorMessage !== undefined
                       ? { errorMessage: completion.errorMessage }
@@ -3259,7 +3259,7 @@ export function makeDevinAdapter(
                   // Keep technical recovery distinct from a user's goal pause.
                   stopReason:
                     wedgeRecoveries.get(input.threadId)?.turnId === turnId
-                      ? "synara.devin.wedge-recovery"
+                      ? "trellis.smeltery.devin.wedge-recovery"
                       : "cancelled",
                   ...completedCost,
                 },

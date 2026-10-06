@@ -3,8 +3,8 @@ import * as OS from "node:os";
 import { join } from "node:path";
 
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import type { ProviderInstanceId, ServerProviderStatus } from "@synara/contracts";
-import { DEFAULT_SERVER_SETTINGS, ServerProviderUpdateError } from "@synara/contracts";
+import type { ProviderInstanceId, ServerProviderStatus } from "@trellis/contracts";
+import { DEFAULT_SERVER_SETTINGS, ServerProviderUpdateError } from "@trellis/contracts";
 import { describe, it, assert } from "@effect/vitest";
 import {
   Deferred,
@@ -23,7 +23,7 @@ import * as PlatformError from "effect/PlatformError";
 import { ChildProcessSpawner } from "effect/unstable/process";
 import { vi } from "vitest";
 
-import { SYNARA_CODEX_HOME_OVERLAY_DIR } from "../../codexHomePaths";
+import { TRELLIS_CODEX_HOME_OVERLAY_DIR } from "../../codexHomePaths";
 import { CODEX_CLI_UNPARSEABLE_VERSION_MESSAGE } from "../codexCliVersion.ts";
 import { claudeIsolatedHomePath } from "../claudeEnvironment";
 import { ServerConfig } from "../../config";
@@ -347,9 +347,9 @@ function withTempCodexHome(configContent?: string) {
   return Effect.gen(function* () {
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const tmpDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "synara-test-codex-" });
+    const tmpDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "trellis-test-codex-" });
     const runtimeDir = yield* fileSystem.makeTempDirectoryScoped({
-      prefix: "synara-test-runtime-",
+      prefix: "trellis-test-runtime-",
     });
 
     yield* Effect.acquireRelease(
@@ -358,7 +358,7 @@ function withTempCodexHome(configContent?: string) {
         // the resolved CODEX_HOME during this test.
         const overrides: Record<string, string> = {
           CODEX_HOME: tmpDir,
-          SYNARA_HOME: runtimeDir,
+          TRELLIS_HOME: runtimeDir,
         };
         const restore: Record<string, string | undefined> = {};
         for (const [key, value] of Object.entries(overrides)) {
@@ -721,7 +721,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         available: false,
         authStatus: "unknown",
         checkedAt: "2026-06-16T12:00:00.000Z",
-        message: "Provider is disabled in Synara settings.",
+        message: "Provider is disabled in Trellis settings.",
       });
     });
 
@@ -735,7 +735,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
 
       assert.strictEqual(statuses.length, 10);
       assert.strictEqual(codex?.available, false);
-      assert.strictEqual(codex?.message, "Provider is disabled in Synara settings.");
+      assert.strictEqual(codex?.message, "Provider is disabled in Trellis settings.");
     });
 
     it("changes projected statuses for settings-only instance updates", () => {
@@ -773,7 +773,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
       assert.strictEqual(previousWork?.displayName, "Work Codex");
       assert.strictEqual(nextWork?.displayName, "Renamed Codex");
       assert.strictEqual(nextWork?.available, false);
-      assert.strictEqual(nextWork?.message, "Provider is disabled in Synara settings.");
+      assert.strictEqual(nextWork?.message, "Provider is disabled in Trellis settings.");
       assert.strictEqual(providerStatusesEqual(previousStatuses, nextStatuses), false);
     });
 
@@ -933,7 +933,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
       assert.strictEqual(unsupported?.availability, "unavailable");
       assert.strictEqual(
         unsupported?.unavailableReason,
-        "Provider driver 'customFork' is not supported by this Synara build.",
+        "Provider driver 'customFork' is not supported by this Trellis build.",
       );
     });
 
@@ -965,7 +965,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         const cachedCodex = yield* readProviderStatusCache(cachePath);
 
         assert.strictEqual(codex?.available, false);
-        assert.strictEqual(codex?.message, "Provider is disabled in Synara settings.");
+        assert.strictEqual(codex?.message, "Provider is disabled in Trellis settings.");
         assert.deepStrictEqual(cachedCodex, cachedReadyCodexStatus);
       }),
     );
@@ -1012,7 +1012,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
           const disabledCodex = disabledStatuses.find((status) => status.provider === "codex");
 
           assert.strictEqual(disabledCodex?.available, false);
-          assert.strictEqual(disabledCodex?.message, "Provider is disabled in Synara settings.");
+          assert.strictEqual(disabledCodex?.message, "Provider is disabled in Trellis settings.");
 
           yield* serverSettings.updateSettings({
             providers: {
@@ -1026,7 +1026,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
           const currentCodex = currentStatuses.find((status) => status.provider === "codex");
           assert.strictEqual(currentCodex?.available, true);
           assert.strictEqual(currentCodex?.authStatus, "authenticated");
-          assert.notStrictEqual(currentCodex?.message, "Provider is disabled in Synara settings.");
+          assert.notStrictEqual(currentCodex?.message, "Provider is disabled in Trellis settings.");
           assert.strictEqual(spawnCount, 0);
         }).pipe(Effect.provide(layer));
       }),
@@ -1040,7 +1040,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         assert.strictEqual(statuses.length, 10);
         for (const status of statuses) {
           assert.strictEqual(status.available, false);
-          assert.strictEqual(status.message, "Provider is disabled in Synara settings.");
+          assert.strictEqual(status.message, "Provider is disabled in Trellis settings.");
           assert.strictEqual(status.versionAdvisory?.status, "unknown");
           assert.strictEqual(status.versionAdvisory?.canUpdate, false);
           assert.strictEqual(status.versionAdvisory?.updateCommand, null);
@@ -1142,15 +1142,15 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
           assert.ok(commands.some((command) => command.includes("droid")));
           assert.notStrictEqual(
             statuses.find((status) => status.provider === "opencode")?.message,
-            "Provider is disabled in Synara settings.",
+            "Provider is disabled in Trellis settings.",
           );
           assert.notStrictEqual(
             statuses.find((status) => status.provider === "pi")?.message,
-            "Provider is disabled in Synara settings.",
+            "Provider is disabled in Trellis settings.",
           );
           assert.notStrictEqual(
             statuses.find((status) => status.provider === "droid")?.message,
-            "Provider is disabled in Synara settings.",
+            "Provider is disabled in Trellis settings.",
           );
         }).pipe(Effect.provide(layer));
       }),
@@ -1163,7 +1163,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
 
         assert.ok(error instanceof ServerProviderUpdateError);
         assert.strictEqual(error.provider, "opencode");
-        assert.strictEqual(error.reason, "Provider is disabled in Synara settings.");
+        assert.strictEqual(error.reason, "Provider is disabled in Trellis settings.");
       }).pipe(Effect.provide(disabledProviderHealthLayer)),
     );
 
@@ -1589,13 +1589,13 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
           'model_provider = "portkey"\n',
         );
         const configuredHome = yield* fileSystem.makeTempDirectoryScoped({
-          prefix: "synara-configured-codex-",
+          prefix: "trellis-configured-codex-",
         });
         yield* fileSystem.writeFileString(
           path.join(configuredHome, "config.toml"),
           'model_provider = "openai"\n',
         );
-        expectedCodexHome = path.join(runtimeDir, SYNARA_CODEX_HOME_OVERLAY_DIR);
+        expectedCodexHome = path.join(runtimeDir, TRELLIS_CODEX_HOME_OVERLAY_DIR);
 
         const status = yield* makeCheckCodexProviderStatus("codex", configuredHome);
         assert.strictEqual(status.status, "ready");
@@ -1624,7 +1624,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         const path = yield* Path.Path;
         const { tmpDir } = yield* withTempCodexHome();
         const shadowHome = yield* fileSystem.makeTempDirectoryScoped({
-          prefix: "synara-codex-shadow-",
+          prefix: "trellis-codex-shadow-",
         });
         yield* fileSystem.writeFileString(path.join(tmpDir, "auth.json"), "{}");
         yield* Effect.sync(() =>
@@ -1666,7 +1666,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         assert.strictEqual(status.authStatus, "unknown");
         assert.strictEqual(
           status.message,
-          "Codex CLI v0.104.0 is too old for Synara. Upgrade to v0.105.0 or newer and restart Synara.",
+          "Codex CLI v0.104.0 is too old for Trellis. Upgrade to v0.105.0 or newer and restart Trellis.",
         );
       }).pipe(
         Effect.provide(
@@ -2136,15 +2136,15 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
       const env = makeClaudeProbeEnv(
         "~/.claude-work",
         { PROVIDER_TEST_INSTANCE: "claude-work" },
-        "/tmp/synara-test-home",
+        "/tmp/trellis-test-home",
       );
 
-      assert.strictEqual(env.HOME, "/tmp/synara-test-home/.claude-work");
+      assert.strictEqual(env.HOME, "/tmp/trellis-test-home/.claude-work");
       assert.strictEqual(env.PROVIDER_TEST_INSTANCE, "claude-work");
     });
 
     it.effect("scopes environment-only Claude health probes to the selected instance", () => {
-      const isolationRootDir = "/tmp/synara-provider-health-state";
+      const isolationRootDir = "/tmp/trellis-provider-health-state";
       const providerInstanceId = "claude_work" as ProviderInstanceId;
       return makeCheckClaudeProviderStatus(
         undefined,
@@ -2665,7 +2665,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         assert.strictEqual(status.status, "ready");
         assert.strictEqual(
           status.message,
-          "Pi CLI is installed. Synara will use Pi agent dir /tmp/pi-agent.",
+          "Pi CLI is installed. Trellis will use Pi agent dir /tmp/pi-agent.",
         );
       }).pipe(
         Effect.provide(
@@ -2707,7 +2707,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         assert.strictEqual(status.authStatus, "unknown");
         assert.strictEqual(
           status.message,
-          "Pi SDK is bundled, but the Pi CLI (`pi`) is not on PATH, so Synara could not verify the installed CLI version.",
+          "Pi SDK is bundled, but the Pi CLI (`pi`) is not on PATH, so Trellis could not verify the installed CLI version.",
         );
       }).pipe(Effect.provide(failingSpawnerLayer("spawn pi ENOENT"))),
     );
@@ -2722,7 +2722,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
         assert.strictEqual(status.version, "1.0.11");
         assert.strictEqual(
           status.message,
-          "Antigravity CLI 1.0.11 is too old for Synara. Upgrade to 1.0.12 or newer.",
+          "Antigravity CLI 1.0.11 is too old for Trellis. Upgrade to 1.0.12 or newer.",
         );
       }).pipe(
         Effect.provide(
@@ -2950,7 +2950,7 @@ it.layer(NodeServices.layer)("ProviderHealth", (it) => {
     );
 
     it.effect("isolates Grok cached logins by account home", () => {
-      const testRoot = mkdtempSync(join(OS.tmpdir(), "synara-grok-health-"));
+      const testRoot = mkdtempSync(join(OS.tmpdir(), "trellis-grok-health-"));
       const ambientHome = join(testRoot, "ambient");
       const workHome = join(
         providerIsolatedHomePath({

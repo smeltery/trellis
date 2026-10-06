@@ -18,8 +18,8 @@ import type {
   ServerProviderUsageLimit,
   ServerProviderUsageLine,
   ServerProviderUsageSnapshot,
-} from "@synara/contracts";
-import { execProcessFile } from "@synara/shared/processRuntime";
+} from "@trellis/contracts";
+import { execProcessFile } from "@trellis/shared/processRuntime";
 
 import { createLogger } from "../../logger";
 import { acquireClaudeAuthStatusLock } from "../../provider/claudeAuthStatusLock";

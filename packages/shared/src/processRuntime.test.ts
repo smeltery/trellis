@@ -44,9 +44,9 @@ describe("processRuntime", () => {
     "runs intentional shell snippets with the supplied environment",
     () => {
       expect(
-        execShellCommandSync('printf "%s" "$SYNARA_PROCESS_RUNTIME_TEST"', {
+        execShellCommandSync('printf "%s" "$TRELLIS_PROCESS_RUNTIME_TEST"', {
           encoding: "utf8",
-          env: { ...process.env, SYNARA_PROCESS_RUNTIME_TEST: "shell-ok" },
+          env: { ...process.env, TRELLIS_PROCESS_RUNTIME_TEST: "shell-ok" },
         }),
       ).toBe("shell-ok");
     },

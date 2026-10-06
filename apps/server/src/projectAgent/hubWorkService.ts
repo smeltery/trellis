@@ -9,10 +9,10 @@ import {
   type HubWorkSourceMessage,
   type HubWorkState,
   type ProjectId,
-  type SynaraCreateThreadSpec,
+  type TrellisCreateThreadSpec,
   type ThreadId,
   type TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect, Option, Schema } from "effect";
 
 import { stableGatewayDigest } from "../agentGateway/creationUtils";
@@ -49,7 +49,7 @@ export interface HubWorkSubmitInput {
   readonly callerTurnId?: TurnId;
   readonly requestId: string;
   readonly sourceMessages: readonly HubWorkSourceMessage[];
-  readonly tasks: readonly { readonly spec: SynaraCreateThreadSpec; readonly title?: string }[];
+  readonly tasks: readonly { readonly spec: TrellisCreateThreadSpec; readonly title?: string }[];
 }
 
 export interface HubWorkService {
@@ -130,7 +130,7 @@ export function makeHubWorkService(dependencies: HubWorkDependencies): HubWorkSe
   const requireConfig = (projectId: ProjectId) =>
     Effect.gen(function* () {
       if (!isServerGroupsEnabled())
-        return yield* Effect.fail(fail("Hubs are available in Synara Beta."));
+        return yield* Effect.fail(fail("Hubs are available in Trellis Beta."));
       const config = yield* projectAgentRepository
         .getConfig(projectId)
         .pipe(Effect.mapError(serviceError));

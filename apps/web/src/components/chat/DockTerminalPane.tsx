@@ -1,7 +1,7 @@
 // A single terminal panel with an independent, chat-owned dock session.
 
-import { type ProjectId, type ThreadId } from "@synara/contracts";
-import { resolveThreadWorkspaceCwd } from "@synara/shared/threadEnvironment";
+import { type ProjectId, type ThreadId } from "@trellis/contracts";
+import { resolveThreadWorkspaceCwd } from "@trellis/shared/threadEnvironment";
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 
 import { useTerminalSurfaceController } from "~/hooks/useTerminalSurfaceController";

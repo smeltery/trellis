@@ -4,7 +4,7 @@
  *
  * @module AcpConfigOptions
  */
-import { type ProviderModelDescriptor } from "@synara/contracts";
+import { type ProviderModelDescriptor } from "@trellis/contracts";
 import type * as Acp from "@agentclientprotocol/sdk";
 
 export function availableAuthMethodIds(

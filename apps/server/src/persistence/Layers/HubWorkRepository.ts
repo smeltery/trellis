@@ -1,4 +1,4 @@
-import { HubWorkRecord, ProjectId } from "@synara/contracts";
+import { HubWorkRecord, ProjectId } from "@trellis/contracts";
 import { Effect, Layer, Schema } from "effect";
 import * as SqlClient from "effect/unstable/sql/SqlClient";
 

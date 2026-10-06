@@ -1,11 +1,12 @@
-export const APP_BASE_NAME = "Synara";
+export const APP_BASE_NAME = "Trellis";
 const isCanaryDesktop =
-  typeof window !== "undefined" && window.location?.protocol === "synara-canary:";
-const isBetaDesktop = typeof window !== "undefined" && window.location?.protocol === "synara-beta:";
+  typeof window !== "undefined" && window.location?.protocol === "trellis-canary:";
+const isBetaDesktop =
+  typeof window !== "undefined" && window.location?.protocol === "trellis-beta:";
 export const APP_DISPLAY_NAME = isCanaryDesktop
-  ? "Synara Canary"
+  ? "Trellis Canary"
   : isBetaDesktop
-    ? "Synara Beta"
+    ? "Trellis Beta"
     : import.meta.env.DEV
       ? `${APP_BASE_NAME} (Dev)`
       : APP_BASE_NAME;

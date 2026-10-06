@@ -11,10 +11,13 @@ import {
   type OrchestrationThread,
   type ProviderSession,
   type ProviderRuntimeEvent,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Cause, Deferred, Effect, Fiber, Layer, Option, Schedule, Stream } from "effect";
-import { makeDrainableWorker, startDrainableWorkerProducers } from "@synara/shared/DrainableWorker";
-import { isProviderKind } from "@synara/shared/providerInstances";
+import {
+  makeDrainableWorker,
+  startDrainableWorkerProducers,
+} from "@trellis/shared/DrainableWorker";
+import { isProviderKind } from "@trellis/shared/providerInstances";
 
 import { parseCheckpointFilesFromUnifiedDiff } from "../../checkpointing/Diffs.ts";
 import {

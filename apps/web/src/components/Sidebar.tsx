@@ -101,12 +101,12 @@ import {
   ThreadId,
   type ResolvedKeybindingsConfig,
   WS_GITHUB_PROJECT_PROVISIONING_CAPABILITY,
-} from "@synara/contracts";
-import { isGenericChatThreadTitle } from "@synara/shared/chatThreads";
-import { parseGitHubRepositoryNameWithOwnerFromPullRequestUrl } from "@synara/shared/githubRepository";
-import { getDefaultModel } from "@synara/shared/model";
-import { pluralize } from "@synara/shared/text";
-import { resolveThreadWorkspaceCwd } from "@synara/shared/threadEnvironment";
+} from "@trellis/contracts";
+import { isGenericChatThreadTitle } from "@trellis/shared/chatThreads";
+import { parseGitHubRepositoryNameWithOwnerFromPullRequestUrl } from "@trellis/shared/githubRepository";
+import { getDefaultModel } from "@trellis/shared/model";
+import { pluralize } from "@trellis/shared/text";
+import { resolveThreadWorkspaceCwd } from "@trellis/shared/threadEnvironment";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import {
@@ -523,7 +523,7 @@ import {
   spaceKey,
   resolveActiveSpaceId,
 } from "../lib/spaceGrouping";
-import { isSidechatThread } from "@synara/shared/sidechatThread";
+import { isSidechatThread } from "@trellis/shared/sidechatThread";
 
 // Central glyphs for the sidebar section-header buttons (expand/collapse, sort, add).
 const ExpandAllIcon = createCentralIconComponent("expand-45");
@@ -605,8 +605,8 @@ function ProjectContextMenuIcon({ icon }: { icon: LucideIcon }) {
 }
 
 type DebugFeatureFlagsWindow = Window & {
-  synaraShowFeatureFlags?: () => void;
-  synaraHideFeatureFlags?: () => void;
+  trellisShowFeatureFlags?: () => void;
+  trellisHideFeatureFlags?: () => void;
 };
 
 function readDebugFeatureFlagsMenuVisibility(): boolean {
@@ -719,7 +719,7 @@ function resolveWorktreeBadgeLabel(
 
 /** User message the coordinator receives when a thread is handed to a group. */
 function groupPickupMessageText(sourceThread: Pick<Thread, "id" | "title">): string {
-  return `A thread was handed to this hub for you to pick up: "${sourceThread.title ?? "Untitled thread"}" (thread id ${sourceThread.id}). Use synara_read_thread to read it and continue the work it was doing.`;
+  return `A thread was handed to this hub for you to pick up: "${sourceThread.title ?? "Untitled thread"}" (thread id ${sourceThread.id}). Use trellis_read_thread to read it and continue the work it was doing.`;
 }
 
 type ThreadMetaChip = {
@@ -913,7 +913,7 @@ function ProjectSortMenu({
   );
 }
 
-const SYNARA_DOCS_URL = "https://trysynara.com/docs";
+const TRELLIS_DOCS_URL = "https://github.com/smeltery/trellis/tree/main/docs";
 
 // Latest curated releases surfaced directly in the help menu. Static data, so
 // computed once at module scope rather than per render.
@@ -1016,7 +1016,7 @@ function SidebarHelpMenu({
             </MenuItem>
             <MenuItem
               className={SIDEBAR_CONTEXT_MENU_ITEM_CLASS_NAME}
-              onClick={() => openExternalLink(SYNARA_DOCS_URL)}
+              onClick={() => openExternalLink(TRELLIS_DOCS_URL)}
             >
               <SidebarContextMenuIcon icon={BookIcon} />
               <span>Docs</span>
@@ -1148,7 +1148,7 @@ function SortableProjectItem({
  * Header Activity toggle: a bell that lights up in the accent tone while the
  * Activity view is on, with an unread dot when completions are waiting.
  */
-const ACTIVITY_ONBOARDING_STORAGE_KEY = "synara:activity-onboarding:v1";
+const ACTIVITY_ONBOARDING_STORAGE_KEY = "trellis:activity-onboarding:v1";
 const ACTIVITY_ONBOARDING_DURATION_MS = 8_000;
 
 function shouldShowActivityOnboarding(): boolean {
@@ -1256,7 +1256,7 @@ function SidebarActivityBellButton({
 }
 
 const SIDEBAR_SURFACE_PICKER_COPY: Record<SidebarView, { title: string; description: string }> = {
-  threads: { title: "Synara", description: "Build, debug, and ship" },
+  threads: { title: "Trellis", description: "Build, debug, and ship" },
   groups: { title: "Hubs", description: "Coordinated work across repos" },
 };
 
@@ -1567,18 +1567,18 @@ export default function Sidebar() {
       updateVisibility();
     };
 
-    debugWindow.synaraShowFeatureFlags = showFeatureFlags;
-    debugWindow.synaraHideFeatureFlags = hideFeatureFlags;
+    debugWindow.trellisShowFeatureFlags = showFeatureFlags;
+    debugWindow.trellisHideFeatureFlags = hideFeatureFlags;
     window.addEventListener("storage", updateVisibility);
     updateVisibility();
 
     return () => {
       window.removeEventListener("storage", updateVisibility);
-      if (debugWindow.synaraShowFeatureFlags === showFeatureFlags) {
-        delete debugWindow.synaraShowFeatureFlags;
+      if (debugWindow.trellisShowFeatureFlags === showFeatureFlags) {
+        delete debugWindow.trellisShowFeatureFlags;
       }
-      if (debugWindow.synaraHideFeatureFlags === hideFeatureFlags) {
-        delete debugWindow.synaraHideFeatureFlags;
+      if (debugWindow.trellisHideFeatureFlags === hideFeatureFlags) {
+        delete debugWindow.trellisHideFeatureFlags;
       }
     };
   }, []);
@@ -4954,7 +4954,7 @@ export default function Sidebar() {
   }, [activeSidebarThreadId, visibleSidebarThreadIds]);
 
   // Pinned rows share the thread-container label rule (project name, or
-  // "Synara" for project-less chats) with the hover cards and Activity rows.
+  // "Trellis" for project-less chats) with the hover cards and Activity rows.
   function resolvePinnedThreadProjectLabel(projectId: ProjectId): string {
     return resolveThreadProjectLabel(projectById.get(projectId));
   }
@@ -5632,8 +5632,8 @@ export default function Sidebar() {
     );
   }
 
-  // A project reads as "running" when Synara tracks a run for it or when a local server
-  // (possibly started outside Synara) is attributed by cwd. Shared by the tree's project
+  // A project reads as "running" when Trellis tracks a run for it or when a local server
+  // (possibly started outside Trellis) is attributed by cwd. Shared by the tree's project
   // header and the rail layout's Spaces rows.
   function isSidebarProjectRunning(projectId: ProjectId): boolean {
     return (
@@ -6350,7 +6350,7 @@ export default function Sidebar() {
       {
         id: "import-projects",
         label: "Import projects from…",
-        description: "Bring Codex and Claude Code projects and conversations into Synara.",
+        description: "Bring Codex and Claude Code projects and conversations into Trellis.",
         keywords: ["import", "projects", "codex", "claude", "conversations", "folders"],
       },
       {
@@ -6371,9 +6371,9 @@ export default function Sidebar() {
       },
       {
         id: "feedback",
-        label: "Feedback Synara",
-        description: "Send feedback or report an issue to the Synara team.",
-        keywords: ["feedback", "bug", "issue", "problem", "report", "support", "synara"],
+        label: "Feedback Trellis",
+        description: "Send feedback or report an issue to the Trellis team.",
+        keywords: ["feedback", "bug", "issue", "problem", "report", "support", "trellis"],
       },
       {
         id: "settings",
@@ -6460,7 +6460,7 @@ export default function Sidebar() {
             toastManager.add({
               type: "info",
               title: "Preparing update",
-              description: `Synara is preparing version ${nextState.availableVersion ?? "available"} in the background.`,
+              description: `Trellis is preparing version ${nextState.availableVersion ?? "available"} in the background.`,
             });
             return;
           }
@@ -6469,7 +6469,7 @@ export default function Sidebar() {
             toastManager.add({
               type: "info",
               title: "Preparing update",
-              description: "Synara is downloading the update in the background.",
+              description: "Trellis is downloading the update in the background.",
             });
             return;
           }
@@ -6487,7 +6487,7 @@ export default function Sidebar() {
             toastManager.add({
               type: "info",
               title: "You're up to date",
-              description: `Synara ${nextState.currentVersion} is already the newest version.`,
+              description: `Trellis ${nextState.currentVersion} is already the newest version.`,
             });
             return;
           }
@@ -6640,7 +6640,7 @@ export default function Sidebar() {
 
   const betaBadge = isBetaDesktopFlavor ? (
     <span
-      aria-label="Synara Beta"
+      aria-label="Trellis Beta"
       className="inline-flex shrink-0 items-center rounded-full bg-[var(--beta-pill)] px-1.5 py-0.5 text-ui-xs font-semibold leading-none text-[var(--beta-pill-ink)]"
     >
       Beta

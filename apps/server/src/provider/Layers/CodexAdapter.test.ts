@@ -15,7 +15,7 @@ import {
   type ProviderUserInputAnswers,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { afterAll, it, vi } from "@effect/vitest";
 
@@ -212,10 +212,10 @@ validationLayer("CodexAdapterLive validation", (it) => {
         provider: "codex",
         threadId: asThreadId("thread-coordinator"),
         runtimeMode: "approval-required",
-        autoApproveSynaraTools: true,
+        autoApproveTrellisTools: true,
       });
       assert.strictEqual(
-        validationManager.startSessionImpl.mock.calls[0]?.[0].autoApproveSynaraTools,
+        validationManager.startSessionImpl.mock.calls[0]?.[0].autoApproveTrellisTools,
         true,
       );
     }),
@@ -380,8 +380,8 @@ validationLayer("CodexAdapterLive validation", (it) => {
   it.effect("lists only explicit generated-image homes from live session Codex options", () =>
     Effect.gen(function* () {
       const now = new Date().toISOString();
-      const originalSynaraHome = process.env.SYNARA_HOME;
-      process.env.SYNARA_HOME = "/tmp/synara-live-generated-images";
+      const originalTrellisHome = process.env.TRELLIS_HOME;
+      process.env.TRELLIS_HOME = "/tmp/trellis-live-generated-images";
       validationManager.sessionSnapshots = [
         {
           provider: "codex",
@@ -454,10 +454,10 @@ validationLayer("CodexAdapterLive validation", (it) => {
       } finally {
         lifecycleOptionsSpy.mockRestore();
         lifecycleListSpy.mockRestore();
-        if (originalSynaraHome === undefined) {
-          delete process.env.SYNARA_HOME;
+        if (originalTrellisHome === undefined) {
+          delete process.env.TRELLIS_HOME;
         } else {
-          process.env.SYNARA_HOME = originalSynaraHome;
+          process.env.TRELLIS_HOME = originalTrellisHome;
         }
         validationManager.sessionSnapshots = [];
         validationManager.codexOptionsByThreadId.clear();
@@ -825,7 +825,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
         payload: {
           summary: "  Invalid MCP configuration  ",
           details: "url is not supported for stdio\n",
-          path: "  mcp_servers.synara  ",
+          path: "  mcp_servers.trellis  ",
         },
       } satisfies ProviderEvent);
 
@@ -840,7 +840,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
       }
       assert.equal(firstEvent.value.payload.summary, "Invalid MCP configuration");
       assert.equal(firstEvent.value.payload.details, "url is not supported for stdio");
-      assert.equal(firstEvent.value.payload.path, "mcp_servers.synara");
+      assert.equal(firstEvent.value.payload.path, "mcp_servers.trellis");
     }),
   );
 
@@ -1774,7 +1774,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
         threadId: asThreadId("thread-1"),
         createdAt: new Date().toISOString(),
         method: "mcpServer/elicitation/request/unrenderable",
-        message: "Synara declined an MCP elicitation it cannot render yet.",
+        message: "Trellis declined an MCP elicitation it cannot render yet.",
       } satisfies ProviderEvent);
 
       const firstEvent = yield* Fiber.join(firstEventFiber);
@@ -1784,7 +1784,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
       if (firstEvent.value.type !== "runtime.warning") return;
       assert.equal(
         firstEvent.value.payload.message,
-        "Synara declined an MCP elicitation it cannot render yet.",
+        "Trellis declined an MCP elicitation it cannot render yet.",
       );
     }),
   );
@@ -2318,7 +2318,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
           entries: [],
         },
       });
-      assert.deepEqual(started.raw?.payload, { synaraSanitized: true });
+      assert.deepEqual(started.raw?.payload, { trellisSanitized: true });
 
       assert.equal(completed?.type, "hook.completed");
       if (completed?.type !== "hook.completed") return;
@@ -2329,7 +2329,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
       assert.equal(serialized.includes("private-hook-secret"), false);
       assert.equal(serialized.includes("private-hook-token"), false);
       assert.equal(serialized.includes("[REDACTED]"), true);
-      assert.deepEqual(completed.raw?.payload, { synaraSanitized: true });
+      assert.deepEqual(completed.raw?.payload, { trellisSanitized: true });
     }),
   );
 
@@ -2381,7 +2381,7 @@ lifecycleLayer("CodexAdapterLive lifecycle", (it) => {
         assert.equal(serialized.includes("private-token"), false);
         assert.ok(serialized.length < 17_000);
         assert.deepEqual(firstEvent.value.raw?.payload, {
-          synaraSanitized: true,
+          trellisSanitized: true,
         });
         // Provider refs still resolved from the raw event.
         assert.equal(firstEvent.value.itemId, "agent_message_9");

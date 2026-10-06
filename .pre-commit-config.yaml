@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: static
+        name: CI static checks
+        entry: flox activate -- bun run check:static
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: runtime
+        name: CI types, tests, and builds
+        entry: flox activate -- bun run check
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true

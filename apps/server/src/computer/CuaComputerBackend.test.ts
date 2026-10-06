@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CuaActionError, CuaComputerBackend } from "./CuaComputerBackend.ts";
-import { ComputerAvailability, ComputerScreenshot, ComputerState } from "@synara/contracts";
+import { ComputerAvailability, ComputerScreenshot, ComputerState } from "@trellis/contracts";
 import { Effect, Schema } from "effect";
 import {
   CuaTransportError,
   CUA_SETUP_TIMEOUT_MS,
   type cuaRequest,
-} from "@synara/shared/cuaDriverProtocol";
+} from "@trellis/shared/cuaDriverProtocol";
 import { ComputerManager } from "./ComputerManager.ts";
 import { FakeComputerBackend } from "./FakeComputerBackend.ts";
 import { withDesktopDeliveryMode, withDesktopOperationSignal } from "./DesktopOperationQueue.ts";
@@ -124,7 +124,7 @@ function fixture(options?: {
         accessibility: !missingPermissions,
         screen_recording: !missingPermissions && !screenRecordingMissing,
         ...monitorPermissions,
-        source: { host_bundle_id: "com.synara.test" },
+        source: { host_bundle_id: "com.trellis.test" },
       };
       await permissionWait;
     }
@@ -793,7 +793,7 @@ describe("Cua native boundary", () => {
       await f.backend.performAction(menuTarget, action);
     }
     // Each admitted name lands on the token as the driver's `click` action
-    // recipe; `menu` is the Synara-side alias for the same AXShowMenu call.
+    // recipe; `menu` is the Trellis-side alias for the same AXShowMenu call.
     const dispatched = f.calls
       .filter((c) => c.name === "click")
       .map((c) => [c.args?.element_token, c.args?.action]);
@@ -1755,7 +1755,7 @@ describe("Cua native boundary", () => {
     expect(availability).toMatchObject({
       kind: "permission-required",
       missing: ["screenRecording"],
-      bundleId: "com.synara.test",
+      bundleId: "com.trellis.test",
     });
     expect(availability.kind === "permission-required" && availability.message).not.toContain(
       "Accessibility",
@@ -2606,7 +2606,7 @@ describe("Cua native boundary", () => {
   });
   it("verifies a moved window through an independent list_windows readback", async () => {
     const f = fixture();
-    // The driver claims the move landed — but Synara only reports verified
+    // The driver claims the move landed — but Trellis only reports verified
     // once its own list_windows re-read shows the requested frame.
     f.onTool("set_window_frame", (args) => {
       f.setBounds({
@@ -3016,7 +3016,7 @@ describe("Cua native boundary", () => {
       ],
       truncated: false,
     });
-    // The driver call is argument-free: window scoping is Synara-side, to the
+    // The driver call is argument-free: window scoping is Trellis-side, to the
     // app that owns the exact window resolved through list_windows.
     await expect(f.backend.getAccessibilityTree!("cua:10:20")).resolves.toEqual({
       apps: [{ pid: 10, name: "TextEdit", bundleId: "com.apple.TextEdit" }],
@@ -3538,7 +3538,7 @@ describe("Cua native boundary", () => {
     });
     // A driver that cannot admit the gesture (older builds report
     // `background_unavailable`; a stale target reports a WindowPointer refusal)
-    // answers with a structured refusal. Synara surfaces it as not-dispatched
+    // answers with a structured refusal. Trellis surfaces it as not-dispatched
     // and never replays — one native call, one rejection.
     f.onTool("drag", () => ({
       isError: true,
@@ -3978,7 +3978,7 @@ describe("preview stills target scope", () => {
 });
 
 describe("Cua workstream-C speed flags", () => {
-  const ENV = ["SYNARA_CUA_PREVIEW_STILL_MS"] as const;
+  const ENV = ["TRELLIS_CUA_PREVIEW_STILL_MS"] as const;
   const savedEnv = new Map<string, string | undefined>();
 
   afterEach(() => {
@@ -4031,8 +4031,8 @@ describe("Cua workstream-C speed flags", () => {
     await f.backend.dispose();
   });
 
-  it("SYNARA_CUA_PREVIEW_STILL_MS overrides the still cadence", async () => {
-    setEnv("SYNARA_CUA_PREVIEW_STILL_MS", "4000");
+  it("TRELLIS_CUA_PREVIEW_STILL_MS overrides the still cadence", async () => {
+    setEnv("TRELLIS_CUA_PREVIEW_STILL_MS", "4000");
     const f = fixture();
     const intervals = vi.spyOn(globalThis, "setInterval");
     await f.backend.attachStream(() => undefined);
@@ -4041,8 +4041,8 @@ describe("Cua workstream-C speed flags", () => {
     await f.backend.dispose();
   });
 
-  it("an unparsable SYNARA_CUA_PREVIEW_STILL_MS falls back to the default", async () => {
-    setEnv("SYNARA_CUA_PREVIEW_STILL_MS", "fast");
+  it("an unparsable TRELLIS_CUA_PREVIEW_STILL_MS falls back to the default", async () => {
+    setEnv("TRELLIS_CUA_PREVIEW_STILL_MS", "fast");
     const f = fixture();
     const intervals = vi.spyOn(globalThis, "setInterval");
     await f.backend.attachStream(() => undefined);
@@ -4051,7 +4051,7 @@ describe("Cua workstream-C speed flags", () => {
   });
 
   it("the constructor's stillIntervalMs wins and stays above the publisher floor", async () => {
-    setEnv("SYNARA_CUA_PREVIEW_STILL_MS", "4000");
+    setEnv("TRELLIS_CUA_PREVIEW_STILL_MS", "4000");
     const f = fixture({ stillIntervalMs: 750 });
     const intervals = vi.spyOn(globalThis, "setInterval");
     await f.backend.attachStream(() => undefined);
@@ -4139,7 +4139,7 @@ describe("host-reported platform and native revision", () => {
     await backend.probeAvailability();
     // The first reply teaches the backend what actually runs on the other
     // end: a Windows host speaks the generic desktop dialect, and an
-    // unpatched upstream driver carries none of the Synara-native surface.
+    // unpatched upstream driver carries none of the Trellis-native surface.
     expect(backend.agentDialect).toBe("linux");
     expect(backend.focusNeutralSemanticText).toBe(false);
     expect(backend.capabilities().ghostCursor).toBe(false);

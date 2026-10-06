@@ -3,14 +3,14 @@
 // quota/credits with linear progress meters, the provider brand icon, and plan/status pills.
 // Usage is fetched read-only from each CLI's stored credentials by the server.
 
-import type { ServerProviderUsageSnapshot } from "@synara/contracts";
-import { deriveProviderInstances } from "@synara/shared/providerInstances";
+import type { ServerProviderUsageSnapshot } from "@trellis/contracts";
+import { deriveProviderInstances } from "@trellis/shared/providerInstances";
 import {
   PROVIDER_USAGE_PROVIDERS,
   providerUsageDisplayName,
   providerUsageNeedsAuthDetail,
   selectVisibleProviderUsageSnapshots,
-} from "@synara/shared/providerUsage";
+} from "@trellis/shared/providerUsage";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

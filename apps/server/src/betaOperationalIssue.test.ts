@@ -1,11 +1,11 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { diagnosticIssueReason } from "@synara/shared/diagnosticIssue";
-import { DESKTOP_DIAGNOSTIC_ISSUE_PREFIX } from "@synara/contracts";
+import { diagnosticIssueReason } from "@trellis/shared/diagnosticIssue";
+import { DESKTOP_DIAGNOSTIC_ISSUE_PREFIX } from "@trellis/contracts";
 import {
-  SYNARA_DESKTOP_BUNDLE_ID_ENV,
-  SYNARA_BETA_BUNDLE_ID,
-  SYNARA_PRODUCTION_BUNDLE_ID,
-} from "@synara/shared/desktopIdentity";
+  TRELLIS_DESKTOP_BUNDLE_ID_ENV,
+  TRELLIS_BETA_BUNDLE_ID,
+  TRELLIS_PRODUCTION_BUNDLE_ID,
+} from "@trellis/shared/desktopIdentity";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -13,10 +13,10 @@ afterEach(() => {
   vi.resetModules();
 });
 
-it.each([SYNARA_PRODUCTION_BUNDLE_ID, "", SYNARA_BETA_BUNDLE_ID])(
+it.each([TRELLIS_PRODUCTION_BUNDLE_ID, "", TRELLIS_BETA_BUNDLE_ID])(
   "emits only allowlisted fields from a Beta backend (%s)",
   async (bundleId) => {
-    vi.stubEnv(SYNARA_DESKTOP_BUNDLE_ID_ENV, bundleId);
+    vi.stubEnv(TRELLIS_DESKTOP_BUNDLE_ID_ENV, bundleId);
     vi.resetModules();
     const { reportBetaOperationalIssue } = await import("./betaOperationalIssue");
     const write = vi.spyOn(process.stdout, "write").mockReturnValue(true);
@@ -28,7 +28,7 @@ it.each([SYNARA_PRODUCTION_BUNDLE_ID, "", SYNARA_BETA_BUNDLE_ID])(
     reportBetaOperationalIssue(issue);
     const calls = write.mock.calls.slice();
     write.mockRestore();
-    if (bundleId === SYNARA_BETA_BUNDLE_ID) {
+    if (bundleId === TRELLIS_BETA_BUNDLE_ID) {
       expect(calls).toEqual([
         [
           DESKTOP_DIAGNOSTIC_ISSUE_PREFIX +
@@ -48,7 +48,7 @@ it.each([
 ] as const)(
   "classifies the emitted Git failure without confusing signing with login (%s)",
   async (message, reason) => {
-    vi.stubEnv(SYNARA_DESKTOP_BUNDLE_ID_ENV, SYNARA_BETA_BUNDLE_ID);
+    vi.stubEnv(TRELLIS_DESKTOP_BUNDLE_ID_ENV, TRELLIS_BETA_BUNDLE_ID);
     const { reportBetaOperationalIssue } = await import("./betaOperationalIssue");
     const write = vi.spyOn(process.stdout, "write").mockReturnValue(true);
     reportBetaOperationalIssue({

@@ -1,4 +1,4 @@
-import type { GitBranch } from "@synara/contracts";
+import type { GitBranch } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 import {
   dedupeRemoteBranchesWithLocalMatches,
@@ -16,7 +16,7 @@ describe("resolveDraftEnvModeAfterBranchChange", () => {
     expect(
       resolveDraftEnvModeAfterBranchChange({
         nextWorktreePath: null,
-        currentWorktreePath: "/repo/.synara/worktrees/feature-a",
+        currentWorktreePath: "/repo/.trellis/worktrees/feature-a",
         effectiveEnvMode: "worktree",
       }),
     ).toBe("local");
@@ -35,7 +35,7 @@ describe("resolveDraftEnvModeAfterBranchChange", () => {
   it("uses worktree mode when selecting a branch already attached to a worktree", () => {
     expect(
       resolveDraftEnvModeAfterBranchChange({
-        nextWorktreePath: "/repo/.synara/worktrees/feature-a",
+        nextWorktreePath: "/repo/.trellis/worktrees/feature-a",
         currentWorktreePath: null,
         effectiveEnvMode: "local",
       }),
@@ -130,7 +130,7 @@ describe("shouldSyncLocalThreadBranch", () => {
       shouldSyncLocalThreadBranch({
         envMode: "local",
         activeWorktreePath: null,
-        activeThreadBranch: "synara/pi",
+        activeThreadBranch: "trellis/pi",
         currentGitBranch: "main",
         hasServerThread: true,
         isThreadSettled: false,
@@ -144,7 +144,7 @@ describe("shouldSyncLocalThreadBranch", () => {
       shouldSyncLocalThreadBranch({
         envMode: "local",
         activeWorktreePath: null,
-        activeThreadBranch: "synara/pi",
+        activeThreadBranch: "trellis/pi",
         currentGitBranch: "main",
         hasServerThread: true,
         isThreadSettled: false,
@@ -216,14 +216,14 @@ describe("resolveAssociatedWorktreeMetadataAfterWorkspacePatch", () => {
       resolveAssociatedWorktreeMetadataAfterWorkspacePatch({
         branch: "main",
         worktreePath: null,
-        existingAssociatedWorktreePath: "/repo/.worktrees/synara-pi",
-        existingAssociatedWorktreeBranch: "synara/pi",
-        existingAssociatedWorktreeRef: "synara/pi",
+        existingAssociatedWorktreePath: "/repo/.worktrees/trellis-pi",
+        existingAssociatedWorktreeBranch: "trellis/pi",
+        existingAssociatedWorktreeRef: "trellis/pi",
       }),
     ).toEqual({
-      associatedWorktreePath: "/repo/.worktrees/synara-pi",
-      associatedWorktreeBranch: "synara/pi",
-      associatedWorktreeRef: "synara/pi",
+      associatedWorktreePath: "/repo/.worktrees/trellis-pi",
+      associatedWorktreeBranch: "trellis/pi",
+      associatedWorktreeRef: "trellis/pi",
     });
   });
 
@@ -248,13 +248,13 @@ describe("resolveAssociatedWorktreeMetadataAfterWorkspacePatch", () => {
       resolveAssociatedWorktreeMetadataAfterWorkspacePatch({
         branch: "main",
         worktreePath: null,
-        existingAssociatedWorktreePath: "/repo/.worktrees/synara-pi",
-        existingAssociatedWorktreeBranch: "synara/pi",
-        existingAssociatedWorktreeRef: "synara/pi",
+        existingAssociatedWorktreePath: "/repo/.worktrees/trellis-pi",
+        existingAssociatedWorktreeBranch: "trellis/pi",
+        existingAssociatedWorktreeRef: "trellis/pi",
         patchAssociatedWorktreeBranch: "feature/new-pair",
       }),
     ).toEqual({
-      associatedWorktreePath: "/repo/.worktrees/synara-pi",
+      associatedWorktreePath: "/repo/.worktrees/trellis-pi",
       associatedWorktreeBranch: "feature/new-pair",
       associatedWorktreeRef: "feature/new-pair",
     });
@@ -365,15 +365,15 @@ describe("resolveBranchSelectionTarget", () => {
     expect(
       resolveBranchSelectionTarget({
         activeProjectCwd: "/repo",
-        activeWorktreePath: "/repo/.synara/worktrees/feature-a",
+        activeWorktreePath: "/repo/.trellis/worktrees/feature-a",
         branch: {
           isDefault: false,
-          worktreePath: "/repo/.synara/worktrees/feature-b",
+          worktreePath: "/repo/.trellis/worktrees/feature-b",
         },
       }),
     ).toEqual({
-      checkoutCwd: "/repo/.synara/worktrees/feature-b",
-      nextWorktreePath: "/repo/.synara/worktrees/feature-b",
+      checkoutCwd: "/repo/.trellis/worktrees/feature-b",
+      nextWorktreePath: "/repo/.trellis/worktrees/feature-b",
       reuseExistingWorktree: true,
     });
   });
@@ -382,7 +382,7 @@ describe("resolveBranchSelectionTarget", () => {
     expect(
       resolveBranchSelectionTarget({
         activeProjectCwd: "/repo",
-        activeWorktreePath: "/repo/.synara/worktrees/feature-a",
+        activeWorktreePath: "/repo/.trellis/worktrees/feature-a",
         branch: {
           isDefault: true,
           worktreePath: "/repo",
@@ -399,7 +399,7 @@ describe("resolveBranchSelectionTarget", () => {
     expect(
       resolveBranchSelectionTarget({
         activeProjectCwd: "/repo",
-        activeWorktreePath: "/repo/.synara/worktrees/feature-a",
+        activeWorktreePath: "/repo/.trellis/worktrees/feature-a",
         branch: {
           isDefault: true,
           worktreePath: null,
@@ -416,15 +416,15 @@ describe("resolveBranchSelectionTarget", () => {
     expect(
       resolveBranchSelectionTarget({
         activeProjectCwd: "/repo",
-        activeWorktreePath: "/repo/.synara/worktrees/feature-a",
+        activeWorktreePath: "/repo/.trellis/worktrees/feature-a",
         branch: {
           isDefault: false,
           worktreePath: null,
         },
       }),
     ).toEqual({
-      checkoutCwd: "/repo/.synara/worktrees/feature-a",
-      nextWorktreePath: "/repo/.synara/worktrees/feature-a",
+      checkoutCwd: "/repo/.trellis/worktrees/feature-a",
+      nextWorktreePath: "/repo/.trellis/worktrees/feature-a",
       reuseExistingWorktree: false,
     });
   });

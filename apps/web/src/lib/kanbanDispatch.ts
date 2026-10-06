@@ -10,7 +10,7 @@ import type {
   ProviderKind,
   ProviderStartOptions,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   resolveKanbanDraftOpenThreadReason,
   resolveDraftDropAction,

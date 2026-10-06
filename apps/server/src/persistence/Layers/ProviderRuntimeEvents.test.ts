@@ -5,7 +5,7 @@ import {
   ThreadId,
   TurnId,
   type ProviderRuntimeEvent,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { assert, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import * as SqlClient from "effect/unstable/sql/SqlClient";
@@ -86,7 +86,7 @@ it.effect("journals image metadata and replays it without the model image body",
         {
           type: "image",
           mimeType: "image/png",
-          synaraImageOmitted: true,
+          trellisImageOmitted: true,
           encodedLength: data.length,
           byteLength: 512 * 1024,
         },
@@ -376,13 +376,13 @@ layer("ProviderRuntimeEventRepository", (it) => {
       assert.deepStrictEqual(persisted.event.payload, oversized.payload);
       const compactedRaw = rows[0]?.event.raw?.payload as
         | {
-            readonly synaraTruncated?: unknown;
+            readonly trellisTruncated?: unknown;
             readonly reason?: unknown;
             readonly originalBytes?: unknown;
           }
         | undefined;
       assert.deepInclude(compactedRaw, {
-        synaraTruncated: true,
+        trellisTruncated: true,
         reason: "provider runtime event exceeded the durable journal size limit",
       });
       assert.isNumber(compactedRaw?.originalBytes);
@@ -432,11 +432,11 @@ layer("ProviderRuntimeEventRepository", (it) => {
       }
       const rawPayload = persisted.event.raw?.payload as
         | {
-            readonly synaraTruncated?: unknown;
+            readonly trellisTruncated?: unknown;
             readonly originalBytes?: unknown;
           }
         | undefined;
-      assert.deepInclude(rawPayload, { synaraTruncated: true });
+      assert.deepInclude(rawPayload, { trellisTruncated: true });
       const originalBytes = rawPayload?.originalBytes;
       assert.isNumber(originalBytes);
       if (typeof originalBytes === "number") {

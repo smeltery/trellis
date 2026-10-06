@@ -3,7 +3,7 @@ import {
   type ProviderInstanceId,
   type ProviderKind,
   type ServerProviderStatus,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { isProviderKind } from "../providerOrdering";
 
 const CUSTOM_BINARY_CONFIRMATION_SUFFIX =
@@ -47,7 +47,7 @@ export function normalizeProviderStatusForLocalConfig(input: {
       available: false,
       authStatus: "unknown",
       checkedAt: status.checkedAt,
-      message: "Provider is disabled in Synara settings.",
+      message: "Provider is disabled in Trellis settings.",
     };
   }
 

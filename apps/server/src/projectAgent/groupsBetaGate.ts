@@ -7,14 +7,14 @@
 // Exports: GROUPS_BETA_ONLY_MESSAGE, isServerGroupsEnabled, isGroupProjectCommand,
 //          gateProjectAgentServiceForStable
 
-import { GROUPS_BETA_FEATURE } from "@synara/shared/betaFeatures";
+import { GROUPS_BETA_FEATURE } from "@trellis/shared/betaFeatures";
 import { Effect, Stream } from "effect";
 
 import { isServerBetaFeatureEnabled } from "../betaFeatureGate";
 import { ProjectAgentServiceError } from "./Errors";
 import type { ProjectAgentServiceShape } from "./Services/ProjectAgentService";
 
-export const GROUPS_BETA_ONLY_MESSAGE = "Hubs are available in Synara Beta.";
+export const GROUPS_BETA_ONLY_MESSAGE = "Hubs are available in Trellis Beta.";
 
 export const isServerGroupsEnabled = (): boolean => isServerBetaFeatureEnabled(GROUPS_BETA_FEATURE);
 

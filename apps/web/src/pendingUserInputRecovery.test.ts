@@ -1,8 +1,8 @@
-import { ApprovalRequestId, EventId, ThreadId } from "@synara/contracts";
+import { ApprovalRequestId, EventId, ThreadId } from "@trellis/contracts";
 import {
   buildStalePendingRequestFailureDetail,
   pendingRequestInstanceKey,
-} from "@synara/shared/threadSummary";
+} from "@trellis/shared/threadSummary";
 import { afterEach, expect, it } from "vitest";
 import {
   expiredUserInputDrafts,

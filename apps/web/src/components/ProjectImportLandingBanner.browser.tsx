@@ -7,7 +7,7 @@ import { render } from "vitest-browser-react";
 import { ProjectImportLandingBanner } from "../projectImport/ProjectImportLandingBanner";
 import { useProjectImportDialogStore } from "../projectImport/projectImportDialogStore";
 
-const storageKey = "synara:project-import-landing-banner:dismissed:v1";
+const storageKey = "trellis:project-import-landing-banner:dismissed:v1";
 
 beforeEach(() => {
   localStorage.removeItem(storageKey);

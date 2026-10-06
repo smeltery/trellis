@@ -40,13 +40,13 @@ import type {
   OrchestrationSession,
   RuntimeMode,
   ThreadId,
-} from "@synara/contracts";
-import { CommandId, EventId } from "@synara/contracts";
-import { createStalePendingInteractionMatcher } from "@synara/shared/pendingInteractions";
+} from "@trellis/contracts";
+import { CommandId, EventId } from "@trellis/contracts";
+import { createStalePendingInteractionMatcher } from "@trellis/shared/pendingInteractions";
 import {
   derivePendingThreadRequestIds,
   type PendingThreadRequestKind,
-} from "@synara/shared/threadSummary";
+} from "@trellis/shared/threadSummary";
 import { Array as Arr, Effect, Option } from "effect";
 import type { ProjectionPendingInteraction } from "../persistence/Services/ProjectionPendingInteractions.ts";
 import { ProjectionPendingInteractionRepository } from "../persistence/Services/ProjectionPendingInteractions.ts";

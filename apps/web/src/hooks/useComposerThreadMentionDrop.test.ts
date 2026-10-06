@@ -1,4 +1,4 @@
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import { isThreadDragTransfer, readThreadDragPayload, THREAD_DRAG_MIME } from "~/lib/threadDrag";

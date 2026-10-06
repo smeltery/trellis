@@ -18,12 +18,12 @@
  *
  * @module stalePendingInteractions
  */
-import type { CommandId, OrchestrationCommand, ThreadId } from "@synara/contracts";
-import { EventId } from "@synara/contracts";
+import type { CommandId, OrchestrationCommand, ThreadId } from "@trellis/contracts";
+import { EventId } from "@trellis/contracts";
 import {
   buildStalePendingRequestFailureDetail,
   type PendingThreadRequestKind,
-} from "@synara/shared/threadSummary";
+} from "@trellis/shared/threadSummary";
 
 import type { ProjectionPendingInteraction } from "../persistence/Services/ProjectionPendingInteractions.ts";
 

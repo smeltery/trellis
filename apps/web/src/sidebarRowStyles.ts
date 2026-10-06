@@ -43,7 +43,7 @@ export const SIDEBAR_PROJECT_NAME_CLASS_NAME = [
   SIDEBAR_ROW_LABEL_TEXT_CLASS_NAME,
 ].join(" ");
 
-/** Section label ("Threads"/"Pinned" and settings "App"/"Synara"). */
+/** Section label ("Threads"/"Pinned" and settings "App"/"Trellis"). */
 /** Soft grey of section labels ("Projects", "Chats"); also the rail's resting glyph tone. */
 export const SIDEBAR_SECTION_LABEL_TONE_CLASS_NAME = "text-muted-foreground/58";
 

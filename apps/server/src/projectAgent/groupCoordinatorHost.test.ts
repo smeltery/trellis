@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 
 import {
   coordinatorWelcomeDisplayName,
@@ -11,15 +11,15 @@ import {
 
 describe("isGroupCoordinatorHostProject", () => {
   const roots = {
-    groupsWorkspaceRoot: "/Users/tester/Documents/Synara/Groups",
-    studioWorkspaceRoot: "/Users/tester/Documents/Synara/Studio",
+    groupsWorkspaceRoot: "/Users/tester/Documents/Trellis/Groups",
+    studioWorkspaceRoot: "/Users/tester/Documents/Trellis/Studio",
   };
 
   it("accepts a hub under the Hubs root", () => {
     expect(
       isGroupCoordinatorHostProject({
         kind: "group",
-        workspaceRoot: "/Users/tester/Documents/Synara/Groups/alpha",
+        workspaceRoot: "/Users/tester/Documents/Trellis/Groups/alpha",
         ...roots,
       }),
     ).toBe(true);
@@ -29,7 +29,7 @@ describe("isGroupCoordinatorHostProject", () => {
     expect(
       isGroupCoordinatorHostProject({
         kind: "studio",
-        workspaceRoot: "/Users/tester/Documents/Synara/Studio",
+        workspaceRoot: "/Users/tester/Documents/Trellis/Studio",
         ...roots,
       }),
     ).toBe(true);

@@ -17,17 +17,17 @@ import {
   TerminalWriteInput,
   type TerminalEvent,
   type TerminalSessionSnapshot,
-} from "@synara/contracts";
-import { describeErrorMessage } from "@synara/shared/errorMessages";
+} from "@trellis/contracts";
+import { describeErrorMessage } from "@trellis/shared/errorMessages";
 import {
   consumeTerminalIdentityInput,
   terminalCliKindFromValue,
-  SYNARA_TERMINAL_HOOK_OSC_PREFIX,
-  SYNARA_TERMINAL_CLI_KIND_ENV_KEY,
+  TRELLIS_TERMINAL_HOOK_OSC_PREFIX,
+  TRELLIS_TERMINAL_CLI_KIND_ENV_KEY,
   type TerminalActivityState,
   type TerminalAgentHookEventType,
   type TerminalCliKind,
-} from "@synara/shared/terminalThreads";
+} from "@trellis/shared/terminalThreads";
 import { Effect, Encoding, Layer, Schema } from "effect";
 
 import { createLogger } from "../../logger";
@@ -44,7 +44,7 @@ import {
   prepareManagedTerminalAgentWrappers,
   type ManagedTerminalProfile,
 } from "../managedTerminalWrappers";
-import { prepareProcess } from "@synara/shared/platformProcess";
+import { prepareProcess } from "@trellis/shared/platformProcess";
 import {
   prepareProviderAuthenticationSettings,
   resolveProviderAuthenticationLaunch,
@@ -383,7 +383,7 @@ function shouldStripCsiSequence(body: string, finalByte: string): boolean {
 
 function shouldStripOscSequence(content: string): boolean {
   return (
-    /^(10|11|12);(?:\?|rgb:)/.test(content) || content.startsWith(SYNARA_TERMINAL_HOOK_OSC_PREFIX)
+    /^(10|11|12);(?:\?|rgb:)/.test(content) || content.startsWith(TRELLIS_TERMINAL_HOOK_OSC_PREFIX)
   );
 }
 
@@ -393,10 +393,10 @@ function extractOscTitle(content: string): string | null {
 }
 
 function extractOscHookEvent(content: string): TerminalAgentHookEventType | null {
-  if (!content.startsWith(SYNARA_TERMINAL_HOOK_OSC_PREFIX)) {
+  if (!content.startsWith(TRELLIS_TERMINAL_HOOK_OSC_PREFIX)) {
     return null;
   }
-  const eventType = content.slice(SYNARA_TERMINAL_HOOK_OSC_PREFIX.length).trim();
+  const eventType = content.slice(TRELLIS_TERMINAL_HOOK_OSC_PREFIX.length).trim();
   return eventType === "Start" || eventType === "Stop" || eventType === "PermissionRequest"
     ? eventType
     : null;
@@ -656,7 +656,7 @@ function toSessionKey(threadId: string, terminalId: string): string {
 
 function shouldExcludeTerminalEnvKey(key: string): boolean {
   const normalizedKey = key.toUpperCase();
-  if (normalizedKey.startsWith("SYNARA_")) {
+  if (normalizedKey.startsWith("TRELLIS_")) {
     return true;
   }
   if (normalizedKey.startsWith("VITE_")) {
@@ -706,7 +706,7 @@ function normalizedRuntimeEnv(
 function cliKindFromRuntimeEnv(
   runtimeEnv: Record<string, string> | null | undefined,
 ): TerminalCliKind | null {
-  return terminalCliKindFromValue(runtimeEnv?.[SYNARA_TERMINAL_CLI_KIND_ENV_KEY]);
+  return terminalCliKindFromValue(runtimeEnv?.[TRELLIS_TERMINAL_CLI_KIND_ENV_KEY]);
 }
 
 function resetSessionHistory(session: TerminalSessionState): void {

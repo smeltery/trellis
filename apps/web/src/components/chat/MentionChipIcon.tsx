@@ -16,8 +16,8 @@ import {
 import { CentralIcon, createCentralIconElement } from "~/lib/central-icons";
 import { MessageCircleIcon, PluginIcon, FolderIcon } from "~/lib/icons";
 import { COMPOSER_INLINE_MENTION_CHIP_ICON_CLASS_NAME } from "../composerInlineChip";
-import type { ProviderMentionReference } from "@synara/contracts";
-import { threadIdFromThreadMentionPath } from "@synara/shared/threadMentions";
+import type { ProviderMentionReference } from "@trellis/contracts";
+import { threadIdFromThreadMentionPath } from "@trellis/shared/threadMentions";
 import { useStore } from "~/store";
 import { resolveThreadDisplayProvider } from "~/lib/threadDisplayProvider";
 import { ProviderIcon } from "../ProviderIcon";

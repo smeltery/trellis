@@ -1,4 +1,4 @@
-import { ProjectId } from "@synara/contracts";
+import { ProjectId } from "@trellis/contracts";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { renderHook } from "vitest-browser-react";
 

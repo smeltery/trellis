@@ -8,15 +8,15 @@ import { existsSync } from "node:fs";
 import * as nodeOs from "node:os";
 import * as nodePath from "node:path";
 
-import { resolveExecutable } from "@synara/shared/executable";
-import { supportsPosixPermissions } from "@synara/shared/filesystemPlatform";
+import { resolveExecutable } from "@trellis/shared/executable";
+import { supportsPosixPermissions } from "@trellis/shared/filesystemPlatform";
 import {
   type ProviderInteractionMode,
   type ProviderModelDescriptor,
   type OmpRoleDescriptor,
   type OmpThinkingLevel,
   OMP_THINKING_LEVEL_OPTIONS,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect, Layer, Option, Schema, Scope, ServiceMap } from "effect";
 import YAML from "yaml";
 import * as AcpErrors from "./AcpErrors.ts";
@@ -268,7 +268,7 @@ export function applyOmpAcpModelSelection<E>(input: {
 /**
  * Applies OMP's native mode config option before a prompt is dispatched. OMP
  * advertises a `mode` select option (category "mode") with `default` always
- * present and `plan` only when plan mode is enabled. Synara's `plan`
+ * present and `plan` only when plan mode is enabled. Trellis's `plan`
  * interaction mode routes to OMP `"plan"`; everything else passes through as
  * `default`. If the requested mode is not advertised (e.g. plan disabled), or
  * OMP did not advertise a mode option, OMP is left on its current (default) mode.

@@ -3,7 +3,7 @@
 // Layer: Web chat recovery hook
 // Exports: useThreadUnblock
 
-import type { ThreadId } from "@synara/contracts";
+import type { ThreadId } from "@trellis/contracts";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { toastManager } from "../components/ui/toast";
@@ -49,7 +49,7 @@ export function useThreadUnblock(input: {
       void (async () => {
         try {
           const api = readNativeApi();
-          if (!api) throw new Error("Not connected to the Synara server.");
+          if (!api) throw new Error("Not connected to the Trellis server.");
           const result = await unblockThreadFromClient(api.orchestration, resolvedThreadId);
           onUnblocked(resolvedThreadId);
           toastManager.add(describeThreadUnblockResult(result));

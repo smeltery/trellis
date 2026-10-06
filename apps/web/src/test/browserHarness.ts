@@ -2,7 +2,7 @@ import {
   DEFAULT_SERVER_SETTINGS_VIEW,
   type ServerConfig,
   type ServerSettingsView,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import { FEATURE_TOUR_STORAGE_KEY } from "../featureTour/store";
 import { PROJECT_IMPORT_ANNOUNCEMENT_STORAGE_KEY } from "../projectImport/useProjectImportAnnouncement";
@@ -11,7 +11,7 @@ export function createBrowserTestServerConfig(checkedAt: string): ServerConfig {
   return {
     cwd: "/repo/project",
     worktreesDir: "/repo/.codex/worktrees",
-    keybindingsConfigPath: "/repo/project/.synara-keybindings.json",
+    keybindingsConfigPath: "/repo/project/.trellis-keybindings.json",
     keybindings: [],
     issues: [],
     providers: [

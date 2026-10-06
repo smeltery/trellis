@@ -37,28 +37,28 @@ describe("trustedOrigins", () => {
     ).toBe(true);
     expect(
       isTrustedAppOrigin({
-        origin: "synara://app",
+        origin: "trellis://app",
         requestOrigin: "http://127.0.0.1:58090",
         config,
       }),
     ).toBe(true);
     expect(
       isTrustedAppOrigin({
-        origin: "synara-canary://app",
+        origin: "trellis-canary://app",
         requestOrigin: "http://127.0.0.1:58090",
         config,
       }),
     ).toBe(true);
     expect(
       isTrustedAppOrigin({
-        origin: "synara-cua://app",
+        origin: "trellis-cua://app",
         requestOrigin: "http://127.0.0.1:58090",
         config,
       }),
     ).toBe(true);
     expect(
       isTrustedAppOrigin({
-        origin: "synara-beta://app",
+        origin: "trellis-beta://app",
         requestOrigin: "http://127.0.0.1:58090",
         config,
       }),
@@ -110,12 +110,12 @@ describe("trustedOrigins", () => {
     const remoteConfig = {
       ...config,
       host: "0.0.0.0",
-      publicUrl: new URL("https://synara.example.test/"),
+      publicUrl: new URL("https://trellis.example.test/"),
     };
     expect(
       isTrustedAppOrigin({
-        origin: "https://synara.example.test",
-        requestOrigin: "http://synara.example.test",
+        origin: "https://trellis.example.test",
+        requestOrigin: "http://trellis.example.test",
         config: remoteConfig,
       }),
     ).toBe(true);
@@ -130,18 +130,18 @@ describe("trustedOrigins", () => {
 
   it("normalizes desktop origins and single Origin-header arrays", () => {
     expect(normalizeCorsOrigin(["http://localhost:5173"])).toBe("http://localhost:5173");
-    expect(normalizeCorsOrigin("synara://app/")).toBe("synara://app");
-    expect(normalizeCorsOrigin("synara-canary://app/")).toBe("synara-canary://app");
-    expect(normalizeCorsOrigin("synara-cua://app/")).toBe("synara-cua://app");
-    expect(normalizeCorsOrigin("synara-beta://app/")).toBe("synara-beta://app");
+    expect(normalizeCorsOrigin("trellis://app/")).toBe("trellis://app");
+    expect(normalizeCorsOrigin("trellis-canary://app/")).toBe("trellis-canary://app");
+    expect(normalizeCorsOrigin("trellis-cua://app/")).toBe("trellis-cua://app");
+    expect(normalizeCorsOrigin("trellis-beta://app/")).toBe("trellis-beta://app");
   });
 
   it("trusts every packaged desktop flavor at the request gate and rejects lookalikes", () => {
     for (const rawOrigin of [
-      "synara://app",
-      "synara-beta://app",
-      "synara-canary://app",
-      "synara-cua://app",
+      "trellis://app",
+      "trellis-beta://app",
+      "trellis-canary://app",
+      "trellis-cua://app",
     ]) {
       expect(
         shouldRejectUntrustedRequestOrigin({
@@ -152,12 +152,12 @@ describe("trustedOrigins", () => {
       ).toBe(false);
     }
     for (const rawOrigin of [
-      "synara://evil.test",
-      "synara-beta://evil.test",
-      "synara-beta://app.evil.test",
-      "synara-betas://app",
-      "synara-canary://evil.test",
-      "synara-cua://evil.test",
+      "trellis://evil.test",
+      "trellis-beta://evil.test",
+      "trellis-beta://app.evil.test",
+      "trellis-betas://app",
+      "trellis-canary://evil.test",
+      "trellis-cua://evil.test",
     ]) {
       expect(
         shouldRejectUntrustedRequestOrigin({
@@ -235,7 +235,7 @@ describe("trustedOrigins", () => {
       requiresWebSocketAuthentication({
         host: "127.0.0.1",
         authToken: undefined,
-        publicUrl: new URL("https://synara.example.test/"),
+        publicUrl: new URL("https://trellis.example.test/"),
       }),
     ).toBe(true);
   });

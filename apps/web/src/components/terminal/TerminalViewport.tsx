@@ -6,8 +6,8 @@
 import "@xterm/xterm/css/xterm.css";
 import { SearchAddon } from "@xterm/addon-search";
 import { TriangleAlertIcon } from "~/lib/icons";
-import { type ThreadId } from "@synara/contracts";
-import { type TerminalActivityState, type TerminalCliKind } from "@synara/shared/terminalThreads";
+import { type ThreadId } from "@trellis/contracts";
+import { type TerminalActivityState, type TerminalCliKind } from "@trellis/shared/terminalThreads";
 import { Terminal } from "@xterm/xterm";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type TerminalContextSelection } from "~/lib/terminalContext";

@@ -53,8 +53,8 @@ import {
   COMPUTER_WS_CHANNELS,
   COMPUTER_WS_METHODS,
   type ComputerEvent,
-} from "@synara/contracts";
-import { VOICE_TRANSCRIPTION_UPLOAD_ROUTE_PATH } from "@synara/shared/binaryTransfer";
+} from "@trellis/contracts";
+import { VOICE_TRANSCRIPTION_UPLOAD_ROUTE_PATH } from "@trellis/shared/binaryTransfer";
 import { Schema } from "effect";
 
 import { showConfirmDialogFallback } from "./confirmDialogFallback";

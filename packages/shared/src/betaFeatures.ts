@@ -3,12 +3,12 @@
 // Layer: Shared contracts (consumed by desktop main, server, and web UI)
 
 import {
-  SYNARA_BETA_BUNDLE_ID,
-  SYNARA_CANARY_BUNDLE_ID,
-  SYNARA_CUA_BUNDLE_ID,
-  SYNARA_DEVELOPMENT_BUNDLE_ID,
-  SYNARA_PRODUCTION_BUNDLE_ID,
-  type SynaraDesktopFlavor,
+  TRELLIS_BETA_BUNDLE_ID,
+  TRELLIS_CANARY_BUNDLE_ID,
+  TRELLIS_CUA_BUNDLE_ID,
+  TRELLIS_DEVELOPMENT_BUNDLE_ID,
+  TRELLIS_PRODUCTION_BUNDLE_ID,
+  type TrellisDesktopFlavor,
 } from "./desktopIdentity";
 
 /**
@@ -44,7 +44,7 @@ export const BETA_ONLY_FEATURES: readonly BetaOnlyFeature[] = [GROUPS_BETA_FEATU
  */
 export function isBetaFeatureEnabled(
   feature: BetaOnlyFeature,
-  flavor: SynaraDesktopFlavor | "unknown",
+  flavor: TrellisDesktopFlavor | "unknown",
 ): boolean {
   return !BETA_ONLY_FEATURES.includes(feature) || flavor !== "production";
 }
@@ -52,17 +52,17 @@ export function isBetaFeatureEnabled(
 /** Maps a desktop bundle id to its flavor; blank or unrecognized -> "unknown". */
 export function desktopFlavorFromBundleId(
   bundleId: string | undefined,
-): SynaraDesktopFlavor | "unknown" {
+): TrellisDesktopFlavor | "unknown" {
   switch (bundleId?.trim()) {
-    case SYNARA_PRODUCTION_BUNDLE_ID:
+    case TRELLIS_PRODUCTION_BUNDLE_ID:
       return "production";
-    case SYNARA_DEVELOPMENT_BUNDLE_ID:
+    case TRELLIS_DEVELOPMENT_BUNDLE_ID:
       return "development";
-    case SYNARA_CANARY_BUNDLE_ID:
+    case TRELLIS_CANARY_BUNDLE_ID:
       return "canary";
-    case SYNARA_CUA_BUNDLE_ID:
+    case TRELLIS_CUA_BUNDLE_ID:
       return "cua";
-    case SYNARA_BETA_BUNDLE_ID:
+    case TRELLIS_BETA_BUNDLE_ID:
       return "beta";
     default:
       return "unknown";
@@ -71,22 +71,22 @@ export function desktopFlavorFromBundleId(
 
 /**
  * Maps the web app's own URL scheme to the hosting desktop's flavor. A Stable
- * build serves `synara:` pages; a development build serves the same scheme, so
+ * build serves `trellis:` pages; a development build serves the same scheme, so
  * the caller passes whether this is a dev build. Anything else (http, missing
  * window) is "unknown".
  */
 export function desktopFlavorFromProtocol(
   protocol: string | undefined,
   isDevBuild: boolean,
-): SynaraDesktopFlavor | "unknown" {
+): TrellisDesktopFlavor | "unknown" {
   switch (protocol) {
-    case "synara-beta:":
+    case "trellis-beta:":
       return "beta";
-    case "synara-canary:":
+    case "trellis-canary:":
       return "canary";
-    case "synara-cua:":
+    case "trellis-cua:":
       return "cua";
-    case "synara:":
+    case "trellis:":
       return isDevBuild ? "development" : "production";
     default:
       return "unknown";

@@ -8,7 +8,7 @@ import { restoreClaudeImportedCopyDates } from "../claudeImportedCopyDates.ts";
  *
  * @module ClaudeAdapterLive
  */
-import { execProcessFile, spawnProcess } from "@synara/shared/processRuntime";
+import { execProcessFile, spawnProcess } from "@trellis/shared/processRuntime";
 import type {
   AgentInfo,
   CanUseTool,
@@ -65,7 +65,7 @@ import {
   type ProviderListAgentsResult,
   type ProviderListModelsResult,
   getAgentMentionAliases,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   applyClaudePromptEffortPrefix,
   getClaudeContextWindowSuffix,
@@ -78,11 +78,11 @@ import {
   resolveApiModelId,
   stripClaudeContextWindowSuffix,
   trimOrNull,
-} from "@synara/shared/model";
-import { buildClaudeSubagentPrompt } from "@synara/shared/agentMentions";
-import { assessClaudeCache } from "@synara/shared/claudeCache";
-import { approvalSessionGrantWidensSessionPolicy } from "@synara/shared/approvalSessionGrant";
-import { approvalRequestKindFromRequestType } from "@synara/shared/threadSummary";
+} from "@trellis/shared/model";
+import { buildClaudeSubagentPrompt } from "@trellis/shared/agentMentions";
+import { assessClaudeCache } from "@trellis/shared/claudeCache";
+import { approvalSessionGrantWidensSessionPolicy } from "@trellis/shared/approvalSessionGrant";
+import { approvalRequestKindFromRequestType } from "@trellis/shared/threadSummary";
 import {
   claudeCacheContextTokens,
   claudeCacheFromRequest,
@@ -111,10 +111,10 @@ import {
 } from "effect";
 
 import { buildClaudeMcpServers } from "../../agentGateway/mcpInjection.ts";
-import { renderSynaraHarnessPolicy } from "../../agentGateway/harnessPolicy.ts";
+import { renderTrellisHarnessPolicy } from "../../agentGateway/harnessPolicy.ts";
 import {
-  isSynaraGatewayToolName,
-  shouldAllowSynaraComputerProviderTool,
+  isTrellisGatewayToolName,
+  shouldAllowTrellisComputerProviderTool,
 } from "../../agentGateway/computerToolPermission.ts";
 import { AgentGatewayCredentials } from "../../agentGateway/Services/AgentGatewayCredentials.ts";
 import { PROVIDER_ADAPTER_RUNTIME_EVENT_BUFFER_CAPACITY } from "../Services/ProviderAdapter.ts";
@@ -1303,7 +1303,7 @@ function toolLifecycleEventData(
 
 // Receiver identity for the shared subagent-thread machinery: ingestion spawns a
 // child thread per receiverThreadId on collab_agent_tool_call items and titles it
-// from these hints (see extractSubagentIdentityHints in @synara/shared/subagents).
+// from these hints (see extractSubagentIdentityHints in @trellis/shared/subagents).
 function subagentReceiverData(
   tool: Pick<ToolInFlight, "itemId" | "input">,
 ): Record<string, unknown> {
@@ -1370,13 +1370,13 @@ export const buildEmbeddedClaudeSystemPromptAppend = (
   enableComputerControl = false,
 ) =>
   [
-    "You are running inside Synara, a coding app that embeds the Claude Agent SDK.",
+    "You are running inside Trellis, a coding app that embeds the Claude Agent SDK.",
     "Do not present the host app as Claude Code unless the user is explicitly asking about Claude Code.",
     "Treat the current working directory as the active workspace for the task.",
     "When the user asks about the current project, codebase, or repository, proactively inspect files in the current working directory before asking the user where to look.",
     "When spawning subagents, set the Agent tool's `model` parameter and pick reasoning effort by choosing a worker-<tier> subagent type (worker-low, worker-medium, worker-high, worker-xhigh).",
     "Honor explicit user instructions about a subagent's model or effort verbatim; otherwise match task complexity: mechanical work → haiku or worker-low, standard work → sonnet or worker-medium, hard reasoning → opus or fable with worker-high and above.",
-    renderSynaraHarnessPolicy({
+    renderTrellisHarnessPolicy({
       gatewayControlAvailable,
       enableComputerControl,
       automationAuthoring: "tool-descriptions",
@@ -2062,7 +2062,7 @@ function makeClaudeAdapter(options?: ClaudeAdapterLiveOptions) {
     const fileSystem = yield* FileSystem.FileSystem;
     const serverConfig = yield* ServerConfig;
     // Optional so adapter tests can run without the gateway layer; when
-    // present, every session gets the synara_* MCP tools.
+    // present, every session gets the trellis_* MCP tools.
     const agentGatewayCredentials = Option.getOrUndefined(
       yield* Effect.serviceOption(AgentGatewayCredentials),
     );
@@ -5911,7 +5911,7 @@ function makeClaudeAdapter(options?: ClaudeAdapterLiveOptions) {
                 context.turnState?.turnId ??
                 (callbackOptions.agentID !== undefined ? context.lastTurnId : undefined);
               if (
-                shouldAllowSynaraComputerProviderTool({
+                shouldAllowTrellisComputerProviderTool({
                   computerControlEnabled:
                     input.enableComputerControl === true &&
                     context.gatewaySessionLease !== undefined,
@@ -5928,13 +5928,13 @@ function makeClaudeAdapter(options?: ClaudeAdapterLiveOptions) {
               }
               // A group coordinator (and any other gateway-only principal the
               // orchestrator trusts) must not stall its turn on interactive
-              // approval for its own Synara group tools — the gateway already
+              // approval for its own Trellis group tools — the gateway already
               // scopes and authorizes them server-side. File edits, shell, and
-              // every non-Synara tool keep the ordinary permission path.
+              // every non-Trellis tool keep the ordinary permission path.
               if (
-                input.autoApproveSynaraTools === true &&
+                input.autoApproveTrellisTools === true &&
                 context.gatewaySessionLease !== undefined &&
-                isSynaraGatewayToolName(toolName)
+                isTrellisGatewayToolName(toolName)
               ) {
                 return {
                   behavior: "allow",
@@ -7289,7 +7289,7 @@ function makeClaudeAdapter(options?: ClaudeAdapterLiveOptions) {
             provider: PROVIDER,
             operation: "forkThread",
             issue:
-              "The source Claude session has a turn in flight; Synara will rebuild the fork from its retained transcript.",
+              "The source Claude session has a turn in flight; Trellis will rebuild the fork from its retained transcript.",
           });
         }
         const claudeOptions = input.providerOptions?.claudeAgent;
@@ -7303,7 +7303,7 @@ function makeClaudeAdapter(options?: ClaudeAdapterLiveOptions) {
             provider: PROVIDER,
             operation: "forkThread",
             issue:
-              "A stopped account-scoped Claude session cannot be forked safely through the default SDK store; Synara will rebuild the fork from its retained transcript.",
+              "A stopped account-scoped Claude session cannot be forked safely through the default SDK store; Trellis will rebuild the fork from its retained transcript.",
           });
         }
         const sourceState = readClaudeResumeState(input.sourceResumeCursor);

@@ -8,7 +8,7 @@ import {
   TurnId,
   type OrchestrationCommand,
   type OrchestrationReadModel,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect } from "effect";
 
 import {

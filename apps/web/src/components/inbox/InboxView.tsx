@@ -6,12 +6,16 @@
 // Layer: Inbox route surface
 // Exports: InboxView (default)
 
-import type { ServerProviderUsageSnapshot, StatsGetRecapResult, ThreadId } from "@synara/contracts";
+import type {
+  ServerProviderUsageSnapshot,
+  StatsGetRecapResult,
+  ThreadId,
+} from "@trellis/contracts";
 import {
   providerUsageDisplayName,
   selectVisibleProviderUsageSnapshots,
-} from "@synara/shared/providerUsage";
-import { pluralize } from "@synara/shared/text";
+} from "@trellis/shared/providerUsage";
+import { pluralize } from "@trellis/shared/text";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
@@ -738,7 +742,7 @@ export default function InboxView() {
                     {isRecapUnavailableError(recapQuery.error) ? (
                       <Tile className="p-5 @lg:px-7 @lg:py-6">
                         <span className="text-ui text-muted-foreground">
-                          The day recap needs a newer Synara server.
+                          The day recap needs a newer Trellis server.
                         </span>
                       </Tile>
                     ) : (

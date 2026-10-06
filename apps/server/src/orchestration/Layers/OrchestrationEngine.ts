@@ -5,9 +5,9 @@ import type {
   ProjectId,
   SpaceId,
   ThreadId,
-} from "@synara/contracts";
-import { OrchestrationCommand, ORCHESTRATION_WS_METHODS } from "@synara/contracts";
-import { SIDECHAT_INACTIVITY_EXPIRY_MS, sidechatExpiryMs } from "@synara/shared/sidechatExpiry";
+} from "@trellis/contracts";
+import { OrchestrationCommand, ORCHESTRATION_WS_METHODS } from "@trellis/contracts";
+import { SIDECHAT_INACTIVITY_EXPIRY_MS, sidechatExpiryMs } from "@trellis/shared/sidechatExpiry";
 import {
   Cause,
   Deferred,
@@ -1804,7 +1804,7 @@ const makeOrchestrationEngine = Effect.gen(function* () {
                     commandId: "repair-local-state",
                     commandType: ORCHESTRATION_WS_METHODS.repairState,
                     detail:
-                      "Projection repair failed and its staged backup could not be restored. Restart Synara before retrying repair.",
+                      "Projection repair failed and its staged backup could not be restored. Restart Trellis before retrying repair.",
                   }),
                 ),
               ),

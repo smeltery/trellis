@@ -1,6 +1,6 @@
 import "../../index.css";
 
-import { MessageId } from "@synara/contracts";
+import { MessageId } from "@trellis/contracts";
 import { expect, it } from "vitest";
 import { render } from "vitest-browser-react";
 

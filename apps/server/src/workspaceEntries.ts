@@ -29,13 +29,13 @@ import {
   PROJECT_SEARCH_CONTENT_MAX_LIMIT,
   PROJECT_SEARCH_CONTENT_MAX_LINE_LENGTH,
   PROJECT_SEARCH_CONTENT_MIN_QUERY_LENGTH,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   isExplicitRelativePath,
   isWindowsAbsolutePath,
   isWorkspaceRelativePathSafe,
-} from "@synara/shared/path";
-import { normalizeWorkspaceEntrySearchQuery } from "@synara/shared/searchQuery";
+} from "@trellis/shared/path";
+import { normalizeWorkspaceEntrySearchQuery } from "@trellis/shared/searchQuery";
 import { resolveRealPathWithinRoot } from "./workspace/realPathContainment";
 
 const WORKSPACE_CACHE_TTL_MS = 15_000;

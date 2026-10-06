@@ -1,8 +1,8 @@
 # Keybindings
 
-Synara reads keybindings from:
+Trellis reads keybindings from:
 
-- `~/.synara/userdata/keybindings.json`
+- `~/.trellis/userdata/keybindings.json`
 
 The file must be a JSON array of rules:
 
@@ -23,7 +23,7 @@ Settings → Keybindings lists every built-in command with its shortcuts and wri
 - Some chords cannot be taken, because something else gets the key first. The list lives in [`apps/web/src/fixedShortcuts.ts`](apps/web/src/fixedShortcuts.ts):
   - text editing: Copy, Paste, Cut, Select All, Undo, Redo, plus line and word movement and deletion;
   - the system: Quit, Hide, and Minimize on macOS;
-  - Synara's own chords:
+  - Trellis's own chords:
     - Settings and the keybindings sheet;
     - back and forward in the desktop app (⌘[ / ⌘] on macOS, Alt+← / Alt+→ elsewhere);
     - file search (Mod+P) and search in files (Mod+Shift+F);

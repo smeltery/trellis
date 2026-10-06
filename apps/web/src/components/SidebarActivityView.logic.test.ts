@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ProjectId, ThreadId } from "@synara/contracts";
+import { ProjectId, ThreadId } from "@trellis/contracts";
 
 import type { SidebarThreadSummary, ThreadSession } from "../types";
 
@@ -479,7 +479,7 @@ describe("project filter", () => {
     ]);
   });
 
-  it("merges every project-less chat container into one Synara scope", () => {
+  it("merges every project-less chat container into one Trellis scope", () => {
     const CHAT_PROJECT_A = ProjectId.makeUnsafe("chat-project-a");
     const CHAT_PROJECT_B = ProjectId.makeUnsafe("chat-project-b");
     const realProject = makeThread({
@@ -581,7 +581,7 @@ describe("resolveActivityScope", () => {
     { kind: "chats", projectIds: [OTHER_PROJECT_ID], threadCount: 1 },
   ];
 
-  it("expands the Synara chats scope to its container projects", () => {
+  it("expands the Trellis chats scope to its container projects", () => {
     expect(resolveActivityScope("chats", options)).toEqual({
       scope: "chats",
       projectFilterIds: new Set([OTHER_PROJECT_ID]),

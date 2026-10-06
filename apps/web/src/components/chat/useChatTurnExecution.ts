@@ -4,7 +4,7 @@ import type {
   ProjectScript,
   ProviderMentionReference,
   ProviderSkillReference,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   DEFAULT_MODEL_BY_PROVIDER,
   MessageId,
@@ -13,10 +13,10 @@ import {
   ThreadId,
   type ModelSelection,
   type ProviderStartOptions,
-} from "@synara/contracts";
-import { buildTemporaryWorktreeBranchName } from "@synara/shared/git";
-import { getDefaultModel } from "@synara/shared/model";
-import { providerSupportsNativeTurnSteering } from "@synara/shared/providerMetadata";
+} from "@trellis/contracts";
+import { buildTemporaryWorktreeBranchName } from "@trellis/shared/git";
+import { getDefaultModel } from "@trellis/shared/model";
+import { providerSupportsNativeTurnSteering } from "@trellis/shared/providerMetadata";
 import { useCallback } from "react";
 import { promoteThreadCreate } from "~/lib/threadCreatePromotion";
 import { waitForDraftThreadDispatchToSettle } from "~/lib/draftThreadDispatch";

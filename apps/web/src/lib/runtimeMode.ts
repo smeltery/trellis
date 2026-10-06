@@ -3,11 +3,11 @@ import type {
   ProviderModelDescriptor,
   RuntimeMode,
   ServerProviderStatus,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   normalizeRuntimeModeForProvider,
   providerSupportsAutoRuntimeMode,
-} from "@synara/shared/runtimeMode";
+} from "@trellis/shared/runtimeMode";
 
 export { normalizeRuntimeModeForProvider, providerSupportsAutoRuntimeMode };
 

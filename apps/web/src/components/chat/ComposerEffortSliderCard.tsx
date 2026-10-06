@@ -10,7 +10,7 @@ import type {
   ProviderKind,
   ProviderModelDescriptor,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import { ResetIcon } from "~/lib/icons";
 import { cn } from "~/lib/utils";

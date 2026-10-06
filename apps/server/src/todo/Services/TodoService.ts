@@ -5,7 +5,7 @@ import type {
   TodoListResult,
   TodoStreamEvent,
   TodoUpdateInput,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { ServiceMap } from "effect";
 import type { Effect, Stream } from "effect";
 
@@ -22,5 +22,5 @@ export interface TodoServiceShape {
 }
 
 export class TodoService extends ServiceMap.Service<TodoService, TodoServiceShape>()(
-  "synara/todo/Services/TodoService",
+  "trellis/todo/Services/TodoService",
 ) {}

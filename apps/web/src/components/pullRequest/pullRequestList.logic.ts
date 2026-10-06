@@ -15,11 +15,11 @@ import type {
   PullRequestActor,
   PullRequestLabel,
   PullRequestSetPinnedInput,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   pullRequestListProjectContexts,
   pullRequestListRepositoryIdentity,
-} from "@synara/shared/githubRepository";
+} from "@trellis/shared/githubRepository";
 
 import type { GitHubInboxInvolvementFilter } from "~/appSettings";
 

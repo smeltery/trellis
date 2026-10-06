@@ -8,11 +8,11 @@ import {
   isBetaFeatureEnabled,
 } from "./betaFeatures";
 import {
-  SYNARA_BETA_BUNDLE_ID,
-  SYNARA_CANARY_BUNDLE_ID,
-  SYNARA_CUA_BUNDLE_ID,
-  SYNARA_DEVELOPMENT_BUNDLE_ID,
-  SYNARA_PRODUCTION_BUNDLE_ID,
+  TRELLIS_BETA_BUNDLE_ID,
+  TRELLIS_CANARY_BUNDLE_ID,
+  TRELLIS_CUA_BUNDLE_ID,
+  TRELLIS_DEVELOPMENT_BUNDLE_ID,
+  TRELLIS_PRODUCTION_BUNDLE_ID,
 } from "./desktopIdentity";
 
 describe("isBetaFeatureEnabled", () => {
@@ -75,15 +75,15 @@ describe("isBetaFeatureEnabled", () => {
 
 describe("desktopFlavorFromBundleId", () => {
   it("maps each known bundle id", () => {
-    expect(desktopFlavorFromBundleId(SYNARA_PRODUCTION_BUNDLE_ID)).toBe("production");
-    expect(desktopFlavorFromBundleId(SYNARA_DEVELOPMENT_BUNDLE_ID)).toBe("development");
-    expect(desktopFlavorFromBundleId(SYNARA_CANARY_BUNDLE_ID)).toBe("canary");
-    expect(desktopFlavorFromBundleId(SYNARA_CUA_BUNDLE_ID)).toBe("cua");
-    expect(desktopFlavorFromBundleId(SYNARA_BETA_BUNDLE_ID)).toBe("beta");
+    expect(desktopFlavorFromBundleId(TRELLIS_PRODUCTION_BUNDLE_ID)).toBe("production");
+    expect(desktopFlavorFromBundleId(TRELLIS_DEVELOPMENT_BUNDLE_ID)).toBe("development");
+    expect(desktopFlavorFromBundleId(TRELLIS_CANARY_BUNDLE_ID)).toBe("canary");
+    expect(desktopFlavorFromBundleId(TRELLIS_CUA_BUNDLE_ID)).toBe("cua");
+    expect(desktopFlavorFromBundleId(TRELLIS_BETA_BUNDLE_ID)).toBe("beta");
   });
 
   it("trims surrounding whitespace", () => {
-    expect(desktopFlavorFromBundleId(` ${SYNARA_BETA_BUNDLE_ID} `)).toBe("beta");
+    expect(desktopFlavorFromBundleId(` ${TRELLIS_BETA_BUNDLE_ID} `)).toBe("beta");
   });
 
   it("returns unknown for blank or unrecognized ids", () => {
@@ -96,14 +96,14 @@ describe("desktopFlavorFromBundleId", () => {
 
 describe("desktopFlavorFromProtocol", () => {
   it("maps each desktop scheme", () => {
-    expect(desktopFlavorFromProtocol("synara-beta:", false)).toBe("beta");
-    expect(desktopFlavorFromProtocol("synara-canary:", false)).toBe("canary");
-    expect(desktopFlavorFromProtocol("synara-cua:", false)).toBe("cua");
-    expect(desktopFlavorFromProtocol("synara:", false)).toBe("production");
+    expect(desktopFlavorFromProtocol("trellis-beta:", false)).toBe("beta");
+    expect(desktopFlavorFromProtocol("trellis-canary:", false)).toBe("canary");
+    expect(desktopFlavorFromProtocol("trellis-cua:", false)).toBe("cua");
+    expect(desktopFlavorFromProtocol("trellis:", false)).toBe("production");
   });
 
-  it("treats the synara scheme in a dev build as development", () => {
-    expect(desktopFlavorFromProtocol("synara:", true)).toBe("development");
+  it("treats the trellis scheme in a dev build as development", () => {
+    expect(desktopFlavorFromProtocol("trellis:", true)).toBe("development");
   });
 
   it("returns unknown for non-desktop protocols and missing values", () => {

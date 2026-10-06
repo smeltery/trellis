@@ -5,7 +5,7 @@
 //          editor (same entries as the header OpenInPicker).
 // Layer: Environment panel section
 
-import type { EditorId, ResolvedKeybindingsConfig } from "@synara/contracts";
+import type { EditorId, ResolvedKeybindingsConfig } from "@trellis/contracts";
 
 import { useEditorLaunchers } from "~/hooks/useEditorLaunchers";
 import { EditorViewIcon } from "~/lib/icons";

@@ -1,0 +1,23 @@
+schema-version = "1.17.0"
+
+[install]
+bun.pkg-path = "bun"
+bun.version = "1.4.2"
+nodejs.pkg-path = "nodejs_24"
+nodejs.version = ">=24.13.1 <25"
+git.pkg-path = "git"
+pre-commit.pkg-path = "pre-commit"
+actionlint.pkg-path = "actionlint"
+shellcheck.pkg-path = "shellcheck"
+
+[options]
+systems = ["aarch64-darwin", "aarch64-linux", "x86_64-linux"]
+
+[services]
+web.command = "bun run dev"
+marketing.command = "bun run dev:marketing"
+
+[profile]
+common = '''
+export PATH="$FLOX_ENV_PROJECT/node_modules/.bin:$PATH"
+'''

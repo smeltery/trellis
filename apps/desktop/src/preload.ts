@@ -6,7 +6,7 @@ import type {
   DesktopBridge,
   DesktopComputerPreviewFrame,
   DesktopDiagnosticActivity,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { normalizeDesktopWsUrl, resolveDesktopWsUrlFromEnv } from "./desktopWsBridge";
 import { DESKTOP_IPC_CHANNELS } from "./ipcChannels";
 import {

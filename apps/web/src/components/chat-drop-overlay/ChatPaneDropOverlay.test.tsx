@@ -4,7 +4,7 @@
 // Targets: getDropZoneFromPointer, isThreadDragPayloadAllowed.
 
 import { describe, expect, it } from "vitest";
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 
 import { getDropZoneFromPointer, isThreadDragPayloadAllowed } from "./ChatPaneDropOverlay";
 

@@ -154,7 +154,7 @@ export function makeServerRuntimeServicesLayer(
     Layer.provideMerge(AgentGatewayOperationRepositoryLive),
     Layer.provideMerge(projectAgentServiceLayer),
     // Persistence-level only: the reactor must recognize coordinator threads to
-    // pre-approve Synara group tools — the same first lookup the project agent
+    // pre-approve Trellis group tools — the same first lookup the project agent
     // service's principal resolver performs, without going through the service.
     Layer.provideMerge(ProjectAgentRepositoryLive),
   );

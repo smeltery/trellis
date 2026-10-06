@@ -3,8 +3,8 @@
 // Layer: Chat status presentation
 // Exports: useThreadErrorToast, buildThreadErrorToastOptions, threadErrorToastId, decideThreadErrorToastAction, collectThreadErrorMap
 
-import type { ThreadId } from "@synara/contracts";
-import { isProviderDeliveryBlockDetail } from "@synara/shared/providerDeliveryBlock";
+import type { ThreadId } from "@trellis/contracts";
+import { isProviderDeliveryBlockDetail } from "@trellis/shared/providerDeliveryBlock";
 import { useEffect, useRef, type RefObject } from "react";
 
 import { useStore } from "../../store";

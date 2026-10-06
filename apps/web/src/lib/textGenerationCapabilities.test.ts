@@ -1,4 +1,4 @@
-import type { ModelSelection, ProviderKind } from "@synara/contracts";
+import type { ModelSelection, ProviderKind } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import {

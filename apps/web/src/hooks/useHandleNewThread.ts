@@ -1,5 +1,5 @@
-import { type ProjectId, type ProviderInstanceId, ThreadId } from "@synara/contracts";
-import { getDefaultModel } from "@synara/shared/model";
+import { type ProjectId, type ProviderInstanceId, ThreadId } from "@trellis/contracts";
+import { getDefaultModel } from "@trellis/shared/model";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { startTransition, useMemo } from "react";

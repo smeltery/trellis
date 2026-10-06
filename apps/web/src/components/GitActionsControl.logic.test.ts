@@ -1,4 +1,4 @@
-import type { GitStatusResult } from "@synara/contracts";
+import type { GitStatusResult } from "@trellis/contracts";
 import { assert, describe, it } from "vitest";
 import {
   buildGitActionProgressStages,
@@ -236,7 +236,7 @@ describe("when: branch is clean, up to date, and has no open PR", () => {
   it("resolveCreatePrActionAvailability blocks stale create-pr calls for default upstream", () => {
     const availability = resolveCreatePrActionAvailability({
       gitStatus: status({
-        branch: "synara/pi-cleanup",
+        branch: "trellis/pi-cleanup",
         upstreamBranch: "main",
         aheadCount: 0,
         behindCount: 0,
@@ -865,7 +865,7 @@ describe("resolveCreatePrExecution", () => {
     const execution = resolveCreatePrExecution({
       ...baseInput,
       gitStatus: status({
-        branch: "synara/pi-cleanup",
+        branch: "trellis/pi-cleanup",
         upstreamBranch: "main",
         aheadCount: 0,
       }),
@@ -1408,9 +1408,9 @@ describe("resolveAutoFeatureBranchName", () => {
 });
 
 describe("resolveDefaultCreateBranchName", () => {
-  it("normalizes an existing legacy synara namespace", () => {
-    const branch = resolveDefaultCreateBranchName(["main"], "synara/refine-toolbar-actions");
-    assert.equal(branch, "synara/refine-toolbar-actions");
+  it("normalizes an existing legacy trellis namespace", () => {
+    const branch = resolveDefaultCreateBranchName(["main"], "trellis/refine-toolbar-actions");
+    assert.equal(branch, "trellis/refine-toolbar-actions");
   });
 });
 
@@ -1418,7 +1418,7 @@ describe("resolveLiveThreadBranchUpdate", () => {
   it("does not regress a semantic thread branch back to a temporary worktree branch", () => {
     const update = resolveLiveThreadBranchUpdate({
       threadBranch: "feature/semantic-branch",
-      gitStatus: status({ branch: "synara/deadbeef" }),
+      gitStatus: status({ branch: "trellis/deadbeef" }),
     });
 
     assert.equal(update, null);
@@ -1444,7 +1444,7 @@ describe("resolveLiveThreadBranchUpdate", () => {
 });
 
 describe("shouldOfferCreateBranchPrompt", () => {
-  const temporaryBranch = "synara/deadbeef";
+  const temporaryBranch = "trellis/deadbeef";
 
   it("hides the create-branch prompt when the branch already has upstream", () => {
     assert.isFalse(

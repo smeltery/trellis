@@ -9,7 +9,7 @@ import {
 } from "./externalMcpSetup";
 
 const stdio = {
-  command: "/Applications/Synara.app/Contents/MacOS/Synara",
+  command: "/Applications/Trellis.app/Contents/MacOS/Trellis",
   args: [
     "server.js",
     "mcp",
@@ -17,7 +17,7 @@ const stdio = {
     "--integration",
     "mcp_int_example",
     "--home-dir",
-    "/tmp/Synara home",
+    "/tmp/Trellis home",
   ],
   env: { ELECTRON_RUN_AS_NODE: "1" },
 };
@@ -28,10 +28,10 @@ describe("external MCP guided setup", () => {
     const claude = buildExternalMcpClientConfiguration("claudeCode", stdio);
 
     expect(codex.value).toBe(
-      "codex mcp add synara --env ELECTRON_RUN_AS_NODE=1 -- /Applications/Synara.app/Contents/MacOS/Synara server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Synara home'",
+      "codex mcp add trellis --env ELECTRON_RUN_AS_NODE=1 -- /Applications/Trellis.app/Contents/MacOS/Trellis server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Trellis home'",
     );
     expect(claude.value).toBe(
-      "claude mcp add --scope user synara -e ELECTRON_RUN_AS_NODE=1 -- /Applications/Synara.app/Contents/MacOS/Synara server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Synara home'",
+      "claude mcp add --scope user trellis -e ELECTRON_RUN_AS_NODE=1 -- /Applications/Trellis.app/Contents/MacOS/Trellis server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Trellis home'",
     );
     expect(`${codex.value}${claude.value}`).not.toContain("syn_mcp_v1_");
   });
@@ -39,25 +39,25 @@ describe("external MCP guided setup", () => {
   it("builds standard JSON configuration for desktop and other clients", () => {
     const desktop = buildExternalMcpClientConfiguration("claudeDesktop", stdio);
     const parsed = JSON.parse(desktop.value) as {
-      mcpServers: { synara: { command: string; args: ReadonlyArray<string> } };
+      mcpServers: { trellis: { command: string; args: ReadonlyArray<string> } };
     };
 
     expect(desktop.format).toBe("json");
-    expect(parsed.mcpServers.synara).toEqual(stdio);
+    expect(parsed.mcpServers.trellis).toEqual(stdio);
   });
 
   it("builds terminal commands for PowerShell on Windows", () => {
     const codex = buildExternalMcpClientConfiguration("codex", stdio, "Win32");
     expect(codex.value).toBe(
-      "& 'codex' 'mcp' 'add' 'synara' '--env' 'ELECTRON_RUN_AS_NODE=1' '--' '/Applications/Synara.app/Contents/MacOS/Synara' 'server.js' 'mcp' 'serve' '--integration' 'mcp_int_example' '--home-dir' '/tmp/Synara home'",
+      "& 'codex' 'mcp' 'add' 'trellis' '--env' 'ELECTRON_RUN_AS_NODE=1' '--' '/Applications/Trellis.app/Contents/MacOS/Trellis' 'server.js' 'mcp' 'serve' '--integration' 'mcp_int_example' '--home-dir' '/tmp/Trellis home'",
     );
     expect(codex.instruction).toContain("PowerShell");
   });
 
   it("builds a project-specific prompt without exposing implementation identifiers", () => {
-    const prompt = buildExternalMcpExamplePrompt("Synara app");
+    const prompt = buildExternalMcpExamplePrompt("Trellis app");
 
-    expect(prompt).toContain('project named "Synara app"');
+    expect(prompt).toContain('project named "Trellis app"');
     expect(prompt).toContain("managed worktree");
     expect(prompt).toContain("approval-required");
     expect(prompt).not.toContain("projectId");
@@ -67,15 +67,15 @@ describe("external MCP guided setup", () => {
 
   it("builds one agent-facing setup prompt covering pairing, registration, and verification", () => {
     const prompt = buildExternalMcpSetupPrompt({
-      setupCommand: "synara mcp pair --code syn_pair_v1_example --home-dir /tmp/home",
+      setupCommand: "trellis mcp pair --code syn_pair_v1_example --home-dir /tmp/home",
       stdio,
     });
 
     expect(prompt).toContain("syn_pair_v1_example");
-    expect(prompt).toContain("codex mcp add synara");
-    expect(prompt).toContain("claude mcp add --scope user synara");
+    expect(prompt).toContain("codex mcp add trellis");
+    expect(prompt).toContain("claude mcp add --scope user trellis");
     expect(prompt).toContain('"mcpServers"');
-    expect(prompt).toContain("synara_overview");
+    expect(prompt).toContain("trellis_overview");
     expect(prompt).not.toContain("syn_mcp_v1_");
   });
 
@@ -84,13 +84,13 @@ describe("external MCP guided setup", () => {
 
     expect(prompt).toContain("already completed");
     expect(prompt).not.toContain("syn_pair_v1_");
-    expect(prompt).toContain("synara_overview");
+    expect(prompt).toContain("trellis_overview");
   });
 
   it("builds a discovery-first example prompt for all-projects connections", () => {
     const prompt = buildExternalMcpExamplePrompt(null);
 
-    expect(prompt).toContain("synara_overview");
+    expect(prompt).toContain("trellis_overview");
     expect(prompt).toContain("managed worktree");
   });
 

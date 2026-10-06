@@ -4,7 +4,7 @@
 
 import "../../index.css";
 
-import { MessageId } from "@synara/contracts";
+import { MessageId } from "@trellis/contracts";
 import { page } from "vitest/browser";
 import { useRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";

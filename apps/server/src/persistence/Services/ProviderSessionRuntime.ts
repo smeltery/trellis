@@ -11,7 +11,7 @@ import {
   ProviderSessionRuntimeStatus,
   RuntimeMode,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Option, Schema, ServiceMap } from "effect";
 import type { Effect } from "effect";
 
@@ -81,4 +81,4 @@ export interface ProviderSessionRuntimeRepositoryShape {
 export class ProviderSessionRuntimeRepository extends ServiceMap.Service<
   ProviderSessionRuntimeRepository,
   ProviderSessionRuntimeRepositoryShape
->()("synara/persistence/Services/ProviderSessionRuntime/ProviderSessionRuntimeRepository") {}
+>()("trellis/persistence/Services/ProviderSessionRuntime/ProviderSessionRuntimeRepository") {}

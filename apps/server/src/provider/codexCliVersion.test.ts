@@ -1,5 +1,5 @@
 // FILE: codexCliVersion.test.ts
-// Purpose: Guards the Codex CLI compatibility boundary required by Synara runtime features.
+// Purpose: Guards the Codex CLI compatibility boundary required by Trellis runtime features.
 // Layer: Server provider unit tests
 // Exports: Vitest coverage for provider/codexCliVersion.ts.
 
@@ -27,7 +27,7 @@ describe("codexCliVersion", () => {
   it("names the continuation-safe minimum in upgrade guidance", () => {
     assert.equal(
       formatCodexCliUpgradeMessage("0.104.0"),
-      "Codex CLI v0.104.0 is too old for Synara. Upgrade to v0.105.0 or newer and restart Synara.",
+      "Codex CLI v0.104.0 is too old for Trellis. Upgrade to v0.105.0 or newer and restart Trellis.",
     );
   });
 
@@ -35,7 +35,7 @@ describe("codexCliVersion", () => {
     assert.equal(parseCodexCliVersion("Codex development build"), null);
     assert.equal(
       CODEX_CLI_UNPARSEABLE_VERSION_MESSAGE,
-      "Codex CLI version check succeeded but returned an unrecognized version. Synara requires a verifiable v0.105.0 or newer installation; upgrade or reinstall Codex and restart Synara.",
+      "Codex CLI version check succeeded but returned an unrecognized version. Trellis requires a verifiable v0.105.0 or newer installation; upgrade or reinstall Codex and restart Trellis.",
     );
   });
 });

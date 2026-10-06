@@ -1,4 +1,4 @@
-import type { GitHubInboxListResult, ProjectId } from "@synara/contracts";
+import type { GitHubInboxListResult, ProjectId } from "@trellis/contracts";
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 

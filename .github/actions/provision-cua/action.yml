@@ -94,7 +94,7 @@ runs:
         CACHE_KEY: ${{ steps.key.outputs.key }}
       run: |
         set -euo pipefail
-        unset SYNARA_CUA_ARTIFACT_DIR SYNARA_CUA_SIGN_IDENTITY
+        unset TRELLIS_CUA_ARTIFACT_DIR TRELLIS_CUA_SIGN_IDENTITY
         node apps/desktop/scripts/provision-cua-driver.mjs --destination "$RUNNER_TEMP/cua-artifact"
         printf '%s\n' "$CACHE_KEY" > "$RUNNER_TEMP/cua-artifact/build-key.txt"
 
@@ -109,9 +109,9 @@ runs:
       run: |
         set -euo pipefail
         test "$(cat "$RUNNER_TEMP/cua-artifact/build-key.txt")" = "$CACHE_KEY"
-        unset SYNARA_CUA_SIGN_IDENTITY
+        unset TRELLIS_CUA_SIGN_IDENTITY
         node apps/desktop/scripts/provision-cua-driver.mjs --artifact-dir "$RUNNER_TEMP/cua-artifact" --destination "$RUNNER_TEMP/cua-verified"
-        echo "SYNARA_CUA_ARTIFACT_DIR=$RUNNER_TEMP/cua-verified" >> "$GITHUB_ENV"
+        echo "TRELLIS_CUA_ARTIFACT_DIR=$RUNNER_TEMP/cua-verified" >> "$GITHUB_ENV"
         echo "Cua exact cache hit: $CACHE_HIT; persistent run: $PERSISTENT_RUN; prepared artifact: $PREPARED_ARTIFACT; key: $CACHE_KEY" >> "$GITHUB_STEP_SUMMARY"
 
     - name: Save trusted default-branch Cua artifact

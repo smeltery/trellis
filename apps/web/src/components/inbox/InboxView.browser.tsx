@@ -1,4 +1,4 @@
-import { isBetaFeatureEnabled } from "@synara/shared/betaFeatures";
+import { isBetaFeatureEnabled } from "@trellis/shared/betaFeatures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
@@ -97,7 +97,7 @@ it("loads the Stable Inbox without offering or requesting Beta to-dos", async ()
   try {
     await expect.element(view.getByRole("heading", { name: "Inbox", exact: true })).toBeVisible();
     await expect
-      .element(view.getByText("The day recap needs a newer Synara server."))
+      .element(view.getByText("The day recap needs a newer Trellis server."))
       .toBeVisible();
     expect(fixture.getRecap).toHaveBeenCalled();
     expect(fixture.navigate).not.toHaveBeenCalled();

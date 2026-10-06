@@ -1,18 +1,20 @@
 {
-  "name": "@synara/cli",
+  "name": "@trellis/cli",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Emanuele-web04/Synara.git",
+    "url": "git+https://github.com/smeltery/trellis.git",
     "directory": "apps/server"
   },
   "bin": {
-    "synara": "dist/index.mjs",
-    "synara-restore-migration-backup": "dist/restoreMigrationBackup.mjs"
+    "trellis": "dist/index.mjs",
+    "trellis-restore-migration-backup": "dist/restoreMigrationBackup.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "UPSTREAM-LICENSE"
   ],
   "type": "module",
   "scripts": {
@@ -48,9 +50,9 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
-    "@synara/contracts": "workspace:*",
-    "@synara/shared": "workspace:*",
-    "@synara/web": "workspace:*",
+    "@trellis/contracts": "workspace:*",
+    "@trellis/shared": "workspace:*",
+    "@trellis/web": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "@types/ws": "^8.5.13",

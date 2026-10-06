@@ -1,4 +1,4 @@
-import type { ExternalMcpCapability, RuntimeMode } from "@synara/contracts";
+import type { ExternalMcpCapability, RuntimeMode } from "@trellis/contracts";
 
 import { GatewayToolError } from "../agentGateway/toolRuntime.ts";
 

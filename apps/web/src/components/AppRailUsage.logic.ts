@@ -1,8 +1,8 @@
 // FILE: AppRailUsage.logic.ts
 // Purpose: Pure selection rules for the provider usage rings at the bottom of the app rail.
 
-import type { ProviderKind } from "@synara/contracts";
-import { PROVIDER_USAGE_PROVIDERS } from "@synara/shared/providerUsage";
+import type { ProviderKind } from "@trellis/contracts";
+import { PROVIDER_USAGE_PROVIDERS } from "@trellis/shared/providerUsage";
 
 import type { RailUsageWindow } from "~/appSettings";
 import type { ProviderUsageDisplayRow } from "~/lib/providerUsageDisplay";

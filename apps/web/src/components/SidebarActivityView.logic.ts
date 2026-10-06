@@ -2,7 +2,7 @@
 // Purpose: Pure grouping/sorting model for the sidebar Activity view (threads as tasks).
 // Exports: eligibility, stable ordering, settle helpers, and the view-model builder.
 
-import type { ProjectId, ThreadId } from "@synara/contracts";
+import type { ProjectId, ThreadId } from "@trellis/contracts";
 import type { SidebarThreadSummary } from "../types";
 import {
   hasUnseenCompletion,
@@ -269,7 +269,7 @@ export type ActivityScopeOption =
 
 /**
  * Scope menu entries: every real project with eligible activity, busiest first.
- * Project-less chats (chat/group-kind containers) collapse into ONE "Synara"
+ * Project-less chats (chat/group-kind containers) collapse into ONE "Trellis"
  * entry instead of one look-alike row per hidden container project.
  */
 export function collectActivityScopeOptions(

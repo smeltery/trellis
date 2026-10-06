@@ -20,15 +20,15 @@ import {
   ProviderRuntimeEvent,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { assert, describe, it } from "@effect/vitest";
-import { assessClaudeCache } from "@synara/shared/claudeCache";
+import { assessClaudeCache } from "@trellis/shared/claudeCache";
 import { Deferred, Effect, Exit, Fiber, Layer, Option, Queue, Random, Stream } from "effect";
 import { TestClock } from "effect/testing";
 import { afterEach, beforeEach, vi } from "vitest";
 
 import { attachmentRelativePath } from "../../attachmentStore.ts";
-import { SYNARA_HARNESS_POLICY_MARKER } from "../../agentGateway/harnessPolicy.ts";
+import { TRELLIS_HARNESS_POLICY_MARKER } from "../../agentGateway/harnessPolicy.ts";
 import {
   AgentGatewayCredentials,
   type AgentGatewayCredentialsShape,
@@ -703,22 +703,22 @@ function fakeSlashCommand(entry: string) {
   return alias ? Object.assign(command, { aliases: [alias] }) : command;
 }
 
-describe("Claude Synara harness policy", () => {
+describe("Claude Trellis harness policy", () => {
   it("advertises scoped MCP additively when credentials are available", () => {
     const text = buildEmbeddedClaudeSystemPromptAppend(true);
-    assert.include(text, SYNARA_HARNESS_POLICY_MARKER);
+    assert.include(text, TRELLIS_HARNESS_POLICY_MARKER);
     assert.include(text, "Final responses must restate every needed scope");
     assert.include(text, "include all decision context");
-    assert.include(text, "Use the synara_* tools");
-    assert.notInclude(text, "Synara MCP control is unavailable");
+    assert.include(text, "Use the trellis_* tools");
+    assert.notInclude(text, "Trellis MCP control is unavailable");
   });
 
   it("stays truthful when scoped MCP credentials are absent", () => {
     const text = buildEmbeddedClaudeSystemPromptAppend(false);
-    assert.include(text, SYNARA_HARNESS_POLICY_MARKER);
+    assert.include(text, TRELLIS_HARNESS_POLICY_MARKER);
     assert.include(text, "Final responses must restate every needed scope");
     assert.include(text, "include all decision context");
-    assert.include(text, "Synara MCP control is unavailable");
+    assert.include(text, "Trellis MCP control is unavailable");
   });
 });
 
@@ -782,7 +782,7 @@ describe("ClaudeAdapterLive", () => {
     );
   });
 
-  it.effect("starts an environment-only runtime in its Synara-scoped home", () => {
+  it.effect("starts an environment-only runtime in its Trellis-scoped home", () => {
     const harness = makeHarness();
     return Effect.acquireUseRelease(
       Effect.sync(() => {
@@ -913,7 +913,7 @@ describe("ClaudeAdapterLive", () => {
     },
   );
 
-  it.effect("injects the canonical Synara browser MCP into an Opus 4.8 session", () => {
+  it.effect("injects the canonical Trellis browser MCP into an Opus 4.8 session", () => {
     const gateway = makeGatewayCredentialsHarness();
     const harness = makeMultiQueryHarness({ gatewayCredentials: gateway.credentials });
     return Effect.gen(function* () {
@@ -931,7 +931,7 @@ describe("ClaudeAdapterLive", () => {
       const options = harness.createInputs[0]?.options;
       assert.equal(options?.model, "claude-opus-4-8");
       assert.deepEqual(options?.mcpServers, {
-        synara: {
+        trellis: {
           type: "http",
           url: "http://127.0.0.1:48123/mcp",
           headers: { Authorization: "Bearer gateway-token-1" },
@@ -975,7 +975,7 @@ describe("ClaudeAdapterLive", () => {
   });
 
   it.effect(
-    "pre-approves Synara group tools for an opted-in coordinator session while Bash still asks",
+    "pre-approves Trellis group tools for an opted-in coordinator session while Bash still asks",
     () => {
       const gateway = makeGatewayCredentialsHarness();
       const harness = makeMultiQueryHarness({ gatewayCredentials: gateway.credentials });
@@ -985,7 +985,7 @@ describe("ClaudeAdapterLive", () => {
           threadId: THREAD_ID,
           provider: "claudeAgent",
           runtimeMode: "approval-required",
-          autoApproveSynaraTools: true,
+          autoApproveTrellisTools: true,
         });
 
         const canUseTool = harness.createInputs[0]?.options.canUseTool;
@@ -994,8 +994,8 @@ describe("ClaudeAdapterLive", () => {
         }
 
         for (const [index, toolName] of [
-          "mcp__synara__synara_create_thread",
-          "synara_project_link_repository",
+          "mcp__trellis__trellis_create_thread",
+          "trellis_project_link_repository",
         ].entries()) {
           const result = (yield* Effect.promise(() =>
             canUseTool(
@@ -1003,8 +1003,8 @@ describe("ClaudeAdapterLive", () => {
               {},
               {
                 signal: new AbortController().signal,
-                toolUseID: `tool-use-synara-${index}`,
-                requestId: `request-synara-${index}`,
+                toolUseID: `tool-use-trellis-${index}`,
+                requestId: `request-trellis-${index}`,
               },
             ),
           )) as PermissionResult;
@@ -1045,54 +1045,57 @@ describe("ClaudeAdapterLive", () => {
     },
   );
 
-  it.effect("keeps Synara group tools on the approval path when the session did not opt in", () => {
-    const gateway = makeGatewayCredentialsHarness();
-    const harness = makeMultiQueryHarness({ gatewayCredentials: gateway.credentials });
-    return Effect.gen(function* () {
-      const adapter = yield* ClaudeAdapter;
-      yield* adapter.startSession({
-        threadId: THREAD_ID,
-        provider: "claudeAgent",
-        runtimeMode: "approval-required",
-      });
+  it.effect(
+    "keeps Trellis group tools on the approval path when the session did not opt in",
+    () => {
+      const gateway = makeGatewayCredentialsHarness();
+      const harness = makeMultiQueryHarness({ gatewayCredentials: gateway.credentials });
+      return Effect.gen(function* () {
+        const adapter = yield* ClaudeAdapter;
+        yield* adapter.startSession({
+          threadId: THREAD_ID,
+          provider: "claudeAgent",
+          runtimeMode: "approval-required",
+        });
 
-      const canUseTool = harness.createInputs[0]?.options.canUseTool;
-      if (!canUseTool) {
-        return assert.fail("Expected a canUseTool hook on the query options.");
-      }
+        const canUseTool = harness.createInputs[0]?.options.canUseTool;
+        if (!canUseTool) {
+          return assert.fail("Expected a canUseTool hook on the query options.");
+        }
 
-      const pending = canUseTool(
-        "mcp__synara__synara_create_thread",
-        {},
-        {
-          signal: new AbortController().signal,
-          toolUseID: "tool-use-synara-no-opt-in",
-          requestId: "request-synara-no-opt-in",
-        },
+        const pending = canUseTool(
+          "mcp__trellis__trellis_create_thread",
+          {},
+          {
+            signal: new AbortController().signal,
+            toolUseID: "tool-use-trellis-no-opt-in",
+            requestId: "request-trellis-no-opt-in",
+          },
+        );
+        const requested = yield* Stream.filter(
+          adapter.streamEvents,
+          (event) => event.type === "request.opened",
+        ).pipe(Stream.runHead);
+        if (requested._tag !== "Some" || requested.value.type !== "request.opened") {
+          return assert.fail("A non-opted-in session must still ask for gateway tools.");
+        }
+        if (!requested.value.requestId) {
+          return assert.fail("The approval request must carry a request id.");
+        }
+        yield* adapter.respondToRequest(
+          THREAD_ID,
+          ApprovalRequestId.makeUnsafe(requested.value.requestId),
+          "decline",
+        );
+        yield* Stream.runHead(adapter.streamEvents);
+        const result = (yield* Effect.promise(() => pending)) as PermissionResult;
+        assert.equal(result.behavior, "deny");
+      }).pipe(
+        Effect.provideService(Random.Random, makeDeterministicRandomService()),
+        Effect.provide(harness.layer),
       );
-      const requested = yield* Stream.filter(
-        adapter.streamEvents,
-        (event) => event.type === "request.opened",
-      ).pipe(Stream.runHead);
-      if (requested._tag !== "Some" || requested.value.type !== "request.opened") {
-        return assert.fail("A non-opted-in session must still ask for gateway tools.");
-      }
-      if (!requested.value.requestId) {
-        return assert.fail("The approval request must carry a request id.");
-      }
-      yield* adapter.respondToRequest(
-        THREAD_ID,
-        ApprovalRequestId.makeUnsafe(requested.value.requestId),
-        "decline",
-      );
-      yield* Stream.runHead(adapter.streamEvents);
-      const result = (yield* Effect.promise(() => pending)) as PermissionResult;
-      assert.equal(result.behavior, "deny");
-    }).pipe(
-      Effect.provideService(Random.Random, makeDeterministicRandomService()),
-      Effect.provide(harness.layer),
-    );
-  });
+    },
+  );
 
   it.effect("rejects Auto on an unsupported selected Claude binary before session startup", () => {
     const query = new FakeClaudeQuery();
@@ -1280,10 +1283,10 @@ describe("ClaudeAdapterLive", () => {
       assert.equal(systemPrompt.excludeDynamicSections, true);
       assert.include(systemPrompt.append ?? "", "When spawning subagents");
       assert.include(systemPrompt.append ?? "", "worker-<tier>");
-      assert.include(systemPrompt.append ?? "", SYNARA_HARNESS_POLICY_MARKER);
-      assert.include(systemPrompt.append ?? "", "Synara is the host and harness");
+      assert.include(systemPrompt.append ?? "", TRELLIS_HARNESS_POLICY_MARKER);
+      assert.include(systemPrompt.append ?? "", "Trellis is the host and harness");
       // This characterization harness intentionally omits gateway credentials.
-      assert.include(systemPrompt.append ?? "", "Synara MCP control is unavailable");
+      assert.include(systemPrompt.append ?? "", "Trellis MCP control is unavailable");
     }).pipe(
       Effect.provideService(Random.Random, makeDeterministicRandomService()),
       Effect.provide(harness.layer),
@@ -2000,11 +2003,11 @@ describe("ClaudeAdapterLive", () => {
         assert.lengthOf(snapshot.turns[0]!.items, 2);
         for (const item of snapshot.turns[0]!.items) {
           const serialized = JSON.stringify(item);
-          assert.include(serialized, '"synaraImageOmitted":true');
+          assert.include(serialized, '"trellisImageOmitted":true');
           assert.isBelow(serialized.length, 1000);
         }
         const eventJson = JSON.stringify(events);
-        assert.include(eventJson, '"synaraImageOmitted":true');
+        assert.include(eventJson, '"trellisImageOmitted":true');
         assert.notInclude(eventJson, data);
         assert.isBelow(eventJson.length, 30_000);
         assert.equal(image.source.data, data);
@@ -7893,7 +7896,7 @@ await agent("Draft the spec", { label: "delta-agent", phase: "Two" });
 
       const permissionPromise = canUseTool(
         "mcp__github__create_issue",
-        { repo: "synara", apiKey: "ghp_live_secret" },
+        { repo: "trellis", apiKey: "ghp_live_secret" },
         {
           signal: new AbortController().signal,
           toolUseID: "tool-use-secret-1",
@@ -7907,7 +7910,7 @@ await agent("Draft the spec", { label: "delta-agent", phase: "Two" });
       }
       assert.equal(
         requested.value.payload.detail,
-        'mcp__github__create_issue: {"repo":"synara","apiKey":"[redacted]"}',
+        'mcp__github__create_issue: {"repo":"trellis","apiKey":"[redacted]"}',
       );
 
       yield* adapter.respondToRequest(
@@ -8031,7 +8034,7 @@ await agent("Draft the spec", { label: "delta-agent", phase: "Two" });
 
         const result = yield* Effect.promise(() =>
           canUseTool(
-            "mcp__synara__computer_click",
+            "mcp__trellis__computer_click",
             { x: 12, y: 34 },
             {
               signal: new AbortController().signal,
@@ -8096,15 +8099,15 @@ await agent("Draft the spec", { label: "delta-agent", phase: "Two" });
 
       // MCP tools are the case that regressed: they classify as `mcp_tool_call`
       // item-wise, and the approval must still carry the canonical request type.
-      const mcpOpened = yield* requestTypeFor("mcp__synara__computer_launch_app", {
+      const mcpOpened = yield* requestTypeFor("mcp__trellis__computer_launch_app", {
         app: "kcalc",
       });
       assert.equal(mcpOpened?.payload.requestType, "tool_approval");
       assert.deepEqual(mcpOpened?.payload.args as Record<string, unknown> | undefined, {
-        toolName: "mcp__synara__computer_launch_app",
+        toolName: "mcp__trellis__computer_launch_app",
         input: { app: "kcalc" },
         sessionApprovalAvailable: false,
-        toolUseId: "tool-use-mcp__synara__computer_launch_app",
+        toolUseId: "tool-use-mcp__trellis__computer_launch_app",
       });
 
       const genericOpened = yield* requestTypeFor("WebFetch", { url: "https://example.com" });
@@ -10491,7 +10494,7 @@ await agent("Draft the spec", { label: "delta-agent", phase: "Two" });
       const promptText = yield* Effect.promise(() =>
         readFirstPromptText(harness.getLastCreateQueryInput()),
       );
-      assert.include(promptText ?? "", "Synara plan mode is active.");
+      assert.include(promptText ?? "", "Trellis plan mode is active.");
       assert.include(promptText ?? "", "<proposed_plan>");
       assert.include(promptText ?? "", "User request:\nplan this for me");
     }).pipe(
@@ -12366,7 +12369,7 @@ describe("Claude explicit native compaction", () => {
           if (native) {
             assert.equal(text, input);
           } else {
-            assert.include(text, "Synara plan mode is active.");
+            assert.include(text, "Trellis plan mode is active.");
           }
         }).pipe(
           Effect.provideService(Random.Random, makeDeterministicRandomService()),

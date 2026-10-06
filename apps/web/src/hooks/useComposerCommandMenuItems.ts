@@ -8,8 +8,8 @@ import type {
   ProviderMentionReference,
   ProviderPluginDescriptor,
   ProviderSkillDescriptor,
-} from "@synara/contracts";
-import { getAgentMentionAutocompleteAliases } from "@synara/contracts";
+} from "@trellis/contracts";
+import { getAgentMentionAutocompleteAliases } from "@trellis/contracts";
 import {
   buildCommandSearchFields,
   buildPluginSearchFields,
@@ -30,8 +30,8 @@ import {
   getProviderNativeSlashCommandSearchTerms,
   shouldHideProviderNativeCommandFromComposerMenu,
 } from "../composerSlashCommands";
-import { threadMentionPathForThreadId } from "@synara/shared/threadMentions";
-import { isGroupContainerKind } from "@synara/shared/projectContainers";
+import { threadMentionPathForThreadId } from "@trellis/shared/threadMentions";
+import { isGroupContainerKind } from "@trellis/shared/projectContainers";
 
 import type { ComposerCommandItem } from "../components/chat/ComposerCommandMenu";
 import type { ProviderModelOption } from "../providerModelOptions";

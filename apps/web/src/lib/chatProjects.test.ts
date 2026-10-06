@@ -1,7 +1,7 @@
 // FILE: chatProjects.test.ts
 // Purpose: Verifies home chat-container project recognition across new and legacy roots.
 
-import { ProjectId, type OrchestrationShellSnapshot } from "@synara/contracts";
+import { ProjectId, type OrchestrationShellSnapshot } from "@trellis/contracts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useStore } from "../store";
@@ -53,35 +53,35 @@ afterEach(() => {
 });
 
 describe("isHomeChatContainerProject", () => {
-  it("matches the managed Documents/Synara general-chat root used by older drafts", () => {
+  it("matches the managed Documents/Trellis general-chat root used by older drafts", () => {
     expect(
       isHomeChatContainerProject(
         {
-          cwd: "/Users/tester/Documents/Synara",
+          cwd: "/Users/tester/Documents/Trellis",
           kind: "chat",
           name: "Home",
           remoteName: "Home",
         },
         {
           homeDir: "/Users/tester",
-          chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+          chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
         },
       ),
     ).toBe(true);
   });
 
-  it("matches Codex-style date/slug chat workspaces under Documents/Synara", () => {
+  it("matches Codex-style date/slug chat workspaces under Documents/Trellis", () => {
     expect(
       isHomeChatContainerProject(
         {
-          cwd: "/Users/tester/Documents/Synara/2026-06-11/yes-it-takes-all-the-skills",
+          cwd: "/Users/tester/Documents/Trellis/2026-06-11/yes-it-takes-all-the-skills",
           kind: "chat",
           name: "Yes it takes",
           remoteName: "Yes it takes",
         },
         {
           homeDir: "/Users/tester",
-          chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+          chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
         },
       ),
     ).toBe(true);
@@ -98,7 +98,7 @@ describe("isHomeChatContainerProject", () => {
         },
         {
           homeDir: "/Users/tester",
-          chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+          chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
         },
       ),
     ).toBe(true);
@@ -110,7 +110,7 @@ describe("isHomeChatContainerProject", () => {
     expect(
       isHomeChatContainerProject(
         {
-          cwd: "/Users/tester/Documents/Synara/2026-06-11/some-chat",
+          cwd: "/Users/tester/Documents/Trellis/2026-06-11/some-chat",
           kind: "chat",
           name: "Some chat",
           remoteName: "Some chat",
@@ -131,18 +131,18 @@ describe("isHomeChatContainerProject", () => {
     ).toBe(false);
   });
 
-  it("does not classify ordinary projects under Documents/Synara as home chat containers", () => {
+  it("does not classify ordinary projects under Documents/Trellis as home chat containers", () => {
     expect(
       isHomeChatContainerProject(
         {
-          cwd: "/Users/tester/Documents/Synara",
+          cwd: "/Users/tester/Documents/Trellis",
           kind: "project",
-          name: "Synara",
-          remoteName: "Synara",
+          name: "Trellis",
+          remoteName: "Trellis",
         },
         {
           homeDir: "/Users/tester",
-          chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+          chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
         },
       ),
     ).toBe(false);
@@ -157,7 +157,7 @@ describe("isHomeChatContainerProject", () => {
 
     const projectPromise = ensureHomeChatProject({
       homeDir: "/Users/tester",
-      chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+      chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
     });
     await Promise.resolve();
 
@@ -193,7 +193,7 @@ describe("isHomeChatContainerProject", () => {
 
     const paths = {
       homeDir: "/Users/tester",
-      chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+      chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
     };
     const firstProjectPromise = ensureHomeChatProject(paths);
     const secondProjectPromise = ensureHomeChatProject(paths);
@@ -238,7 +238,7 @@ describe("isHomeChatContainerProject", () => {
 
     const projectId = await ensureHomeChatProject({
       homeDir: "/Users/tester",
-      chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+      chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
     });
 
     expect(projectId).toBe(existingProjectId);
@@ -285,7 +285,7 @@ describe("isHomeChatContainerProject", () => {
 
     const projectId = await ensureHomeChatProject({
       homeDir: "/Users/tester",
-      chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+      chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
     });
 
     expect(projectId).toBe(existingProjectId);
@@ -330,7 +330,7 @@ describe("isHomeChatContainerProject", () => {
     await expect(
       ensureHomeChatProject({
         homeDir: "/Users/tester",
-        chatWorkspaceRoot: "/Users/tester/Documents/Synara",
+        chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
       }),
     ).rejects.toThrow(duplicateError.message);
     expect(dispatchCommand).not.toHaveBeenCalledWith(

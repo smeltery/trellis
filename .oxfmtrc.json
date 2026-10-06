@@ -8,7 +8,15 @@
     "bun.lock",
     "*.tsbuildinfo",
     "**/routeTree.gen.ts",
-    "apps/web/public/mockServiceWorker.js"
+    "apps/web/public/mockServiceWorker.js",
+    "fork/branding",
+    "docs/computer-use-cua/evidence",
+    "docs/performance",
+    "audit",
+    "evidence"
   ],
-  "sortPackageJson": {}
+  "sortPackageJson": {},
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 100
 }

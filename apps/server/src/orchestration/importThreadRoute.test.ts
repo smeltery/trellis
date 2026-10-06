@@ -10,7 +10,7 @@ import {
   type ProviderSession,
   type ProviderStartOptions,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { it, vi } from "@effect/vitest";
 import { Effect, FileSystem, Option, Path } from "effect";
@@ -44,7 +44,7 @@ it("expands instance Claude homes for historical-session imports", () => {
   assert.equal(environment?.CLAUDE_IMPORT_TEST, "1");
 });
 
-it("expands instance Claude homes against the configured Synara home", () => {
+it("expands instance Claude homes against the configured Trellis home", () => {
   const environment = claudeHistoricalSessionEnvironment(
     {
       claudeAgent: {
@@ -52,15 +52,15 @@ it("expands instance Claude homes against the configured Synara home", () => {
         environment: { CLAUDE_IMPORT_TEST: "1" },
       },
     } satisfies ProviderStartOptions,
-    { homeDir: "/synara/home" },
+    { homeDir: "/trellis/home" },
   );
 
-  assert.equal(environment?.HOME, path.join("/synara/home", "claude-work"));
+  assert.equal(environment?.HOME, path.join("/trellis/home", "claude-work"));
   assert.equal(environment?.CLAUDE_IMPORT_TEST, "1");
 });
 
 it("scopes environment-only Claude imports to the selected provider instance", () => {
-  const isolationRootDir = "/synara/userdata";
+  const isolationRootDir = "/trellis/userdata";
   const providerInstanceId = "claude_work" as ProviderInstanceId;
   const environment = claudeHistoricalSessionEnvironment(
     {
@@ -69,7 +69,7 @@ it("scopes environment-only Claude imports to the selected provider instance", (
       },
     } satisfies ProviderStartOptions,
     {
-      homeDir: "/synara/home",
+      homeDir: "/trellis/home",
       isolationRootDir,
       providerInstanceId,
     },
@@ -84,10 +84,10 @@ it("does not remerge ambient credentials into Claude import child environments",
   process.env.ANTHROPIC_API_KEY = "ambient-key";
   try {
     const environment: NodeJS.ProcessEnv = claudeHistoricalSessionChildEnvironment({
-      HOME: "/tmp/synara-claude-import",
+      HOME: "/tmp/trellis-claude-import",
     });
 
-    assert.deepEqual(environment, { HOME: "/tmp/synara-claude-import" });
+    assert.deepEqual(environment, { HOME: "/tmp/trellis-claude-import" });
     assert.equal((environment as NodeJS.ProcessEnv)["ANTHROPIC_API_KEY"], undefined);
   } finally {
     if (original === undefined) {
@@ -169,7 +169,7 @@ it.effect("imports Codex history through a provider-owned fork", () =>
       fileSystem,
       path,
       platform: process.platform,
-      serverConfig: { homeDir: "/tmp/synara-home", stateDir: "/tmp/synara-state" },
+      serverConfig: { homeDir: "/tmp/trellis-home", stateDir: "/tmp/trellis-state" },
       orchestrationEngine: {
         dispatch: (command: OrchestrationCommand) =>
           Effect.sync(() => {
@@ -229,7 +229,7 @@ it.effect("rejects imports before inspecting a disabled provider adapter", () =>
       fileSystem,
       path,
       platform: process.platform,
-      serverConfig: { homeDir: "/tmp/synara-home", stateDir: "/tmp/synara-state" },
+      serverConfig: { homeDir: "/tmp/trellis-home", stateDir: "/tmp/trellis-state" },
       orchestrationEngine: {
         dispatch: () => Effect.die("disabled import must not dispatch"),
       } as unknown as OrchestrationEngineShape,
@@ -364,7 +364,7 @@ it("passes the resolved OpenCode instance into external-thread preflight", async
           updatedAt: now,
         }),
     } as never,
-    serverConfig: { homeDir: "/home/tester", stateDir: "/synara/state" },
+    serverConfig: { homeDir: "/home/tester", stateDir: "/trellis/state" },
     serverSettings: {
       getSettings: Effect.succeed({
         ...DEFAULT_SERVER_SETTINGS,

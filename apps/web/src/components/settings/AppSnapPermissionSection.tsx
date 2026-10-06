@@ -10,7 +10,7 @@ import {
   type DesktopAppSnapPermissionKind,
   type DesktopAppSnapSettingsPane,
   type DesktopAppSnapState,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useEffect, useRef, useState } from "react";
 
 import { createLatestAppSnapRequestGuard } from "~/appSnap.logic";
@@ -34,39 +34,39 @@ export const APP_SNAP_PERMISSION_PANES: readonly AppSnapPermissionPaneDescriptor
     pane: "input-monitoring",
     title: "Input Monitoring",
     description:
-      "Lets Synara notice the double-Option chord while another app owns the keyboard. Nothing you type is recorded.",
+      "Lets Trellis notice the double-Option chord while another app owns the keyboard. Nothing you type is recorded.",
   },
   {
     pane: "screen-recording",
     title: "Screen Recording",
     description:
-      "Lets Synara capture an image of the frontmost window. Only the single window you snap is captured, only at the moment you press the chord.",
+      "Lets Trellis capture an image of the frontmost window. Only the single window you snap is captured, only at the moment you press the chord.",
   },
 ];
 
 /**
  * Computer also needs Input Monitoring for Escape and human takeover. This
  * grant does not enable AppSnap's shortcut. The matching kind list lives in
- * `@synara/shared/computerGrants`.
+ * `@trellis/shared/computerGrants`.
  */
 export const COMPUTER_PERMISSION_PANES: readonly AppSnapPermissionPaneDescriptor[] = [
   {
     pane: "accessibility",
     title: "Accessibility",
     description:
-      "Lets Synara move the pointer, click, and type on your behalf. Nothing is driven unless you authorize a Computer task.",
+      "Lets Trellis move the pointer, click, and type on your behalf. Nothing is driven unless you authorize a Computer task.",
   },
   {
     pane: "screen-recording",
     title: "Screen Recording",
     description:
-      "Lets Synara capture windows and the desktop so the agent can see what it is driving.",
+      "Lets Trellis capture windows and the desktop so the agent can see what it is driving.",
   },
   {
     pane: "input-monitoring",
     title: "Input Monitoring",
     description:
-      "Lets Synara detect Escape and pause when you take over during a Computer task. This does not enable the AppSnap shortcut.",
+      "Lets Trellis detect Escape and pause when you take over during a Computer task. This does not enable the AppSnap shortcut.",
   },
 ];
 

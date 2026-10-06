@@ -1,4 +1,4 @@
-import type { ProjectId } from "@synara/contracts";
+import type { ProjectId } from "@trellis/contracts";
 import { useMemo, useState } from "react";
 
 import type { Project } from "~/types";

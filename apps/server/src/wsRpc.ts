@@ -42,7 +42,7 @@ import {
   type ServerDiagnosticsResult,
   type ServerLifecycleStreamEvent,
   type ServerSettings,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { clamp } from "effect/Number";
 import { Effect, FileSystem, Layer, Option, Path, Queue, Schema, Scope, Stream } from "effect";
 import { Headers, HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http";
@@ -91,19 +91,19 @@ import { CheckpointDiffQuery } from "./checkpointing/Services/CheckpointDiffQuer
 import { resolveThreadWorkspaceCwd } from "./checkpointing/Utils";
 import { ServerConfig, type ServerConfigShape } from "./config";
 import { realpathNearestExisting } from "./realpathNearestExisting";
-import { isGroupContainerKind } from "@synara/shared/projectContainers";
-import { workspaceRootsEqual } from "@synara/shared/threadWorkspace";
-import { WORKSPACE_FILE_WRITE_CONFLICT_CODE } from "@synara/shared/workspaceFileWrite";
+import { isGroupContainerKind } from "@trellis/shared/projectContainers";
+import { workspaceRootsEqual } from "@trellis/shared/threadWorkspace";
+import { WORKSPACE_FILE_WRITE_CONFLICT_CODE } from "@trellis/shared/workspaceFileWrite";
 import {
   mergeProviderStartOptions,
   providerStartOptionsFromInstance,
   resolveModelSelectionInstanceId,
   resolveProviderInstance,
-} from "@synara/shared/providerInstances";
+} from "@trellis/shared/providerInstances";
 import {
   isThreadDetailEventFor,
   THREAD_DETAIL_EVENT_TYPES,
-} from "@synara/shared/threadDetailEvents";
+} from "@trellis/shared/threadDetailEvents";
 import { listStudioThreadOutputs } from "./studioOutputs";
 import {
   ensureStudioWorkspaceInstructionsFiles,
@@ -166,7 +166,7 @@ import { ProjectionStateIncompleteError } from "./persistence/Errors";
 import { ProjectionSnapshotQuery } from "./orchestration/Services/ProjectionSnapshotQuery";
 import { shouldPublishThreadShellForEvent } from "./orchestration/threadShellEvents";
 import { ProviderDiscoveryService } from "./provider/Services/ProviderDiscoveryService";
-import { discoverSkillsCatalog, synaraSkillsDir } from "./provider/skillsCatalog";
+import { discoverSkillsCatalog, trellisSkillsDir } from "./provider/skillsCatalog";
 import { recoverUnregisteredGitHubCheckout } from "./project/githubProjectRegistration";
 import { ProviderAdapterRegistry } from "./provider/Services/ProviderAdapterRegistry";
 import { ProviderHealth } from "./provider/Services/ProviderHealth";
@@ -254,7 +254,7 @@ const THREAD_DETAIL_SNAPSHOT_BOOTSTRAP_TIMEOUT_MS = 5_000;
 const THREAD_DETAIL_SNAPSHOT_BOOTSTRAP_POLL_MS = 100;
 
 class WsRequestAdmissionMiddleware extends RpcMiddleware.Service<WsRequestAdmissionMiddleware>()(
-  "synara/WsRequestAdmissionMiddleware",
+  "trellis/WsRequestAdmissionMiddleware",
   { error: WsRpcError, requiredForClient: false },
 ) {}
 
@@ -1149,7 +1149,7 @@ const makeWsRpcHandlersLayer = () =>
       const tasksEnabled = isServerBetaFeatureEnabled("tasks");
       const tasksUnavailableError = () =>
         new WsRpcError({
-          message: "Tasks is available in Synara Beta.",
+          message: "Tasks is available in Trellis Beta.",
           code: TASKS_UNAVAILABLE_ERROR_CODE,
           retryable: false,
         });
@@ -1720,7 +1720,7 @@ const makeWsRpcHandlersLayer = () =>
                     operationId: input.operationId,
                     kind: "phase",
                     phase: "registering",
-                    message: "Adding project to Synara",
+                    message: "Adding project to Trellis",
                   });
 
                   const { command: normalizedCommand, prepareWorkspaceRoot } =
@@ -2527,13 +2527,13 @@ const makeWsRpcHandlersLayer = () =>
               discoverSkillsCatalog({
                 cwd: input.cwd ?? null,
                 homeDir: config.homeDir,
-                synaraBaseDir: config.baseDir,
+                trellisBaseDir: config.baseDir,
                 includeDuplicateOrigins: true,
               }),
             ).pipe(
               Effect.map((skills) => ({
                 skills,
-                synaraSkillsDir: synaraSkillsDir(config.baseDir),
+                trellisSkillsDir: trellisSkillsDir(config.baseDir),
               })),
             ),
             "Failed to list the skills catalog",
@@ -3290,7 +3290,7 @@ function makeWsNegotiateHttpRouteLayer() {
               headers: { "Cache-Control": "no-store", Vary: "Origin" },
             });
           }
-          // The desktop app fetches cross-origin (synara://app); reflect only
+          // The desktop app fetches cross-origin (trellis://app); reflect only
           // origins the WS upgrade itself would trust.
           const origin = normalizeCorsOrigin(request.headers.origin);
           const corsHeaders =

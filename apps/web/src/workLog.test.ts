@@ -1,4 +1,4 @@
-import { MessageId, TurnId, type OrchestrationThreadActivity } from "@synara/contracts";
+import { MessageId, TurnId, type OrchestrationThreadActivity } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -67,7 +67,7 @@ describe("deriveWorkLogEntries", () => {
     ["clipboard consent", { decision: "accept", toolName: "computer_read_clipboard" }],
     [
       "wrapped clipboard consent",
-      { decision: "accept", toolName: "mcp__synara__computer_read_clipboard" },
+      { decision: "accept", toolName: "mcp__trellis__computer_read_clipboard" },
     ],
     ["scoped consent", { decision: "accept", approvalScope: "device-task" }],
   ])("keeps the %s outcome visible", (_name, payload) => {
@@ -744,12 +744,12 @@ describe("deriveWorkLogEntries", () => {
         id: "automation-created",
         createdAt: "2026-02-23T00:00:05.000Z",
         kind: "automation.created",
-        summary: "Created automation: Watch Synara PR 231 - Every 5m",
+        summary: "Created automation: Watch Trellis PR 231 - Every 5m",
         tone: "info",
         payload: {
           source: "chat-composer",
           automationId: "automation-7",
-          automationName: "Watch Synara PR 231",
+          automationName: "Watch Trellis PR 231",
           cadenceLabel: "Every 5m",
         },
       }),
@@ -763,7 +763,7 @@ describe("deriveWorkLogEntries", () => {
     expect(automationEntry).toBeDefined();
     expect(automationEntry?.automation).toEqual({
       id: "automation-7",
-      name: "Watch Synara PR 231",
+      name: "Watch Trellis PR 231",
       cadenceLabel: "Every 5m",
     });
   });
@@ -794,14 +794,14 @@ describe("deriveWorkLogEntries", () => {
     });
   });
 
-  it("exposes a provider-independent Synara thread creation recap", () => {
+  it("exposes a provider-independent Trellis thread creation recap", () => {
     const activities: OrchestrationThreadActivity[] = [
       makeActivity({
-        id: "synara-created-threads",
+        id: "trellis-created-threads",
         createdAt: "2026-02-23T00:00:05.000Z",
         turnId: "turn-1",
-        kind: "synara.threads.created",
-        summary: "Created 2 Synara threads",
+        kind: "trellis.threads.created",
+        summary: "Created 2 Trellis threads",
         tone: "info",
         payload: {
           operationId: "gateway:create:two-workers",
@@ -830,7 +830,7 @@ describe("deriveWorkLogEntries", () => {
     ];
 
     const [entry] = deriveWorkLogEntries(activities, TurnId.makeUnsafe("turn-1"));
-    expect(entry?.synaraThreadCreation).toEqual({
+    expect(entry?.trellisThreadCreation).toEqual({
       operationId: "gateway:create:two-workers",
       requestedCount: 2,
       createdCount: 2,
@@ -862,7 +862,7 @@ describe("deriveWorkLogEntries", () => {
       makeActivity({
         id: "worker-settled",
         createdAt: "2026-02-23T00:00:05.000Z",
-        kind: "synara.worker.settled",
+        kind: "trellis.worker.settled",
         summary: "✓ Mars rocket research finished",
         tone: "info",
         payload: {
@@ -880,7 +880,7 @@ describe("deriveWorkLogEntries", () => {
       makeActivity({
         id: "worker-stuck",
         createdAt: "2026-02-23T00:00:06.000Z",
-        kind: "synara.worker.stuck",
+        kind: "trellis.worker.stuck",
         summary: "⚠ Quiet worker has not reported for over 10 minutes",
         tone: "approval",
         payload: {
@@ -894,7 +894,7 @@ describe("deriveWorkLogEntries", () => {
       makeActivity({
         id: "workers-rollup",
         createdAt: "2026-02-23T00:00:07.000Z",
-        kind: "synara.workers.settled",
+        kind: "trellis.workers.settled",
         summary: "All 3 threads settled: A ✓, B ✓, C ⚠ needs approval",
         tone: "approval",
         payload: {
@@ -913,7 +913,7 @@ describe("deriveWorkLogEntries", () => {
       visibleTurnIds: new Set(["turn-other"]),
     });
     const settled = entries.find((entry) => entry.id === "worker-settled");
-    expect(settled?.synaraWorkerNotice).toEqual({
+    expect(settled?.trellisWorkerNotice).toEqual({
       kind: "settled",
       marker: "✓",
       phrase: "finished",
@@ -929,9 +929,9 @@ describe("deriveWorkLogEntries", () => {
       ],
     });
     const stuck = entries.find((entry) => entry.id === "worker-stuck");
-    expect(stuck?.synaraWorkerNotice?.kind).toBe("stuck");
+    expect(stuck?.trellisWorkerNotice?.kind).toBe("stuck");
     const rollup = entries.find((entry) => entry.id === "workers-rollup");
-    expect(rollup?.synaraWorkerNotice).toEqual({
+    expect(rollup?.trellisWorkerNotice).toEqual({
       kind: "rollup",
       marker: null,
       phrase: null,
@@ -1102,7 +1102,7 @@ describe("deriveWorkLogEntries", () => {
         id: "recovery-first",
         createdAt: "2026-02-23T00:00:01.000Z",
         kind: "provider.runtime.reconciled",
-        summary: "Synara recovered a stale running state",
+        summary: "Trellis recovered a stale running state",
         turnId: "turn-stale",
         payload: recoveryPayload,
       }),
@@ -1116,7 +1116,7 @@ describe("deriveWorkLogEntries", () => {
         id: "recovery-repeat",
         createdAt: "2026-02-23T00:00:03.000Z",
         kind: "provider.runtime.reconciled",
-        summary: "Synara recovered a stale running state",
+        summary: "Trellis recovered a stale running state",
         turnId: "turn-stale",
         payload: recoveryPayload,
       }),
@@ -1980,7 +1980,7 @@ describe("deriveWorkLogEntries", () => {
             toolCallId: "acp-typing-call",
             toolName: "computer_type_text",
             rawInput: {
-              _toolName: "mcp__synara__computer_type_text",
+              _toolName: "mcp__trellis__computer_type_text",
               app_name: "Notes",
               label: "Message",
               text: "private typed value",
@@ -1999,7 +1999,7 @@ describe("deriveWorkLogEntries", () => {
             toolCallId: "acp-inspection-call",
             toolName: "computer_inspect",
             rawInput: {
-              toolName: "synara_computer_inspect",
+              toolName: "trellis_computer_inspect",
               tool: "computer_read_clipboard",
               arguments: {},
             },
@@ -2222,7 +2222,7 @@ describe("deriveWorkLogEntries", () => {
                   type: "read",
                   command: "sed -n '1,220p' README.md",
                   name: "README.md",
-                  path: "/Users/emanueledipietro/Developer/Testing/synara/README.md",
+                  path: "/Users/emanueledipietro/Developer/Testing/trellis/README.md",
                 },
               ],
             },
@@ -3123,21 +3123,21 @@ describe("deriveWorkLogEntries", () => {
   });
 
   it("preserves cancellation when an owning turn aborts", () => {
-    const turnId = TurnId.makeUnsafe("turn-with-cancelled-synara-tool");
+    const turnId = TurnId.makeUnsafe("turn-with-cancelled-trellis-tool");
     const entries = deriveWorkLogEntries(
       [
         makeActivity({
-          id: "cancelled-synara-start",
+          id: "cancelled-trellis-start",
           createdAt: "2026-02-23T00:00:01.000Z",
           kind: "tool.started",
-          summary: "Synara create thread",
+          summary: "Trellis create thread",
           turnId,
           payload: {
             itemType: "mcp_tool_call",
-            title: "Synara create thread",
+            title: "Trellis create thread",
             data: {
-              toolCallId: "cancelled-synara-call",
-              toolName: "mcp__synara__synara_create_thread",
+              toolCallId: "cancelled-trellis-call",
+              toolName: "mcp__trellis__trellis_create_thread",
             },
           },
         }),
@@ -3165,14 +3165,14 @@ describe("deriveWorkLogEntries", () => {
           id: "interrupted-tool",
           createdAt: "2026-02-23T00:00:01.000Z",
           kind: "tool.completed",
-          summary: "Synara create thread",
+          summary: "Trellis create thread",
           payload: {
             itemType: "mcp_tool_call",
-            title: "Synara create thread",
+            title: "Trellis create thread",
             status: "interrupted",
             data: {
-              toolCallId: "interrupted-synara-call",
-              toolName: "mcp__synara__synara_create_thread",
+              toolCallId: "interrupted-trellis-call",
+              toolName: "mcp__trellis__trellis_create_thread",
             },
           },
         }),
@@ -3441,42 +3441,42 @@ describe("deriveWorkLogEntries", () => {
     });
   });
 
-  it("presents Synara MCP activity consistently across provider item shapes", () => {
+  it("presents Trellis MCP activity consistently across provider item shapes", () => {
     const activities: OrchestrationThreadActivity[] = [
       makeActivity({
-        id: "synara-mcp-create-thread-progress",
+        id: "trellis-mcp-create-thread-progress",
         kind: "tool.updated",
         summary: "MCP tool call",
         payload: {
           itemType: "mcp_tool_call",
           title: "MCP tool call",
           data: {
-            toolCallId: "synara-mcp-create",
-            toolName: "mcp__synara__synara_create_thread",
+            toolCallId: "trellis-mcp-create",
+            toolName: "mcp__trellis__trellis_create_thread",
           },
         },
       }),
       makeActivity({
-        id: "synara-dynamic-send-message-progress",
+        id: "trellis-dynamic-send-message-progress",
         kind: "tool.updated",
         summary: "Tool call",
         payload: {
           itemType: "dynamic_tool_call",
-          title: "Synara__synara_send_message",
+          title: "Trellis__trellis_send_message",
           data: {
-            toolCallId: "synara-dynamic-send",
+            toolCallId: "trellis-dynamic-send",
           },
         },
       }),
       makeActivity({
-        id: "synara-file-change-list-threads-progress",
+        id: "trellis-file-change-list-threads-progress",
         kind: "tool.updated",
         summary: "File change",
         payload: {
           itemType: "file_change",
-          title: "mcp__Synara__synara_list_threads",
+          title: "mcp__Trellis__trellis_list_threads",
           data: {
-            toolCallId: "synara-file-change-list",
+            toolCallId: "trellis-file-change-list",
           },
         },
       }),
@@ -3485,27 +3485,27 @@ describe("deriveWorkLogEntries", () => {
     const entries = deriveWorkLogEntries(activities, undefined);
     expect(entries.map((entry) => [entry.itemType, entry.toolTitle])).toEqual(
       expect.arrayContaining([
-        ["mcp_tool_call", "Synara is creating a thread"],
-        ["dynamic_tool_call", "Synara is sending a message"],
-        ["file_change", "Synara is listing threads"],
+        ["mcp_tool_call", "Trellis is creating a thread"],
+        ["dynamic_tool_call", "Trellis is sending a message"],
+        ["file_change", "Trellis is listing threads"],
       ]),
     );
     expect(entries).toHaveLength(3);
   });
 
-  it("preserves a failed Synara MCP result as a failed activity sentence", () => {
+  it("preserves a failed Trellis MCP result as a failed activity sentence", () => {
     const [entry] = deriveWorkLogEntries(
       [
         makeActivity({
-          id: "synara-create-threads-failed",
+          id: "trellis-create-threads-failed",
           kind: "tool.completed",
-          summary: "synara__synara_create_threads",
+          summary: "trellis__trellis_create_threads",
           payload: {
             itemType: "mcp_tool_call",
             status: "failed",
             data: {
-              toolCallId: "synara-create-failed",
-              toolName: "mcp__synara__synara_create_threads",
+              toolCallId: "trellis-create-failed",
+              toolName: "mcp__trellis__trellis_create_threads",
               rawOutput: {
                 is_error: 1,
                 output: { Error: "Invalid target options\n  at target.options" },
@@ -3519,7 +3519,7 @@ describe("deriveWorkLogEntries", () => {
 
     expect(entry).toMatchObject({
       toolStatus: "failed",
-      toolTitle: "Synara couldn't create threads",
+      toolTitle: "Trellis couldn't create threads",
       detail: "Invalid target options",
     });
   });
@@ -3839,11 +3839,11 @@ describe("deriveWorkLogEntries", () => {
             toolCallId: "toolu_012fsSN5hrdndPjxoWQjZswu",
             kind: "agent",
             tool: "task",
-            prompt: "Explore the Synara web app and report back with file paths.",
+            prompt: "Explore the Trellis web app and report back with file paths.",
             rawInput: {
               _toolName: "task",
               description: "Explore composer model/effort UI",
-              prompt: "Explore the Synara web app and report back with file paths.",
+              prompt: "Explore the Trellis web app and report back with file paths.",
             },
           },
         },
@@ -3858,7 +3858,7 @@ describe("deriveWorkLogEntries", () => {
         toolTitle: "Explore composer model/effort UI",
         subagentAction: expect.objectContaining({
           tool: "task",
-          prompt: "Explore the Synara web app and report back with file paths.",
+          prompt: "Explore the Trellis web app and report back with file paths.",
         }),
         liveActivity: expect.objectContaining({ state: "running_tool" }),
       }),
@@ -4758,7 +4758,7 @@ describe("deriveWorkLogEntries Codex find regression", () => {
               id: "call_UmQKQmLCCrj9PF82rupLIFDO",
               command:
                 "/bin/zsh -lc \"find apps packages -maxdepth 2 -name package.json -print -exec sed -n '1,120p' {} \\\\;\"",
-              cwd: "/Users/emanueledipietro/Developer/Testing/synara",
+              cwd: "/Users/emanueledipietro/Developer/Testing/trellis",
               processId: "38005",
               source: "unifiedExecStartup",
               status: "inProgress",
@@ -4796,7 +4796,7 @@ describe("deriveWorkLogEntries Codex find regression", () => {
               id: "call_UmQKQmLCCrj9PF82rupLIFDO",
               command:
                 "/bin/zsh -lc \"find apps packages -maxdepth 2 -name package.json -print -exec sed -n '1,120p' {} \\\\;\"",
-              cwd: "/Users/emanueledipietro/Developer/Testing/synara",
+              cwd: "/Users/emanueledipietro/Developer/Testing/trellis",
               processId: "38005",
               source: "unifiedExecStartup",
               status: "completed",

@@ -1,6 +1,6 @@
 import "../index.css";
-import type { BrowserVaultMethods, BrowserVaultSnapshot } from "@synara/contracts";
-import { ThreadId } from "@synara/contracts";
+import type { BrowserVaultMethods, BrowserVaultSnapshot } from "@trellis/contracts";
+import { ThreadId } from "@trellis/contracts";
 import { page } from "vitest/browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-react";
@@ -71,8 +71,8 @@ describe("browser saved logins", () => {
         safariAccess: {
           getInfo: async () => ({
             supported: true,
-            appName: "Synara",
-            appPath: "/Applications/Synara.app",
+            appName: "Trellis",
+            appPath: "/Applications/Trellis.app",
           }),
           openSettings: async () => true,
           revealApp: async () => true,
@@ -101,7 +101,7 @@ describe("browser saved logins", () => {
       await expect
         .element(page.getByRole("status"))
         .toHaveTextContent(
-          "System Settings is open. Once Synara is switched on, quit and reopen it.",
+          "System Settings is open. Once Trellis is switched on, quit and reopen it.",
         );
       await page.getByRole("button", { name: "Not now" }).click();
       await page.getByRole("button", { name: "Import browser cookies" }).click();

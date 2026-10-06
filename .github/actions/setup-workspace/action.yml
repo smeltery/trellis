@@ -100,8 +100,8 @@ runs:
         fi
         case "$WORKSPACE_SCOPE" in
           full) bun install --frozen-lockfile ;;
-          static) bun install --frozen-lockfile --filter './' --filter '@synara/scripts' ;;
-          runtime) bun install --frozen-lockfile --filter '!@synara/marketing' ;;
+          static) bun install --frozen-lockfile --filter './' --filter '@trellis/scripts' ;;
+          runtime) bun install --frozen-lockfile --filter '!@trellis/marketing' ;;
         esac
 
     - name: Install Electron test runtime

@@ -1,0 +1,37 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { REPO_URL } from "../lib/releases";
+---
+
+<Layout>
+  <section class="content hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Local-first agent workspace</p>
+      <h1>Trellis</h1>
+      <p class="lede">
+        Run coding agents against real projects with durable threads, terminals, worktrees, browser
+        context, and desktop release tooling in one focused environment.
+      </p>
+      <div class="actions">
+        <a class="button" href="/download/">Download</a>
+        <a class="button secondary" href={REPO_URL}>View source</a>
+      </div>
+    </div>
+    <img class="product" src="/product.png" alt="Trellis app icon" />
+  </section>
+
+  <section class="content features">
+    <article>
+      <h2>Project state stays local</h2>
+      <p>Threads, workspace paths, terminals, and local server state stay anchored to your machine.</p>
+    </article>
+    <article>
+      <h2>Designed for agent work</h2>
+      <p>Model controls, approvals, diffs, plans, and context panes live beside the transcript.</p>
+    </article>
+    <article>
+      <h2>Desktop and web</h2>
+      <p>Use the desktop shell or run the same workspace through the local web server.</p>
+    </article>
+  </section>
+</Layout>

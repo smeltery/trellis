@@ -15,9 +15,11 @@ const DIAGNOSTIC_FILES = [
 ] as const;
 
 export function preserveDependencyDiagnostics(env: NodeJS.ProcessEnv): boolean {
-  return [env.SYNARA_WEB_SOURCEMAP, env.SYNARA_SERVER_SOURCEMAP, env.SYNARA_DESKTOP_SOURCEMAP].some(
-    (value) => ["1", "true", "hidden"].includes(value?.trim().toLowerCase() ?? ""),
-  );
+  return [
+    env.TRELLIS_WEB_SOURCEMAP,
+    env.TRELLIS_SERVER_SOURCEMAP,
+    env.TRELLIS_DESKTOP_SOURCEMAP,
+  ].some((value) => ["1", "true", "hidden"].includes(value?.trim().toLowerCase() ?? ""));
 }
 
 export function createDesktopBundleFilePatterns(

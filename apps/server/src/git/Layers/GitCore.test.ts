@@ -30,7 +30,7 @@ import { ServerConfig } from "../../config.ts";
 // ── Helpers ──
 
 const ServerConfigLayer = ServerConfig.layerTest(process.cwd(), {
-  prefix: "synara-git-core-test-",
+  prefix: "trellis-git-core-test-",
 });
 const GitCoreTestLayer = GitCoreLive.pipe(
   Layer.provide(ServerConfigLayer),
@@ -1420,7 +1420,7 @@ it.layer(TestLayer)("git integration", (it) => {
 
         const stashList = yield* git(tmp, ["stash", "list"]);
         expect(stashList).toContain("pre-existing stash");
-        expect(stashList).not.toContain("synara: stash before switching to feature");
+        expect(stashList).not.toContain("trellis: stash before switching to feature");
         expect(yield* readTextFile(path.join(tmp, "README.md"))).toBe("dirty changes\n");
       }),
     );
@@ -1450,7 +1450,7 @@ it.layer(TestLayer)("git integration", (it) => {
         expect(yield* readTextFile(path.join(tmp, "README.md"))).toBe("conflicting content\n");
         expect((yield* git(tmp, ["status", "--short"])).trim()).toBe("");
         expect(yield* git(tmp, ["stash", "list"])).toContain(
-          "synara: stash before switching to conflicting",
+          "trellis: stash before switching to conflicting",
         );
       }),
     );
@@ -1609,21 +1609,21 @@ it.layer(TestLayer)("git integration", (it) => {
       Effect.gen(function* () {
         const tmp = yield* makeTmpDir();
         yield* initRepoWithCommit(tmp);
-        yield* (yield* GitCore).createBranch({ cwd: tmp, branch: "synara/feat/session" });
-        yield* (yield* GitCore).createBranch({ cwd: tmp, branch: "synara/feat/session-1" });
-        yield* (yield* GitCore).createBranch({ cwd: tmp, branch: "synara/tmp-working" });
-        yield* (yield* GitCore).checkoutBranch({ cwd: tmp, branch: "synara/tmp-working" });
+        yield* (yield* GitCore).createBranch({ cwd: tmp, branch: "trellis/feat/session" });
+        yield* (yield* GitCore).createBranch({ cwd: tmp, branch: "trellis/feat/session-1" });
+        yield* (yield* GitCore).createBranch({ cwd: tmp, branch: "trellis/tmp-working" });
+        yield* (yield* GitCore).checkoutBranch({ cwd: tmp, branch: "trellis/tmp-working" });
 
         const renamed = yield* (yield* GitCore).renameBranch({
           cwd: tmp,
-          oldBranch: "synara/tmp-working",
-          newBranch: "synara/feat/session",
+          oldBranch: "trellis/tmp-working",
+          newBranch: "trellis/feat/session",
         });
 
-        expect(renamed.branch).toBe("synara/feat/session-2");
+        expect(renamed.branch).toBe("trellis/feat/session-2");
         const branches = yield* (yield* GitCore).listBranches({ cwd: tmp });
         expect(branches.branches.find((branch) => branch.current)?.name).toBe(
-          "synara/feat/session-2",
+          "trellis/feat/session-2",
         );
       }),
     );
@@ -1801,16 +1801,16 @@ it.layer(TestLayer)("git integration", (it) => {
           cwd: tmp,
           ref: "HEAD",
           path: wtPath,
-          newBranch: "synara/abcd1234",
+          newBranch: "trellis/abcd1234",
         });
 
         expect(result.worktree).toEqual({
           path: wtPath,
           ref: expectedHead,
-          branch: "synara/abcd1234",
+          branch: "trellis/abcd1234",
         });
-        expect(yield* git(wtPath, ["symbolic-ref", "--short", "HEAD"])).toBe("synara/abcd1234");
-        expect(yield* git(tmp, ["rev-parse", "refs/heads/synara/abcd1234"])).toBe(expectedHead);
+        expect(yield* git(wtPath, ["symbolic-ref", "--short", "HEAD"])).toBe("trellis/abcd1234");
+        expect(yield* git(tmp, ["rev-parse", "refs/heads/trellis/abcd1234"])).toBe(expectedHead);
 
         yield* core.removeWorktree({
           cwd: tmp,
@@ -1818,7 +1818,7 @@ it.layer(TestLayer)("git integration", (it) => {
           force: true,
           reclaimTemporaryBranch: true,
         });
-        const remainingBranches = yield* git(tmp, ["branch", "--list", "synara/abcd1234"]);
+        const remainingBranches = yield* git(tmp, ["branch", "--list", "trellis/abcd1234"]);
         expect(remainingBranches).toBe("");
       }),
     );
@@ -1836,7 +1836,7 @@ it.layer(TestLayer)("git integration", (it) => {
             cwd: tmp,
             ref: "HEAD",
             path: wtPath,
-            newBranch: "synara/ph123456",
+            newBranch: "trellis/ph123456",
             copyChangesFrom: tmp,
           },
           {
@@ -1870,7 +1870,7 @@ it.layer(TestLayer)("git integration", (it) => {
               cwd: tmp,
               ref: "refs/heads/missing",
               path: path.join(tmp, "wt-invalid-ref"),
-              newBranch: "synara/notstarted",
+              newBranch: "trellis/notstarted",
             },
             {
               onPhase: (phase) =>
@@ -1883,7 +1883,7 @@ it.layer(TestLayer)("git integration", (it) => {
 
         expect(Exit.isFailure(result)).toBe(true);
         expect(phases).toEqual([]);
-        expect(yield* git(tmp, ["branch", "--list", "synara/notstarted"])).toBe("");
+        expect(yield* git(tmp, ["branch", "--list", "trellis/notstarted"])).toBe("");
       }),
     );
 
@@ -1902,12 +1902,12 @@ it.layer(TestLayer)("git integration", (it) => {
             cwd: tmp,
             ref: "HEAD",
             path: wtPath,
-            newBranch: "synara/rollback1",
+            newBranch: "trellis/rollback1",
           }),
         );
 
         expect(Exit.isFailure(result)).toBe(true);
-        expect(yield* git(tmp, ["branch", "--list", "synara/rollback1"])).toBe("");
+        expect(yield* git(tmp, ["branch", "--list", "trellis/rollback1"])).toBe("");
       }),
     );
 
@@ -1966,7 +1966,7 @@ it.layer(TestLayer)("git integration", (it) => {
           cwd: tmp,
           ref: "HEAD",
           path: wtPath,
-          newBranch: "synara/ab12cd34",
+          newBranch: "trellis/ab12cd34",
         });
         const operations: string[] = [];
         const core = yield* makeIsolatedGitCore((input) => {
@@ -1988,7 +1988,7 @@ it.layer(TestLayer)("git integration", (it) => {
           operations.indexOf("GitCore.removeWorktree.reclaimBranch"),
         );
         expect(existsSync(wtPath)).toBe(false);
-        expect(yield* git(tmp, ["branch", "--list", "synara/ab12cd34"])).toBe("");
+        expect(yield* git(tmp, ["branch", "--list", "trellis/ab12cd34"])).toBe("");
       }),
     );
 
@@ -2255,12 +2255,12 @@ it.layer(TestLayer)("git integration", (it) => {
           yield* initRepoWithCommit(tmp);
           const core = yield* GitCore;
 
-          yield* git(tmp, ["remote", "add", "origin", "git@github.com:example-org/synara.git"]);
+          yield* git(tmp, ["remote", "add", "origin", "git@github.com:example-org/trellis.git"]);
 
           const remoteName = yield* core.ensureRemote({
             cwd: tmp,
             preferredName: "origin",
-            url: "git@github.com:example-org/synara.git/",
+            url: "git@github.com:example-org/trellis.git/",
           });
 
           expect(remoteName).toBe("origin");
@@ -2720,7 +2720,7 @@ it.layer(TestLayer)("git integration", (it) => {
         expect(refPatch).not.toContain("deleted file mode");
         expect(refPatch).toContain("-one");
         expect(refPatch).toContain("+two");
-        expect(refPatch).not.toContain("synara-ref-blob-");
+        expect(refPatch).not.toContain("trellis-ref-blob-");
 
         const stats = yield* core.readDiffStats(tmp, "ref", baseSha);
         expect(stats).toEqual({ additions: 2, deletions: 1, fileCount: 1 });
@@ -3062,7 +3062,7 @@ it.layer(TestLayer)("git integration", (it) => {
           yield* git(tmp, [
             "checkout",
             "-b",
-            "synara/pr-488/statemachine",
+            "trellis/pr-488/statemachine",
             "--track",
             "jasonLaster/statemachine",
           ]);
@@ -3084,7 +3084,7 @@ it.layer(TestLayer)("git integration", (it) => {
             yield* git(tmp, ["ls-remote", "--heads", "jasonLaster", "statemachine"]),
           ).toContain("statemachine");
           expect(
-            yield* git(tmp, ["ls-remote", "--heads", "jasonLaster", "synara/pr-488/statemachine"]),
+            yield* git(tmp, ["ls-remote", "--heads", "jasonLaster", "trellis/pr-488/statemachine"]),
           ).toBe("");
         }),
     );

@@ -13,13 +13,13 @@ import {
   type ClaudeCodeEffort,
   type ProviderKind,
   type UploadChatAttachment,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   ATTACHMENT_CANCEL_ROUTE_PATH,
   ATTACHMENT_UPLOAD_ROUTE_PATH,
-} from "@synara/shared/binaryTransfer";
-import { applyClaudePromptEffortPrefix, getModelCapabilities } from "@synara/shared/model";
-import { parseComputerInvocation } from "@synara/shared/computerInvocation";
+} from "@trellis/shared/binaryTransfer";
+import { applyClaudePromptEffortPrefix, getModelCapabilities } from "@trellis/shared/model";
+import { parseComputerInvocation } from "@trellis/shared/computerInvocation";
 
 import {
   cloneComposerImageAttachment,
@@ -131,7 +131,7 @@ export async function prepareComposerImageAttachmentsFromFiles(input: {
       error =
         cause instanceof ComposerImagePreparationError
           ? cause.message
-          : `Synara could not prepare '${file.name || "image"}'.`;
+          : `Trellis could not prepare '${file.name || "image"}'.`;
     }
   }
 

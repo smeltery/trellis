@@ -4,7 +4,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { ThreadId, type ResolvedKeybindingsConfig, type TurnId } from "@synara/contracts";
+import { ThreadId, type ResolvedKeybindingsConfig, type TurnId } from "@trellis/contracts";
 import type { FileDiffMetadata } from "@pierre/diffs/react";
 import * as Schema from "effect/Schema";
 import { Columns2Icon, CopyIcon, EllipsisIcon, FolderIcon, Rows3Icon } from "~/lib/icons";
@@ -460,7 +460,7 @@ export default function DiffPanel({
   const { resolvedTheme } = useTheme();
   const { settings } = useAppSettings();
   const [diffRenderMode, setDiffRenderMode] = useLocalStorage(
-    "synara:diff-render-mode:v1",
+    "trellis:diff-render-mode:v1",
     "split",
     DiffRenderModeSchema,
   );

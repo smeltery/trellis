@@ -3,7 +3,7 @@
 // Layer: Web chat presentation helpers
 // Exports: row derivation, structural sharing, copy/timer helpers
 
-import { type MessageId, type TurnId } from "@synara/contracts";
+import { type MessageId, type TurnId } from "@trellis/contracts";
 import { type TimelineEntry, type WorkLogEntry, formatElapsed } from "../../session-logic";
 import { normalizeCompactToolLabel as normalizeCompactToolLabelValue } from "../../lib/toolCallLabel";
 import { isCodexActivityStatusWorkEntry } from "./agentActivity.logic";
@@ -601,9 +601,9 @@ export function deriveTerminalAssistantMessageIds(
 // Server-posted coordinator notices and provider handoff boundaries keep their own
 // row: they are not turn work, so they never merge into or fold with a turn.
 export function isStandaloneWorkEntry(
-  entry: Pick<WorkLogEntry, "synaraWorkerNotice" | "providerHandoff">,
+  entry: Pick<WorkLogEntry, "trellisWorkerNotice" | "providerHandoff">,
 ): boolean {
-  return Boolean(entry.synaraWorkerNotice || entry.providerHandoff);
+  return Boolean(entry.trellisWorkerNotice || entry.providerHandoff);
 }
 
 // Derives transcript rows from timeline entries while keeping live narration and
@@ -1121,9 +1121,9 @@ function workLogAutomationsEqual(a: WorkLogEntry["automation"], b: WorkLogEntry[
   );
 }
 
-function workLogSynaraThreadCreationsEqual(
-  a: WorkLogEntry["synaraThreadCreation"],
-  b: WorkLogEntry["synaraThreadCreation"],
+function workLogTrellisThreadCreationsEqual(
+  a: WorkLogEntry["trellisThreadCreation"],
+  b: WorkLogEntry["trellisThreadCreation"],
 ) {
   if (a === b) return true;
   if (!a || !b) return false;
@@ -1236,7 +1236,7 @@ function workLogEntryContentEqual(a: WorkLogEntry, b: WorkLogEntry): boolean {
     workLogSubagentActionsEqual(a.subagentAction, b.subagentAction) &&
     workLogSubagentsEqual(a.subagents, b.subagents) &&
     workLogAutomationsEqual(a.automation, b.automation) &&
-    workLogSynaraThreadCreationsEqual(a.synaraThreadCreation, b.synaraThreadCreation) &&
+    workLogTrellisThreadCreationsEqual(a.trellisThreadCreation, b.trellisThreadCreation) &&
     workLogLiveActivitiesEqual(a.liveActivity, b.liveActivity) &&
     workLogToolDetailsEqual(a.toolDetails, b.toolDetails)
   );

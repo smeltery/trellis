@@ -10,7 +10,7 @@ import type {
   ProviderInstanceId,
   ProviderKind,
   ServerProviderUsageSnapshot,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 export interface ProviderUsageContext {
   /** Resolved user home directory (ServerConfig.homeDir). */

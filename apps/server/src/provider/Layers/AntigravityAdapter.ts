@@ -15,22 +15,22 @@ import {
   RuntimeTaskId,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   spawnProcess as spawnPlatformProcess,
   type RuntimeSpawnOptions,
-} from "@synara/shared/processRuntime";
+} from "@trellis/shared/processRuntime";
 import { Effect, Layer, Option, Queue, Stream } from "effect";
 
 import {
   type AcpStdioProxySpawn,
   buildAntigravityMcpPluginConfig,
-  SYNARA_AGENT_GATEWAY_BOOTSTRAP_TOKEN_ENV,
-  SYNARA_AGENT_GATEWAY_URL_ENV,
+  TRELLIS_AGENT_GATEWAY_BOOTSTRAP_TOKEN_ENV,
+  TRELLIS_AGENT_GATEWAY_URL_ENV,
 } from "../../agentGateway/mcpInjection.ts";
 import {
-  type SynaraHarnessPolicyDeliveryState,
-  takeSynaraHarnessPolicyForProviderSession,
+  type TrellisHarnessPolicyDeliveryState,
+  takeTrellisHarnessPolicyForProviderSession,
 } from "../../agentGateway/harnessPolicy.ts";
 import {
   AgentGatewayCredentials,
@@ -180,7 +180,7 @@ type AntigravitySessionContext = ToolSurfaceCounters & {
   /**
    * Conversations owned by spawned subagents, keyed by conversation id.
    * The capture hook is installed globally, so a subagent CLI spawned by the
-   * session's own CLI inherits `SYNARA_ANTIGRAVITY_EVENTS` and writes its
+   * session's own CLI inherits `TRELLIS_ANTIGRAVITY_EVENTS` and writes its
    * pre-invocation/tool/stop events into this session's hook stream. Those
    * events describe a different process and conversation and must never
    * rebind the session; they are forwarded as child-thread events carrying
@@ -259,7 +259,7 @@ function shellQuote(value: string, platform: NodeJS.Platform = process.platform)
 }
 
 /**
- * Hook output when capture is inactive (the session is not Synara-managed).
+ * Hook output when capture is inactive (the session is not Trellis-managed).
  * Antigravity requires PreToolUse output to carry a `decision`: an empty
  * object is treated as a denial with an empty reason, which blocks every tool
  * call because the hook is installed globally with `matcher: "*"` (#490).
@@ -270,7 +270,7 @@ function shellQuote(value: string, platform: NodeJS.Platform = process.platform)
  * denial that aborts the invocation. The CLI raises a PreInvocation for the
  * subagent's first model call when the parent agent invokes a subagent, so
  * `{}` there denies the subagent launch and the parent CLI exits with code 1
- * ("Antigravity CLI exited with code 1."). Synara-managed sessions spawn
+ * ("Antigravity CLI exited with code 1."). Trellis-managed sessions spawn
  * subagents deliberately, so pre-invocation must answer "allow".
  *
  * `{}` stays correct for the other hook points, including Stop, where an
@@ -318,10 +318,10 @@ export function buildAntigravityCaptureCommand(
     // paths are space-free in every supported install layout (dev bun/electron
     // binaries and packaged apps under %LOCALAPPDATA%\Programs).
     const invocation = `${executablePath} ${scriptPath} ${event}`;
-    return `if not defined SYNARA_ANTIGRAVITY_EVENTS (more >nul 2>nul & powershell -NoProfile -Command ${win32FallbackHookJson(event)}) else (set ELECTRON_RUN_AS_NODE=1&& ${invocation})`;
+    return `if not defined TRELLIS_ANTIGRAVITY_EVENTS (more >nul 2>nul & powershell -NoProfile -Command ${win32FallbackHookJson(event)}) else (set ELECTRON_RUN_AS_NODE=1&& ${invocation})`;
   }
   const invocation = `${shellQuote(executablePath, platform)} ${shellQuote(scriptPath, platform)} ${shellQuote(event, platform)}`;
-  return `if [ -z "\${SYNARA_ANTIGRAVITY_EVENTS:-}" ]; then cat >/dev/null 2>&1 || :; printf '%s\\n' '${fallback}'; else ELECTRON_RUN_AS_NODE=1 ${invocation}; fi`;
+  return `if [ -z "\${TRELLIS_ANTIGRAVITY_EVENTS:-}" ]; then cat >/dev/null 2>&1 || :; printf '%s\\n' '${fallback}'; else ELECTRON_RUN_AS_NODE=1 ${invocation}; fi`;
 }
 
 export function hookScriptSource(): string {
@@ -331,7 +331,7 @@ let payload = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", (chunk) => { payload += chunk; });
 process.stdin.on("end", () => {
-  const target = process.env.SYNARA_ANTIGRAVITY_EVENTS;
+  const target = process.env.TRELLIS_ANTIGRAVITY_EVENTS;
   if (!target) {
     // Mirrors the shell wrapper's inactive fallback: PreToolUse must carry a
     // decision or Antigravity denies the tool call with an empty reason, and
@@ -389,10 +389,10 @@ process.stdin.on("end", () => {
   }
   fs.appendFileSync(target, event + "\\t" + capturedPayload + "\\n");
   if (event === "pre-tool") {
-    const decision = process.env.SYNARA_ANTIGRAVITY_HOOK_DECISION === "allow" ? "allow" : "ask";
+    const decision = process.env.TRELLIS_ANTIGRAVITY_HOOK_DECISION === "allow" ? "allow" : "ask";
     process.stdout.write(JSON.stringify({ decision }) + "\\n");
   } else if (event === "pre-invocation") {
-    // PreInvocation vetoes the upcoming LLM invocation; Synara-managed
+    // PreInvocation vetoes the upcoming LLM invocation; Trellis-managed
     // sessions run subagents deliberately, so never block them here. An
     // empty object would deny the launch and the parent CLI exits 1.
     process.stdout.write('{"decision":"allow"}\\n');
@@ -411,7 +411,7 @@ export function buildAntigravityHookConfig(
 ): Record<string, unknown> {
   const hook = (event: string) => ({ type: "command", command: command(event) });
   return {
-    "synara-capture": {
+    "trellis-capture": {
       PreToolUse: [{ matcher: "*", hooks: [hook("pre-tool")] }],
       PostToolUse: [{ matcher: "*", hooks: [hook("post-tool")] }],
       PreInvocation: [hook("pre-invocation")],
@@ -524,7 +524,7 @@ export async function ensureCapturePlugin(
     ".gemini",
     "antigravity-cli",
     "plugins",
-    "synara-capture",
+    "trellis-capture",
   );
   const scriptPath = path.join(pluginDir, "capture.cjs");
   await fs.mkdir(pluginDir, { recursive: true });
@@ -533,8 +533,8 @@ export async function ensureCapturePlugin(
     `${JSON.stringify(
       {
         $schema: "https://antigravity.google/schemas/v1/plugin.json",
-        name: "synara-capture",
-        description: "Streams Antigravity CLI lifecycle events to Synara when requested.",
+        name: "trellis-capture",
+        description: "Streams Antigravity CLI lifecycle events to Trellis when requested.",
       },
       null,
       2,
@@ -578,38 +578,38 @@ export function buildAntigravityTurnProcessEnvironment(input: {
   const hasGatewayBootstrap =
     input.gatewayConnection !== undefined && input.gatewayBootstrapToken !== undefined;
   const gatewayKeys = hasGatewayBootstrap
-    ? [SYNARA_AGENT_GATEWAY_URL_ENV, SYNARA_AGENT_GATEWAY_BOOTSTRAP_TOKEN_ENV]
+    ? [TRELLIS_AGENT_GATEWAY_URL_ENV, TRELLIS_AGENT_GATEWAY_BOOTSTRAP_TOKEN_ENV]
     : [];
   const gatewayEnvironment = hasGatewayBootstrap
     ? {
-        [SYNARA_AGENT_GATEWAY_URL_ENV]: input.gatewayConnection!.url,
-        [SYNARA_AGENT_GATEWAY_BOOTSTRAP_TOKEN_ENV]: input.gatewayBootstrapToken!,
+        [TRELLIS_AGENT_GATEWAY_URL_ENV]: input.gatewayConnection!.url,
+        [TRELLIS_AGENT_GATEWAY_BOOTSTRAP_TOKEN_ENV]: input.gatewayBootstrapToken!,
       }
     : {};
   return buildProviderChildEnvironment({
     provider: PROVIDER,
     ...(input.baseEnv === undefined ? {} : { baseEnv: input.baseEnv }),
-    inheritedSynaraKeys: [
-      "SYNARA_ANTIGRAVITY_EVENTS",
-      "SYNARA_ANTIGRAVITY_HOOK_DECISION",
+    inheritedTrellisKeys: [
+      "TRELLIS_ANTIGRAVITY_EVENTS",
+      "TRELLIS_ANTIGRAVITY_HOOK_DECISION",
       ...gatewayKeys,
     ],
     overrides: {
-      SYNARA_ANTIGRAVITY_EVENTS: input.eventFile,
-      SYNARA_ANTIGRAVITY_HOOK_DECISION: "allow",
+      TRELLIS_ANTIGRAVITY_EVENTS: input.eventFile,
+      TRELLIS_ANTIGRAVITY_HOOK_DECISION: "allow",
       ...gatewayEnvironment,
     },
   });
 }
 
 export function buildAntigravityTurnPrompt(
-  state: SynaraHarnessPolicyDeliveryState,
+  state: TrellisHarnessPolicyDeliveryState,
   input: {
     readonly prompt: string;
     readonly hasGatewaySessionLease: boolean;
   },
 ): string {
-  const harnessPolicy = takeSynaraHarnessPolicyForProviderSession(state, {
+  const harnessPolicy = takeTrellisHarnessPolicyForProviderSession(state, {
     provider: PROVIDER,
     scopedGatewayConnectionAvailable: input.hasGatewaySessionLease,
   });
@@ -646,7 +646,7 @@ export function parseAntigravityCliModelLabel(
 
   // Newer `agy models` rows are `slug<TAB>Display Name (Effort)`. Older builds
   // printed only the display label. Prefer the display column when present so
-  // Synara never treats `slug\tName` as a single model id at dispatch.
+  // Trellis never treats `slug\tName` as a single model id at dispatch.
   const tabIndex = stripped.indexOf("\t");
   const labelColumn =
     tabIndex >= 0 ? stripped.slice(tabIndex + 1).trim() : stripped.replace(/^(?:[*•-]\s+)+/u, "");
@@ -1771,7 +1771,7 @@ const makeAntigravityAdapter = (dependencies: AntigravityAdapterDependencies = {
     /**
      * Forward a hook event that belongs to a subagent conversation spawned by
      * the session's own CLI. The capture hook is installed globally, so the
-     * subagent CLI inherits `SYNARA_ANTIGRAVITY_EVENTS` and writes its
+     * subagent CLI inherits `TRELLIS_ANTIGRAVITY_EVENTS` and writes its
      * events into this session's hook stream. Those events describe a
      * different process and conversation: they must never rebind the session
      * (cursor, transcript, thread) — instead they are surfaced as child-thread
@@ -2269,7 +2269,7 @@ const makeAntigravityAdapter = (dependencies: AntigravityAdapterDependencies = {
             new ProviderAdapterRequestError({
               provider: PROVIDER,
               method: "plugin/install",
-              detail: messageFromCause(cause, "Failed to install the Synara capture hook."),
+              detail: messageFromCause(cause, "Failed to install the Trellis capture hook."),
               cause,
             }),
         });
@@ -2388,7 +2388,7 @@ const makeAntigravityAdapter = (dependencies: AntigravityAdapterDependencies = {
         const canBootstrapGateway = agentGatewayCredentials !== undefined;
         // Preparing the prompt must not consume delivery if bootstrap or spawn
         // fails. Commit the marker only when the CLI process actually starts.
-        const policyDeliveryState: SynaraHarnessPolicyDeliveryState = {
+        const policyDeliveryState: TrellisHarnessPolicyDeliveryState = {
           harnessPolicyDelivered: context.harnessPolicyDelivered,
           enableComputerControl: context.enableComputerControl,
         };
@@ -2415,7 +2415,7 @@ const makeAntigravityAdapter = (dependencies: AntigravityAdapterDependencies = {
           defaultEffortByModel.get(model),
         );
         const runDir = yield* Effect.tryPromise({
-          try: () => fs.mkdtemp(path.join(os.tmpdir(), "synara-antigravity-")),
+          try: () => fs.mkdtemp(path.join(os.tmpdir(), "trellis-antigravity-")),
           catch: (cause) =>
             new ProviderAdapterRequestError({
               provider: PROVIDER,
@@ -2453,7 +2453,7 @@ const makeAntigravityAdapter = (dependencies: AntigravityAdapterDependencies = {
           return yield* new ProviderAdapterRequestError({
             provider: PROVIDER,
             method: "turn/prepare",
-            detail: `The Synara gateway credential is no longer active for this provider turn (expected gateway capabilities: ${expectedCapabilities.join(", ") || "none"}; lease minted with: ${mintedCapabilities.join(", ") || "none"}).`,
+            detail: `The Trellis gateway credential is no longer active for this provider turn (expected gateway capabilities: ${expectedCapabilities.join(", ") || "none"}; lease minted with: ${mintedCapabilities.join(", ") || "none"}).`,
           });
         }
         if (gatewaySessionLease) context.gatewaySessionLease = gatewaySessionLease;

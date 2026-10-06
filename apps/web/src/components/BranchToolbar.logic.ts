@@ -1,8 +1,8 @@
-import type { GitBranch } from "@synara/contracts";
+import type { GitBranch } from "@trellis/contracts";
 import {
   deriveAssociatedWorktreeMetadata,
   type AssociatedWorktreeMetadata,
-} from "@synara/shared/threadWorkspace";
+} from "@trellis/shared/threadWorkspace";
 import { Schema } from "effect";
 import type { ThreadWorkspacePatch } from "../types";
 

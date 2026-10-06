@@ -21,9 +21,9 @@ import { ChildProcessSpawner } from "effect/unstable/process";
 import {
   DEFAULT_GIT_TEXT_GENERATION_MODEL,
   DEFAULT_GIT_TEXT_GENERATION_REASONING_EFFORT,
-} from "@synara/contracts";
-import { sanitizeGeneratedThreadTitle } from "@synara/shared/chatThreads";
-import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@synara/shared/git";
+} from "@trellis/contracts";
+import { sanitizeGeneratedThreadTitle } from "@trellis/shared/chatThreads";
+import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@trellis/shared/git";
 
 import {
   hydrateCodexProviderCredentialEnvironment,
@@ -113,7 +113,7 @@ function minimumCodexAuthValidityMs(timing: CodexTextGenerationTiming): number {
 class CodexTextGenerationTimingConfig extends ServiceMap.Service<
   CodexTextGenerationTimingConfig,
   CodexTextGenerationTiming
->()("synara/git/CodexTextGenerationTimingConfig") {}
+>()("trellis/git/CodexTextGenerationTimingConfig") {}
 
 export function codexTextGenerationPlatformError(
   platform: NodeJS.Platform,
@@ -439,7 +439,7 @@ const makeCodexTextGeneration = Effect.gen(function* () {
     return Effect.gen(function* () {
       const homePath = yield* acquireSecureTempDirectory({
         directory: tempDir(),
-        prefix: "synara-codex-text-home-",
+        prefix: "trellis-codex-text-home-",
       }).pipe(
         Effect.mapError(
           (cause) =>
@@ -627,7 +627,7 @@ const makeCodexTextGeneration = Effect.gen(function* () {
         });
         const schemaPath = yield* acquireSecureTempFile({
           directory: tempDir(),
-          prefix: "synara-codex-schema-",
+          prefix: "trellis-codex-schema-",
           content: JSON.stringify(toJsonSchemaObject(outputSchemaJson)),
         }).pipe(
           Effect.mapError(
@@ -641,7 +641,7 @@ const makeCodexTextGeneration = Effect.gen(function* () {
         );
         const outputPath = yield* acquireSecureTempFile({
           directory: tempDir(),
-          prefix: "synara-codex-output-",
+          prefix: "trellis-codex-output-",
           content: "",
         }).pipe(
           Effect.mapError(

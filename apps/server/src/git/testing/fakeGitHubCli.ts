@@ -13,7 +13,7 @@ import type {
   GitPullRequestComment,
   PullRequestMergeCapabilities,
   PullRequestStack,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import { GitHubCliError } from "../Errors.ts";
 import { GITHUB_READ_SLOTS } from "../githubReadGate.ts";

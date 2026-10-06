@@ -7,7 +7,7 @@ import {
   isWorkspaceRelativePathSafe,
   joinWorkspaceRelativePath,
   workspaceRelativePathOf,
-} from "@synara/shared/path";
+} from "@trellis/shared/path";
 
 export interface EditedFilePathTargets {
   absolutePath: string | null;

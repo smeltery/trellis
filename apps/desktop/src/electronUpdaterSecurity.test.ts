@@ -33,9 +33,9 @@ describe("electronUpdaterSecurity", () => {
     expect(
       resolveWindowsUpdatePublisherNames(
         ["CN=Feed Controlled, O=Unexpected"],
-        [" CN=Synara, O=Acme Tools ", "CN=Only", ""],
+        [" CN=Trellis, O=Acme Tools ", "CN=Only", ""],
       ),
-    ).toEqual(["CN=Synara, O=Acme Tools"]);
+    ).toEqual(["CN=Trellis, O=Acme Tools"]);
     expect(resolveWindowsUpdatePublisherNames(["CN=Feed Controlled, O=Unexpected"], null)).toEqual([
       "CN=Feed Controlled, O=Unexpected",
     ]);
@@ -47,9 +47,9 @@ describe("electronUpdaterSecurity", () => {
         null,
         JSON.stringify({
           Status: 0,
-          Path: "C:\\Users\\test\\AppData\\Local\\Temp\\SynaraSetup.exe",
+          Path: "C:\\Users\\test\\AppData\\Local\\Temp\\TrellisSetup.exe",
           SignerCertificate: {
-            Subject: "CN=Synara, O=Acme Tools",
+            Subject: "CN=Trellis, O=Acme Tools",
           },
         }),
         "",
@@ -57,8 +57,8 @@ describe("electronUpdaterSecurity", () => {
     });
 
     const result = await verifyWindowsUpdateCodeSignature(
-      ["CN=Synara, O=Acme Tools"],
-      "C:\\Users\\test\\AppData\\Local\\Temp\\SynaraSetup.exe",
+      ["CN=Trellis, O=Acme Tools"],
+      "C:\\Users\\test\\AppData\\Local\\Temp\\TrellisSetup.exe",
       { info: vi.fn(), warn: vi.fn() },
       {
         env: { SystemRoot: "C:\\Windows" },
@@ -82,8 +82,8 @@ describe("electronUpdaterSecurity", () => {
   it("rejects a CN-only publisher allowlist", async () => {
     const logger = { info: vi.fn(), warn: vi.fn() };
     const result = await verifyWindowsUpdateCodeSignature(
-      ["CN=Synara"],
-      "C:\\Temp\\SynaraSetup.exe",
+      ["CN=Trellis"],
+      "C:\\Temp\\TrellisSetup.exe",
       logger,
       {
         env: { SystemRoot: "C:\\Windows" },
@@ -92,8 +92,8 @@ describe("electronUpdaterSecurity", () => {
             null,
             JSON.stringify({
               Status: 0,
-              Path: "C:\\Temp\\SynaraSetup.exe",
-              SignerCertificate: { Subject: "CN=Synara, O=Acme Tools" },
+              Path: "C:\\Temp\\TrellisSetup.exe",
+              SignerCertificate: { Subject: "CN=Trellis, O=Acme Tools" },
             }),
             "",
           );
@@ -101,7 +101,7 @@ describe("electronUpdaterSecurity", () => {
       },
     );
 
-    expect(result).toContain("publisherNames: CN=Synara");
+    expect(result).toContain("publisherNames: CN=Trellis");
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining("signed with incorrect certificate"),
     );
@@ -109,8 +109,8 @@ describe("electronUpdaterSecurity", () => {
 
   it("fails closed when PowerShell cannot verify the signature", async () => {
     const result = await verifyWindowsUpdateCodeSignature(
-      ["CN=Synara, O=Acme Tools"],
-      "C:\\Temp\\SynaraSetup.exe",
+      ["CN=Trellis, O=Acme Tools"],
+      "C:\\Temp\\TrellisSetup.exe",
       { info: vi.fn(), warn: vi.fn() },
       {
         env: { SystemRoot: "C:\\Windows" },
@@ -126,8 +126,8 @@ describe("electronUpdaterSecurity", () => {
 
   it("fails closed when signature output is malformed", async () => {
     const result = await verifyWindowsUpdateCodeSignature(
-      ["CN=Synara, O=Acme Tools"],
-      "C:\\Temp\\SynaraSetup.exe",
+      ["CN=Trellis, O=Acme Tools"],
+      "C:\\Temp\\TrellisSetup.exe",
       { info: vi.fn(), warn: vi.fn() },
       {
         env: { SystemRoot: "C:\\Windows" },
@@ -142,8 +142,8 @@ describe("electronUpdaterSecurity", () => {
 
   it("fails closed when signature output omits the signed file path", async () => {
     const result = await verifyWindowsUpdateCodeSignature(
-      ["CN=Synara, O=Acme Tools"],
-      "C:\\Temp\\SynaraSetup.exe",
+      ["CN=Trellis, O=Acme Tools"],
+      "C:\\Temp\\TrellisSetup.exe",
       { info: vi.fn(), warn: vi.fn() },
       {
         env: { SystemRoot: "C:\\Windows" },
@@ -152,7 +152,7 @@ describe("electronUpdaterSecurity", () => {
             null,
             JSON.stringify({
               Status: 0,
-              SignerCertificate: { Subject: "CN=Synara, O=Acme Tools" },
+              SignerCertificate: { Subject: "CN=Trellis, O=Acme Tools" },
             }),
             "",
           );
@@ -166,8 +166,8 @@ describe("electronUpdaterSecurity", () => {
 
   it("returns a mismatch summary for an unexpected publisher", async () => {
     const result = await verifyWindowsUpdateCodeSignature(
-      ["CN=Synara, O=Acme Tools"],
-      "C:\\Temp\\SynaraSetup.exe",
+      ["CN=Trellis, O=Acme Tools"],
+      "C:\\Temp\\TrellisSetup.exe",
       { info: vi.fn(), warn: vi.fn() },
       {
         env: { SystemRoot: "C:\\Windows" },
@@ -176,7 +176,7 @@ describe("electronUpdaterSecurity", () => {
             null,
             JSON.stringify({
               Status: 0,
-              Path: "C:\\Temp\\SynaraSetup.exe",
+              Path: "C:\\Temp\\TrellisSetup.exe",
               SignerCertificate: { Subject: "CN=Someone Else, O=Acme Tools" },
             }),
             "",
@@ -185,7 +185,7 @@ describe("electronUpdaterSecurity", () => {
       },
     );
 
-    expect(result).toContain("publisherNames: CN=Synara, O=Acme Tools");
+    expect(result).toContain("publisherNames: CN=Trellis, O=Acme Tools");
     expect(result).toContain("Someone Else");
   });
 
@@ -194,7 +194,7 @@ describe("electronUpdaterSecurity", () => {
     const updaterModule = { BaseUpdater: FakeBaseUpdater };
     const prototype = FakeBaseUpdater.prototype as {
       spawnSyncLog?: (cmd: string, args?: string[]) => string;
-      __synaraSpawnSyncLogPatched?: boolean;
+      __trellisSpawnSyncLogPatched?: boolean;
     };
 
     hardenElectronUpdater(updaterModule, {}, "darwin");
@@ -207,7 +207,7 @@ describe("electronUpdaterSecurity", () => {
     const output = prototype.spawnSyncLog?.call(instance, process.execPath, ["--version"]);
 
     expect(output).toMatch(/^v\d+\.\d+\.\d+/);
-    expect(prototype.__synaraSpawnSyncLogPatched).toBe(true);
+    expect(prototype.__trellisSpawnSyncLogPatched).toBe(true);
   });
 
   it("replaces the NSIS signature verifier on Windows", async () => {
@@ -233,7 +233,7 @@ describe("electronUpdaterSecurity", () => {
 
     const result = await updater.verifyUpdateCodeSignature(
       ["CN=Feed Publisher, O=Acme Tools"],
-      "C:\\Temp\\SynaraSetup.exe",
+      "C:\\Temp\\TrellisSetup.exe",
     );
     expect(result).not.toContain("no valid embedded publisher subject DN");
     expect(result).toContain("signature verification could not be completed");
@@ -251,7 +251,7 @@ describe("electronUpdaterSecurity", () => {
     await expect(
       updater.verifyUpdateCodeSignature(
         ["CN=Feed Controlled, O=Unexpected"],
-        "C:\\Temp\\SynaraSetup.exe",
+        "C:\\Temp\\TrellisSetup.exe",
       ),
     ).resolves.toContain("no valid embedded publisher subject DN");
   });

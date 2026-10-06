@@ -13,8 +13,8 @@ import {
   TriangleAlertIcon,
   type LucideIcon,
 } from "~/lib/icons";
-import { ThreadId, type ProviderMentionReference } from "@synara/contracts";
-import { isLocalAbsolutePath } from "@synara/shared/path";
+import { ThreadId, type ProviderMentionReference } from "@trellis/contracts";
+import { isLocalAbsolutePath } from "@trellis/shared/path";
 import "katex/dist/katex.min.css";
 import { matchWikiLinkAt, remarkWikiLinks } from "../lib/remarkWikiLinks";
 import { remarkGithubAlerts, type GithubAlertKind } from "../lib/remarkGithubAlerts";
@@ -250,9 +250,9 @@ function restoreLiteralDollarPlaceholders(value: string): string {
     .replaceAll(encodeURIComponent(LITERAL_DOLLAR_PLACEHOLDER), "$");
 }
 
-// synara://thread/<target> links carry an id or title that may be
+// trellis://thread/<target> links carry an id or title that may be
 // %-encoded; a malformed sequence keeps the raw target instead of throwing.
-function decodeSynaraThreadLinkTarget(target: string): string {
+function decodeTrellisThreadLinkTarget(target: string): string {
   try {
     return decodeURIComponent(target).trim();
   } catch {
@@ -262,7 +262,7 @@ function decodeSynaraThreadLinkTarget(target: string): string {
 
 function markdownUrlTransform(href: string): string {
   const restoredHref = restoreLiteralDollarPlaceholders(href);
-  if (restoredHref.startsWith("thread://") || restoredHref.startsWith("synara://thread/")) {
+  if (restoredHref.startsWith("thread://") || restoredHref.startsWith("trellis://thread/")) {
     return restoredHref;
   }
   return rewriteMarkdownFileUriHref(restoredHref) ?? defaultUrlTransform(restoredHref);
@@ -1126,8 +1126,8 @@ const MARKDOWN_COMPONENTS: Components = {
     const restoredHref = href ? restoreLiteralDollarPlaceholders(href) : href;
     const threadHref = restoredHref?.startsWith("thread://")
       ? restoredHref.slice("thread://".length)
-      : restoredHref?.startsWith("synara://thread/")
-        ? decodeSynaraThreadLinkTarget(restoredHref.slice("synara://thread/".length))
+      : restoredHref?.startsWith("trellis://thread/")
+        ? decodeTrellisThreadLinkTarget(restoredHref.slice("trellis://thread/".length))
         : null;
     if (threadHref && onOpenThread) {
       return (

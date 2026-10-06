@@ -10,7 +10,11 @@
 // plain mocked object under a stubbed `window`, matching real Electron
 // delivery where frames arrive as {windowId, seq, jpeg} payloads.
 
-import type { DesktopComputerPreviewFrame, ThreadComputerState, ThreadId } from "@synara/contracts";
+import type {
+  DesktopComputerPreviewFrame,
+  ThreadComputerState,
+  ThreadId,
+} from "@trellis/contracts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const reactHarness = vi.hoisted(() => {

@@ -8,7 +8,7 @@ import type {
   ResolvedKeybindingsConfig,
   ServerConfig,
   ServerKeybindingEdit,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -92,7 +92,7 @@ export function KeyboardShortcutsResetButton() {
   const resetAll = async () => {
     const message = [
       "Reset all shortcuts to their defaults?",
-      "Every shortcut you changed, added, or removed goes back to what Synara ships with. Project script shortcuts are kept.",
+      "Every shortcut you changed, added, or removed goes back to what Trellis ships with. Project script shortcuts are kept.",
     ].join("\n");
     const api = readNativeApi();
     const confirmed = api

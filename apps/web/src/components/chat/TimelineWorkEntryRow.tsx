@@ -3,8 +3,8 @@
 // Layer: Web chat presentation component
 // Exports: TimelineWorkEntryRow, EditedFileRowContent, prefersCompactWorkEntryRow
 
-import type { ModelSelection, TurnId } from "@synara/contracts";
-import { PROVIDER_DESCRIPTORS } from "@synara/shared/providerMetadata";
+import type { ModelSelection, TurnId } from "@trellis/contracts";
+import { PROVIDER_DESCRIPTORS } from "@trellis/shared/providerMetadata";
 import {
   createElement,
   memo,
@@ -65,7 +65,7 @@ import { DiffStatLabel } from "./DiffStatLabel";
 import { type ExpandedImagePreview } from "./ExpandedImagePreview";
 import { LinkChipIcon } from "../LinkChipIcon";
 import { normalizeCompactToolLabel } from "./MessagesTimeline.logic";
-import { SynaraLogo } from "../SynaraLogo";
+import { TrellisLogo } from "../TrellisLogo";
 import { ToolCallDetailsContent } from "./ToolCallDetailsDialog";
 import { DisclosureChevron } from "../ui/DisclosureChevron";
 import { DisclosureRegion } from "../ui/DisclosureRegion";
@@ -77,14 +77,14 @@ import {
 } from "../../lib/toolArgumentSummary";
 import {
   deriveFriendlyCommandTarget,
-  deriveSynaraMcpToolTitle,
+  deriveTrellisMcpToolTitle,
   extractWebFetchUrl,
   isGenericToolTitle,
-  isSynaraBrowserToolCall,
+  isTrellisBrowserToolCall,
   normalizeToolTextForComparison,
   resolveCommandVisualKind,
-  sanitizeSynaraMcpToolPreview,
-  type SynaraMcpToolStatus,
+  sanitizeTrellisMcpToolPreview,
+  type TrellisMcpToolStatus,
 } from "../../lib/toolCallLabel";
 import { formatLiveActivityMeta, useLiveActivityNow } from "../../lib/liveActivityPresentation";
 import { openWorkspaceFileReference, useWorkspaceFileOpener } from "../../lib/workspaceFileOpener";
@@ -106,8 +106,8 @@ type TimelineWorkEntry = WorkLogEntry;
 
 const AgentTaskIcon: LucideIcon = (props) => <BotIcon {...props} />;
 
-const SynaraToolIcon: LucideIcon = ({ className, ...props }) => (
-  <SynaraLogo {...props} className={cn("text-current", className)} />
+const TrellisToolIcon: LucideIcon = ({ className, ...props }) => (
+  <TrellisLogo {...props} className={cn("text-current", className)} />
 );
 
 function workToneIcon(tone: TimelineWorkEntry["tone"]): {
@@ -304,8 +304,8 @@ export function renderWorkEntryIcon(Icon: LucideIcon, className: string): ReactE
 export function workEntryLeftIcon(workEntry: TimelineWorkEntry): LucideIcon {
   if (isComputerWorkEntry(workEntry)) return ComputerUseIcon;
   if (isGitHubMcpToolCall(workEntry)) return GitHubIcon;
-  if (isSynaraBrowserWorkEntry(workEntry)) return GlobeIcon;
-  if (isSynaraToolCall(workEntry)) return SynaraToolIcon;
+  if (isTrellisBrowserWorkEntry(workEntry)) return GlobeIcon;
+  if (isTrellisToolCall(workEntry)) return TrellisToolIcon;
   if (workEntry.itemType === "mcp_tool_call") return McpIcon;
   return workEntryIcon(workEntry);
 }
@@ -322,20 +322,20 @@ function isGitHubMcpToolCall(workEntry: TimelineWorkEntry): boolean {
   return Boolean(toolName?.startsWith("mcp__codex_apps__github"));
 }
 
-// Synara's own agent-gateway tools (synara_list_threads, synara_create_thread,
-// ...) get the Synara mark instead of the generic MCP glyph. Providers report
-// the call differently: Claude prefixes the MCP server (mcp__synara__*), ACP
-// agents surface the bare tool name (synara_*), and Codex reports server/tool
-// pairs that the label humanizer renders as "Synara: ...".
-function toolWorkEntryStatus(workEntry: TimelineWorkEntry): SynaraMcpToolStatus {
+// Trellis's own agent-gateway tools (trellis_list_threads, trellis_create_thread,
+// ...) get the Trellis mark instead of the generic MCP glyph. Providers report
+// the call differently: Claude prefixes the MCP server (mcp__trellis__*), ACP
+// agents surface the bare tool name (trellis_*), and Codex reports server/tool
+// pairs that the label humanizer renders as "Trellis: ...".
+function toolWorkEntryStatus(workEntry: TimelineWorkEntry): TrellisMcpToolStatus {
   if (workEntry.toolStatus) return workEntry.toolStatus;
   return workEntry.activityKind !== undefined && workEntry.activityKind !== "tool.completed"
     ? "running"
     : "completed";
 }
 
-function isSynaraBrowserWorkEntry(workEntry: TimelineWorkEntry): boolean {
-  return isSynaraBrowserToolCall({
+function isTrellisBrowserWorkEntry(workEntry: TimelineWorkEntry): boolean {
+  return isTrellisBrowserToolCall({
     toolName: workEntry.toolName,
     title: workEntry.toolTitle,
     fallbackLabel: workEntry.label,
@@ -343,9 +343,9 @@ function isSynaraBrowserWorkEntry(workEntry: TimelineWorkEntry): boolean {
   });
 }
 
-function isSynaraToolCall(workEntry: TimelineWorkEntry): boolean {
+function isTrellisToolCall(workEntry: TimelineWorkEntry): boolean {
   return (
-    deriveSynaraMcpToolTitle({
+    deriveTrellisMcpToolTitle({
       toolName: workEntry.toolName,
       title: workEntry.toolTitle,
       fallbackLabel: workEntry.label,
@@ -390,7 +390,7 @@ function capitalizePhrase(value: string): string {
 function toolWorkEntryHeading(workEntry: TimelineWorkEntry): string {
   if (computerToolName(workEntry.toolName)) {
     // Work-log projection already resolves the action and target. The generic
-    // MCP presentation would replace that with "Synara clicked the desktop".
+    // MCP presentation would replace that with "Trellis clicked the desktop".
     const title = normalizeCompactToolLabel(workEntry.toolTitle ?? "");
     if (title && !isGenericToolTitle(title) && !computerToolName(title))
       return capitalizePhrase(title);
@@ -402,14 +402,14 @@ function toolWorkEntryHeading(workEntry: TimelineWorkEntry): string {
   if (workEntry.activityKind === "turn.tasks.updated") {
     return capitalizePhrase(workEntry.label);
   }
-  const synaraTitle = deriveSynaraMcpToolTitle({
+  const trellisTitle = deriveTrellisMcpToolTitle({
     toolName: workEntry.toolName,
     title: workEntry.toolTitle,
     fallbackLabel: workEntry.label,
     status: toolWorkEntryStatus(workEntry),
   });
-  if (synaraTitle) {
-    return synaraTitle;
+  if (trellisTitle) {
+    return trellisTitle;
   }
   if (!workEntry.toolTitle) {
     return capitalizePhrase(normalizeCompactToolLabel(workEntry.label));
@@ -440,8 +440,8 @@ function workEntryDisplayParts(workEntry: TimelineWorkEntry): {
   const rawPreview = workEntryPreview(workEntry);
   const preview =
     !isGitHubMcpToolCall(workEntry) &&
-    (isSynaraBrowserWorkEntry(workEntry) || isSynaraToolCall(workEntry))
-      ? sanitizeSynaraMcpToolPreview({
+    (isTrellisBrowserWorkEntry(workEntry) || isTrellisToolCall(workEntry))
+      ? sanitizeTrellisMcpToolPreview({
           preview: rawPreview,
           heading,
           status: toolWorkEntryStatus(workEntry),
@@ -564,14 +564,14 @@ export const TimelineWorkEntryRow = memo(function TimelineWorkEntryRow(props: {
   // deliberately skip it and reuse only the shared tool-label typography.
   const isGitHubToolRow = isGitHubMcpToolCall(workEntry);
   const isComputerToolRow = isComputerWorkEntry(workEntry);
-  const isSynaraBrowserToolRow = !isGitHubToolRow && isSynaraBrowserWorkEntry(workEntry);
-  const isSynaraToolRow =
-    !isGitHubToolRow && !isSynaraBrowserToolRow && isSynaraToolCall(workEntry);
+  const isTrellisBrowserToolRow = !isGitHubToolRow && isTrellisBrowserWorkEntry(workEntry);
+  const isTrellisToolRow =
+    !isGitHubToolRow && !isTrellisBrowserToolRow && isTrellisToolCall(workEntry);
   const isMcpToolRow =
     workEntry.itemType === "mcp_tool_call" &&
     !isGitHubToolRow &&
-    !isSynaraBrowserToolRow &&
-    !isSynaraToolRow;
+    !isTrellisBrowserToolRow &&
+    !isTrellisToolRow;
   const LeftIcon = workEntryLeftIcon(workEntry);
   const leftIconKind = webFetchUrl
     ? "web-fetch"
@@ -579,10 +579,10 @@ export const TimelineWorkEntryRow = memo(function TimelineWorkEntryRow(props: {
       ? "computer"
       : isGitHubToolRow || EntryIcon === GitHubIcon
         ? "github"
-        : isSynaraBrowserToolRow
+        : isTrellisBrowserToolRow
           ? "browser"
-          : isSynaraToolRow
-            ? "synara"
+          : isTrellisToolRow
+            ? "trellis"
             : isMcpToolRow
               ? "mcp"
               : undefined;

@@ -1,44 +1,44 @@
 // FILE: desktopIdentity.ts
 // Purpose: Defines the canonical desktop application identity across packaging and runtime.
 
-export const SYNARA_DESKTOP_SCHEME = "synara";
-export const SYNARA_DESKTOP_ORIGIN = `${SYNARA_DESKTOP_SCHEME}://app`;
-export const SYNARA_DESKTOP_ENTRY_URL = `${SYNARA_DESKTOP_ORIGIN}/index.html`;
-export const SYNARA_DESKTOP_UPDATE_CHANNEL = "synara";
-export const SYNARA_PRODUCTION_BUNDLE_ID = "com.emanueledipietro.synara";
-export const SYNARA_DEVELOPMENT_BUNDLE_ID = `${SYNARA_PRODUCTION_BUNDLE_ID}.dev`;
-export const SYNARA_CANARY_BUNDLE_ID = `${SYNARA_PRODUCTION_BUNDLE_ID}.canary`;
+export const TRELLIS_DESKTOP_SCHEME = "trellis";
+export const TRELLIS_DESKTOP_ORIGIN = `${TRELLIS_DESKTOP_SCHEME}://app`;
+export const TRELLIS_DESKTOP_ENTRY_URL = `${TRELLIS_DESKTOP_ORIGIN}/index.html`;
+export const TRELLIS_DESKTOP_UPDATE_CHANNEL = "trellis";
+export const TRELLIS_PRODUCTION_BUNDLE_ID = "com.smeltery.trellis";
+export const TRELLIS_DEVELOPMENT_BUNDLE_ID = `${TRELLIS_PRODUCTION_BUNDLE_ID}.dev`;
+export const TRELLIS_CANARY_BUNDLE_ID = `${TRELLIS_PRODUCTION_BUNDLE_ID}.canary`;
 /** Display/setup identity of the GUI host; this value does not confer native authority. */
-export const SYNARA_DESKTOP_BUNDLE_ID_ENV = "SYNARA_DESKTOP_BUNDLE_ID";
-export const SYNARA_CANARY_DESKTOP_SCHEME = "synara-canary";
-export const SYNARA_CANARY_DESKTOP_ORIGIN = `${SYNARA_CANARY_DESKTOP_SCHEME}://app`;
-export const SYNARA_CANARY_DESKTOP_ENTRY_URL = `${SYNARA_CANARY_DESKTOP_ORIGIN}/index.html`;
-export const SYNARA_CUA_BUNDLE_ID = `${SYNARA_PRODUCTION_BUNDLE_ID}.cua`;
-export const SYNARA_CUA_DESKTOP_SCHEME = "synara-cua";
-export const SYNARA_CUA_DESKTOP_ORIGIN = `${SYNARA_CUA_DESKTOP_SCHEME}://app`;
-export const SYNARA_CUA_DESKTOP_ENTRY_URL = `${SYNARA_CUA_DESKTOP_ORIGIN}/index.html`;
-export const SYNARA_BETA_BUNDLE_ID = `${SYNARA_PRODUCTION_BUNDLE_ID}.beta`;
-export const SYNARA_BETA_DESKTOP_SCHEME = "synara-beta";
-export const SYNARA_BETA_DESKTOP_ORIGIN = `${SYNARA_BETA_DESKTOP_SCHEME}://app`;
-export const SYNARA_BETA_DESKTOP_ENTRY_URL = `${SYNARA_BETA_DESKTOP_ORIGIN}/index.html`;
-export const SYNARA_SOURCE_DESKTOP_BUILD_MARKER = "synara-source-desktop-build-v2";
-export const SYNARA_DESKTOP_SMOKE_USER_DATA_ENV = "SYNARA_DESKTOP_SMOKE_USER_DATA";
+export const TRELLIS_DESKTOP_BUNDLE_ID_ENV = "TRELLIS_DESKTOP_BUNDLE_ID";
+export const TRELLIS_CANARY_DESKTOP_SCHEME = "trellis-canary";
+export const TRELLIS_CANARY_DESKTOP_ORIGIN = `${TRELLIS_CANARY_DESKTOP_SCHEME}://app`;
+export const TRELLIS_CANARY_DESKTOP_ENTRY_URL = `${TRELLIS_CANARY_DESKTOP_ORIGIN}/index.html`;
+export const TRELLIS_CUA_BUNDLE_ID = `${TRELLIS_PRODUCTION_BUNDLE_ID}.cua`;
+export const TRELLIS_CUA_DESKTOP_SCHEME = "trellis-cua";
+export const TRELLIS_CUA_DESKTOP_ORIGIN = `${TRELLIS_CUA_DESKTOP_SCHEME}://app`;
+export const TRELLIS_CUA_DESKTOP_ENTRY_URL = `${TRELLIS_CUA_DESKTOP_ORIGIN}/index.html`;
+export const TRELLIS_BETA_BUNDLE_ID = `${TRELLIS_PRODUCTION_BUNDLE_ID}.beta`;
+export const TRELLIS_BETA_DESKTOP_SCHEME = "trellis-beta";
+export const TRELLIS_BETA_DESKTOP_ORIGIN = `${TRELLIS_BETA_DESKTOP_SCHEME}://app`;
+export const TRELLIS_BETA_DESKTOP_ENTRY_URL = `${TRELLIS_BETA_DESKTOP_ORIGIN}/index.html`;
+export const TRELLIS_SOURCE_DESKTOP_BUILD_MARKER = "trellis-source-desktop-build-v2";
+export const TRELLIS_DESKTOP_SMOKE_USER_DATA_ENV = "TRELLIS_DESKTOP_SMOKE_USER_DATA";
 
-export type SynaraDesktopFlavor = "production" | "development" | "canary" | "cua" | "beta";
-export const SYNARA_PACKAGED_DESKTOP_FLAVORS = ["production", "canary", "cua", "beta"] as const;
-export type SynaraPackagedDesktopFlavor = (typeof SYNARA_PACKAGED_DESKTOP_FLAVORS)[number];
+export type TrellisDesktopFlavor = "production" | "development" | "canary" | "cua" | "beta";
+export const TRELLIS_PACKAGED_DESKTOP_FLAVORS = ["production", "canary", "cua", "beta"] as const;
+export type TrellisPackagedDesktopFlavor = (typeof TRELLIS_PACKAGED_DESKTOP_FLAVORS)[number];
 
 /**
  * electron-updater matches the update channel against the release tag's
  * prerelease identifier, so the beta flavor must use the `beta` channel to see
- * `vX.Y.Z-beta.N` releases. Every other flavor keeps the `synara` channel.
+ * `vX.Y.Z-beta.N` releases. Every other flavor keeps the `trellis` channel.
  */
-export function desktopUpdateChannel(flavor: SynaraDesktopFlavor): string {
-  return flavor === "beta" ? "beta" : SYNARA_DESKTOP_UPDATE_CHANNEL;
+export function desktopUpdateChannel(flavor: TrellisDesktopFlavor): string {
+  return flavor === "beta" ? "beta" : TRELLIS_DESKTOP_UPDATE_CHANNEL;
 }
 
-export interface SynaraDesktopIdentity {
-  readonly flavor: SynaraDesktopFlavor;
+export interface TrellisDesktopIdentity {
+  readonly flavor: TrellisDesktopFlavor;
   readonly displayName: string;
   readonly bundleId: string;
   readonly scheme: string;
@@ -49,11 +49,11 @@ export interface SynaraDesktopIdentity {
   readonly usesScriptedUpdates: boolean;
 }
 
-export function resolveSynaraDesktopFlavor(input: {
+export function resolveTrellisDesktopFlavor(input: {
   readonly isDevelopment: boolean;
   readonly requestedFlavor?: string | undefined;
   readonly allowDevelopmentOverride?: boolean | undefined;
-}): SynaraDesktopFlavor {
+}): TrellisDesktopFlavor {
   const requestedFlavor = input.requestedFlavor?.trim().toLowerCase();
   if (requestedFlavor === "cua") {
     return "cua";
@@ -74,19 +74,19 @@ export function resolveSynaraDesktopFlavor(input: {
 }
 
 /** Packaged identity is fixed when the artifact is staged, before it is signed. */
-export function resolveSynaraDesktopRuntimeFlavor(input: {
+export function resolveTrellisDesktopRuntimeFlavor(input: {
   readonly isPackaged: boolean;
   readonly isDevelopment: boolean;
   readonly packagedFlavor?: unknown;
   readonly requestedFlavor?: string | undefined;
   readonly allowDevelopmentOverride?: boolean | undefined;
-}): SynaraDesktopFlavor {
+}): TrellisDesktopFlavor {
   if (input.isPackaged && input.packagedFlavor !== undefined) {
     const flavor = input.packagedFlavor;
     if (flavor === "production" || flavor === "canary" || flavor === "cua" || flavor === "beta") {
       return flavor;
     }
-    throw new Error("The packaged Synara desktop flavor is invalid. Rebuild the application.");
+    throw new Error("The packaged Trellis desktop flavor is invalid. Rebuild the application.");
   }
   // Source launchers also use an app bundle on macOS. Their build marker keeps
   // the existing environment-based routing, while legacy packaged apps remain
@@ -94,7 +94,7 @@ export function resolveSynaraDesktopRuntimeFlavor(input: {
   if (input.isPackaged && input.allowDevelopmentOverride !== true) {
     return "production";
   }
-  return resolveSynaraDesktopFlavor(input);
+  return resolveTrellisDesktopFlavor(input);
 }
 
 export function canOverrideDesktopSmokeUserData(input: {
@@ -105,72 +105,72 @@ export function canOverrideDesktopSmokeUserData(input: {
     input.packagedFlavor === "cua" ||
     input.packagedFlavor === "beta" ||
     (input.packagedFlavor === undefined &&
-      input.sourceBuildMarker === SYNARA_SOURCE_DESKTOP_BUILD_MARKER)
+      input.sourceBuildMarker === TRELLIS_SOURCE_DESKTOP_BUILD_MARKER)
   );
 }
 
-export function synaraDesktopIdentity(flavor: SynaraDesktopFlavor): SynaraDesktopIdentity {
+export function trellisDesktopIdentity(flavor: TrellisDesktopFlavor): TrellisDesktopIdentity {
   if (flavor === "cua") {
     return {
       flavor,
-      displayName: "Synara Cua",
-      bundleId: SYNARA_CUA_BUNDLE_ID,
-      scheme: SYNARA_CUA_DESKTOP_SCHEME,
-      origin: SYNARA_CUA_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_CUA_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-cua",
-      defaultHomeDirectoryName: ".synara-cua",
+      displayName: "Trellis Cua",
+      bundleId: TRELLIS_CUA_BUNDLE_ID,
+      scheme: TRELLIS_CUA_DESKTOP_SCHEME,
+      origin: TRELLIS_CUA_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_CUA_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-cua",
+      defaultHomeDirectoryName: ".trellis-cua",
       usesScriptedUpdates: true,
     };
   }
   if (flavor === "canary") {
     return {
       flavor,
-      displayName: "Synara Canary",
-      bundleId: SYNARA_CANARY_BUNDLE_ID,
-      scheme: SYNARA_CANARY_DESKTOP_SCHEME,
-      origin: SYNARA_CANARY_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_CANARY_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-canary",
-      defaultHomeDirectoryName: ".synara-canary",
+      displayName: "Trellis Canary",
+      bundleId: TRELLIS_CANARY_BUNDLE_ID,
+      scheme: TRELLIS_CANARY_DESKTOP_SCHEME,
+      origin: TRELLIS_CANARY_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_CANARY_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-canary",
+      defaultHomeDirectoryName: ".trellis-canary",
       usesScriptedUpdates: true,
     };
   }
   if (flavor === "beta") {
     return {
       flavor,
-      displayName: "Synara Beta",
-      bundleId: SYNARA_BETA_BUNDLE_ID,
-      scheme: SYNARA_BETA_DESKTOP_SCHEME,
-      origin: SYNARA_BETA_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_BETA_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-beta",
-      defaultHomeDirectoryName: ".synara-beta",
+      displayName: "Trellis Beta",
+      bundleId: TRELLIS_BETA_BUNDLE_ID,
+      scheme: TRELLIS_BETA_DESKTOP_SCHEME,
+      origin: TRELLIS_BETA_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_BETA_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-beta",
+      defaultHomeDirectoryName: ".trellis-beta",
       usesScriptedUpdates: false,
     };
   }
   if (flavor === "development") {
     return {
       flavor,
-      displayName: "Synara (Dev)",
-      bundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      scheme: SYNARA_DESKTOP_SCHEME,
-      origin: SYNARA_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-dev",
-      defaultHomeDirectoryName: ".synara-dev",
+      displayName: "Trellis (Dev)",
+      bundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      scheme: TRELLIS_DESKTOP_SCHEME,
+      origin: TRELLIS_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-dev",
+      defaultHomeDirectoryName: ".trellis-dev",
       usesScriptedUpdates: false,
     };
   }
   return {
     flavor,
-    displayName: "Synara",
-    bundleId: SYNARA_PRODUCTION_BUNDLE_ID,
-    scheme: SYNARA_DESKTOP_SCHEME,
-    origin: SYNARA_DESKTOP_ORIGIN,
-    entryUrl: SYNARA_DESKTOP_ENTRY_URL,
-    userDataDirectoryName: "synara",
-    defaultHomeDirectoryName: ".synara",
+    displayName: "Trellis",
+    bundleId: TRELLIS_PRODUCTION_BUNDLE_ID,
+    scheme: TRELLIS_DESKTOP_SCHEME,
+    origin: TRELLIS_DESKTOP_ORIGIN,
+    entryUrl: TRELLIS_DESKTOP_ENTRY_URL,
+    userDataDirectoryName: "trellis",
+    defaultHomeDirectoryName: ".trellis",
     usesScriptedUpdates: false,
   };
 }

@@ -12,7 +12,7 @@ import type {
   ProviderKind,
   ProviderRuntimeEvent,
   ProviderSession,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   ApprovalRequestId,
   CommandId,
@@ -23,7 +23,7 @@ import {
   RuntimeItemId,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect, Exit, Layer, ManagedRuntime, Option, PubSub, Scope, Stream } from "effect";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -375,7 +375,7 @@ describe("ProviderRuntimeIngestion", () => {
     readonly persistedStream?: boolean;
     readonly computerManager?: ComputerManager;
   }) {
-    const workspaceRoot = makeTempDir("synara-provider-project-");
+    const workspaceRoot = makeTempDir("trellis-provider-project-");
     fs.mkdirSync(path.join(workspaceRoot, ".git"));
     const provider = createProviderServiceHarness(
       options?.persistedStream === true ? { persistedStream: true } : undefined,
@@ -1591,7 +1591,8 @@ describe("ProviderRuntimeIngestion", () => {
         turnId,
         payload: {
           state: "cancelled",
-          stopReason: outcome === "user-cancel" ? "cancelled" : "synara.devin.wedge-recovery",
+          stopReason:
+            outcome === "user-cancel" ? "cancelled" : "trellis.smeltery.devin.wedge-recovery",
         },
       });
       await waitForThread(harness.engine, (thread) => thread.session?.status === "interrupted");
@@ -1644,7 +1645,7 @@ describe("ProviderRuntimeIngestion", () => {
           payload: {
             message: "Arbitrary failure message",
             class: "transport_error",
-            detail: { reason: "synara.devin.wedge-recovery" },
+            detail: { reason: "trellis.smeltery.devin.wedge-recovery" },
           },
         });
         thread = await waitForThread(
@@ -5805,7 +5806,7 @@ describe("ProviderRuntimeIngestion", () => {
         ? (data.rawOutput as Record<string, unknown>)
         : {};
 
-    expect(data.__synaraTruncated).toBe(true);
+    expect(data.__trellisTruncated).toBe(true);
     expect(JSON.stringify(data).length).toBeLessThan(17_000);
     expect(rawInput.command).toBe("bun run something");
     expect(String(rawOutput.stdout ?? "").length).toBeLessThan(3_000);

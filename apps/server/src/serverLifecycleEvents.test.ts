@@ -16,9 +16,9 @@ describe("ServerLifecycleEvents", () => {
           payload: {
             cwd: "/one",
             homeDir: "/home/tester",
-            chatWorkspaceRoot: "/home/tester/.synara/chats",
-            studioWorkspaceRoot: "/home/tester/.synara/chats/Studio",
-            groupsWorkspaceRoot: "/home/tester/.synara/chats/Groups",
+            chatWorkspaceRoot: "/home/tester/.trellis/chats",
+            studioWorkspaceRoot: "/home/tester/.trellis/chats/Studio",
+            groupsWorkspaceRoot: "/home/tester/.trellis/chats/Groups",
             projectName: "one",
           },
         });
@@ -33,9 +33,9 @@ describe("ServerLifecycleEvents", () => {
           payload: {
             cwd: "/two",
             homeDir: "/home/tester",
-            chatWorkspaceRoot: "/home/tester/.synara/chats",
-            studioWorkspaceRoot: "/home/tester/.synara/chats/Studio",
-            groupsWorkspaceRoot: "/home/tester/.synara/chats/Groups",
+            chatWorkspaceRoot: "/home/tester/.trellis/chats",
+            studioWorkspaceRoot: "/home/tester/.trellis/chats/Studio",
+            groupsWorkspaceRoot: "/home/tester/.trellis/chats/Groups",
             projectName: "two",
           },
         });

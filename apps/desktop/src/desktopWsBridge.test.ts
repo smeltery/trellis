@@ -14,13 +14,13 @@ describe("desktopWsBridge", () => {
     expect(normalizeDesktopWsUrl(null)).toBeNull();
   });
 
-  it("reads only the canonical Synara desktop URL environment value", () => {
+  it("reads only the canonical Trellis desktop URL environment value", () => {
     expect(
       resolveDesktopWsUrlFromEnv({
-        SYNARA_DESKTOP_WS_URL: "ws://127.0.0.1:6000/?token=synara",
+        TRELLIS_DESKTOP_WS_URL: "ws://127.0.0.1:6000/?token=trellis",
         UNRELATED_DESKTOP_WS_URL: "ws://127.0.0.1:5000/?token=ignored",
       }),
-    ).toBe("ws://127.0.0.1:6000/?token=synara");
+    ).toBe("ws://127.0.0.1:6000/?token=trellis");
     expect(
       resolveDesktopWsUrlFromEnv({
         UNRELATED_DESKTOP_WS_URL: "ws://127.0.0.1:5000/?token=ignored",

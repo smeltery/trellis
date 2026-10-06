@@ -14,7 +14,7 @@ afterEach(async () => {
   for (const home of homes.splice(0)) await rm(home, { recursive: true, force: true });
 });
 async function directory() {
-  const home = await mkdtemp(join(tmpdir(), "synara-vault-key-"));
+  const home = await mkdtemp(join(tmpdir(), "trellis-vault-key-"));
   homes.push(home);
   return home;
 }

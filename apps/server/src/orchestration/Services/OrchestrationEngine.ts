@@ -14,7 +14,7 @@ import type {
   OrchestrationCommand,
   OrchestrationEvent,
   OrchestrationReadModel,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { ServiceMap } from "effect";
 import type { Effect, Scope, Stream } from "effect";
 
@@ -173,4 +173,4 @@ export interface OrchestrationEngineShape {
 export class OrchestrationEngineService extends ServiceMap.Service<
   OrchestrationEngineService,
   OrchestrationEngineShape
->()("synara/orchestration/Services/OrchestrationEngine/OrchestrationEngineService") {}
+>()("trellis/orchestration/Services/OrchestrationEngine/OrchestrationEngineService") {}

@@ -8,10 +8,10 @@ import {
   PROVIDER_DISPLAY_NAMES,
   type ProviderKind,
   type SidechatExpiry,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { GROUPS_ON, VISIBLE_PROVIDER_DESCRIPTORS } from "../betaFeatures";
-import { sameAppSnapShortcut } from "@synara/shared/appSnapShortcut";
-import { desktopFlavorFromProtocol } from "@synara/shared/betaFeatures";
+import { sameAppSnapShortcut } from "@trellis/shared/appSnapShortcut";
+import { desktopFlavorFromProtocol } from "@trellis/shared/betaFeatures";
 import { SafariAccessSetupButton } from "../components/SafariAccessOnboarding";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -204,7 +204,7 @@ const SIDECHAT_EXPIRY_OPTIONS = [
 ] as const satisfies ReadonlyArray<{ value: SidechatExpiry; label: string }>;
 
 const GITHUB_LINK_OPEN_TARGET_LABELS = {
-  app: "In Synara",
+  app: "In Trellis",
   browser: "In-app browser",
   external: "External browser",
 } as const satisfies Record<GitHubLinkOpenTarget, string>;
@@ -375,9 +375,9 @@ function SettingsRouteView() {
     toastManager.add({
       type: "warning",
       title: "Restart to apply title bar",
-      description: "The window frame updates the next time Synara launches.",
+      description: "The window frame updates the next time Trellis launches.",
       actionProps: {
-        "aria-label": "Restart Synara",
+        "aria-label": "Restart Trellis",
         children: "Restart",
         onClick: () => {
           void window.desktopBridge?.customTitleBar?.relaunch();
@@ -978,7 +978,7 @@ function SettingsRouteView() {
         <SettingsSection title="App">
           <SettingsRow
             title="App icon"
-            description="Choose the icon Synara uses in the dock or taskbar."
+            description="Choose the icon Trellis uses in the dock or taskbar."
             resetAction={
               settings.desktopAppIcon !== defaultDesktopAppIcon ? (
                 <SettingResetButton
@@ -1005,8 +1005,8 @@ function SettingsRouteView() {
               title="Use custom title bar"
               description={
                 customTitleBarRestartRequired
-                  ? "Restart Synara to apply. Some Linux window managers work better with the system title bar."
-                  : "Replace the system title bar with Synara's frameless chrome and window controls. Restart required to apply."
+                  ? "Restart Trellis to apply. Some Linux window managers work better with the system title bar."
+                  : "Replace the system title bar with Trellis's frameless chrome and window controls. Restart required to apply."
               }
               status={customTitleBarRestartRequired ? "Restart required" : undefined}
               resetAction={
@@ -1436,7 +1436,7 @@ function SettingsRouteView() {
         {isAudioLevelAvailable() ? (
           <SettingsRow
             title="Message trail sound"
-            description="Make the message marks on the left of long chats move with sound: what your Mac plays (a video, a meeting), your microphone, or whichever is louder. macOS asks for access the first time. Synara only reads how loud the sound is and never records it."
+            description="Make the message marks on the left of long chats move with sound: what your Mac plays (a video, a meeting), your microphone, or whichever is louder. macOS asks for access the first time. Trellis only reads how loud the sound is and never records it."
             resetAction={
               settings.messageTrailAudioSource !== defaults.messageTrailAudioSource ? (
                 <SettingResetButton

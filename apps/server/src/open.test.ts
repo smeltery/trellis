@@ -1,7 +1,7 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import { assertSuccess } from "@effect/vitest/utils";
-import { EDITORS } from "@synara/contracts";
+import { EDITORS } from "@trellis/contracts";
 import { FileSystem, Path, Effect } from "effect";
 
 import { launchDetached, resolveAvailableEditors, resolveEditorLaunch } from "./open";
@@ -117,7 +117,7 @@ it.layer(NodeServices.layer)("resolveEditorLaunch", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "synara-vscode-folder-" });
+      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-vscode-folder-" });
       const folderPath = path.join(dir, "Project Folder");
       yield* fs.makeDirectory(folderPath);
 
@@ -138,7 +138,7 @@ it.layer(NodeServices.layer)("resolveEditorLaunch", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "synara-open-terminal-" });
+      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-open-terminal-" });
       const filePath = path.join(dir, "src", "open.ts");
       yield* fs.makeDirectory(path.dirname(filePath), { recursive: true });
       yield* fs.writeFileString(filePath, "export const value = 1;\n");
@@ -205,7 +205,7 @@ it.layer(NodeServices.layer)("resolveEditorLaunch", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const home = yield* fs.makeTempDirectoryScoped({ prefix: "synara-open-apps-" });
+      const home = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-open-apps-" });
       yield* fs.makeDirectory(path.join(home, "Applications", "Ghostty.app"), {
         recursive: true,
       });
@@ -294,7 +294,7 @@ it.layer(NodeServices.layer)("resolveEditorLaunch", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const home = yield* fs.makeTempDirectoryScoped({ prefix: "synara-open-ghostty-" });
+      const home = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-open-ghostty-" });
       const binDir = path.join(home, "bin");
       yield* fs.makeDirectory(binDir, { recursive: true });
       yield* fs.writeFileString(path.join(binDir, "ghostty"), "#!/bin/sh\n");
@@ -321,7 +321,7 @@ it.layer(NodeServices.layer)("resolveEditorLaunch", (it) => {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const parentPath = yield* fs.makeTempDirectoryScoped({
-        prefix: "synara-file-manager-",
+        prefix: "trellis-file-manager-",
       });
       const directoryPath = path.join(parentPath, "Project Folder");
       const filePath = path.join(directoryPath, "source file.ts");
@@ -400,7 +400,7 @@ it.layer(NodeServices.layer)("launchDetached", (it) => {
   it.effect("rejects when command does not exist", () =>
     Effect.gen(function* () {
       const result = yield* launchDetached({
-        command: `synara-no-such-command-${Date.now()}`,
+        command: `trellis-no-such-command-${Date.now()}`,
         args: [],
       }).pipe(Effect.result);
       assert.equal(result._tag, "Failure");
@@ -413,7 +413,7 @@ it.layer(NodeServices.layer)("resolveAvailableEditors", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "synara-editors-" });
+      const dir = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-editors-" });
 
       yield* fs.writeFileString(path.join(dir, "cursor.CMD"), "@echo off\r\n");
       yield* fs.writeFileString(path.join(dir, "code-insiders.CMD"), "@echo off\r\n");
@@ -431,7 +431,7 @@ it.layer(NodeServices.layer)("resolveAvailableEditors", (it) => {
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const programFiles = yield* fs.makeTempDirectoryScoped({ prefix: "synara-vscode-store-" });
+      const programFiles = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-vscode-store-" });
       const binDir = path.join(programFiles, "bin");
       const installLocation = path.join(
         programFiles,
@@ -521,7 +521,7 @@ it.layer(NodeServices.layer)("resolveAvailableEditors", (it) => {
       const path = yield* Path.Path;
       const editor = EDITORS.find((candidate) => candidate.id === "vscode");
       assert.ok(editor);
-      const programFiles = yield* fs.makeTempDirectoryScoped({ prefix: "synara-vscode-staged-" });
+      const programFiles = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-vscode-staged-" });
       yield* fs.makeDirectory(
         path.join(
           programFiles,

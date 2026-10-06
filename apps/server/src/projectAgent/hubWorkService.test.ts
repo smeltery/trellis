@@ -6,7 +6,7 @@ import {
   ThreadId,
   TurnId,
   type OrchestrationThreadShell,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect, Exit, Layer, Option } from "effect";
 
 import { OrchestrationCommandReceiptRepositoryLive } from "../persistence/Layers/OrchestrationCommandReceipts";

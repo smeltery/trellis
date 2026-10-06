@@ -1,5 +1,5 @@
-import type { OrchestrationThreadPullRequest } from "@synara/contracts";
-import { resolveThreadBranchRegressionGuard } from "@synara/shared/git";
+import type { OrchestrationThreadPullRequest } from "@trellis/contracts";
+import { resolveThreadBranchRegressionGuard } from "@trellis/shared/git";
 
 export type ThreadPullRequestLookup =
   | {

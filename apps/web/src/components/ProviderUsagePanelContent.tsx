@@ -4,8 +4,8 @@
 // The limit rows are the point of the popover, so reset credits and usage lines
 // sit behind a "Details" toggle whose state persists in app settings.
 
-import type { ProviderKind, ServerCodexResetCredits } from "@synara/contracts";
-import { providerUsageLabel } from "@synara/shared/providerUsage";
+import type { ProviderKind, ServerCodexResetCredits } from "@trellis/contracts";
+import { providerUsageLabel } from "@trellis/shared/providerUsage";
 
 import { useAppSettings } from "~/appSettings";
 import { ExternalLinkIcon, TriangleAlertIcon } from "~/lib/icons";

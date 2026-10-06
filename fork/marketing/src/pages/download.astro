@@ -1,0 +1,100 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { RELEASES_URL, REPO_URL } from "../lib/releases";
+---
+
+<Layout title="Download Trellis" description="Download the latest Trellis desktop release or inspect release artifacts on GitHub.">
+  <section class="content download">
+    <div>
+      <p class="eyebrow">Desktop releases</p>
+      <h1>Download Trellis</h1>
+      <p>
+        Get the latest signed desktop builds from GitHub Releases. Pick your platform below, or
+        inspect all artifacts and checksums on the release page.
+      </p>
+      <p class="release-status" data-release-status>Loading latest release...</p>
+      <div class="download-grid" data-download-grid>
+        <a class="download-card" href={RELEASES_URL} data-release-platform="mac-arm64">
+          <span>macOS</span>
+          <strong>Apple Silicon</strong>
+          <small>.dmg</small>
+        </a>
+        <a class="download-card" href={RELEASES_URL} data-release-platform="mac-x64">
+          <span>macOS</span>
+          <strong>Intel</strong>
+          <small>.dmg</small>
+        </a>
+        <a class="download-card" href={RELEASES_URL} data-release-platform="windows-x64">
+          <span>Windows</span>
+          <strong>Windows 10, 11</strong>
+          <small>.exe</small>
+        </a>
+        <a class="download-card" href={RELEASES_URL} data-release-platform="linux-x64">
+          <span>Linux</span>
+          <strong>x64</strong>
+          <small>AppImage</small>
+        </a>
+      </div>
+      <div class="actions">
+        <a class="button" href={RELEASES_URL}>All release artifacts</a>
+        <a class="button secondary" href={REPO_URL}>Repository</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import {
+    RELEASES_URL,
+    fetchLatestRelease,
+    findReleaseAsset,
+    type ReleasePlatform,
+  } from "../lib/releases";
+
+  const releaseStatus = document.querySelector<HTMLElement>("[data-release-status]");
+  const downloadCards = document.querySelectorAll<HTMLAnchorElement>("[data-release-platform]");
+
+  if (downloadCards.length > 0) {
+    void hydrateDownloadCards();
+  }
+
+  async function hydrateDownloadCards(): Promise<void> {
+    try {
+      const release = await fetchLatestRelease();
+      if (releaseStatus) {
+        releaseStatus.textContent = release.tag_name
+          ? `Latest release: ${release.tag_name}`
+          : "Latest release";
+      }
+
+      for (const card of downloadCards) {
+        const platform = card.dataset.releasePlatform;
+        if (!isReleasePlatform(platform)) {
+          card.href = release.html_url || RELEASES_URL;
+          continue;
+        }
+
+        const asset = findReleaseAsset(release, platform);
+        card.href = asset?.browser_download_url ?? release.html_url ?? RELEASES_URL;
+        card.dataset.releaseReady = asset ? "true" : "false";
+      }
+    } catch {
+      if (releaseStatus) {
+        releaseStatus.textContent = "Could not load latest release. Showing release page links.";
+      }
+      for (const card of downloadCards) {
+        card.href = RELEASES_URL;
+        card.dataset.releaseReady = "false";
+      }
+    }
+  }
+
+  function isReleasePlatform(value: string | undefined): value is ReleasePlatform {
+    return (
+      value === "mac-arm64" ||
+      value === "mac-x64" ||
+      value === "windows-x64" ||
+      value === "linux-x64"
+    );
+  }
+</script>

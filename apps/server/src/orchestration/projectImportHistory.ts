@@ -4,7 +4,7 @@ import type {
   ProviderStartOptions,
   ThreadHandoffImportedMessage,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Data, Effect } from "effect";
 import { readClaudeImportMessageDates } from "../provider/claudeProjectImport";
 import type { ProviderAdapterRegistryShape } from "../provider/Services/ProviderAdapterRegistry";

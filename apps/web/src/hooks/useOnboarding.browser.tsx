@@ -29,8 +29,8 @@ vi.mock("../workspacePathsStore", () => ({
 const clients: QueryClient[] = [];
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  localStorage.removeItem("synara:onboarding:v2");
-  localStorage.removeItem("synara:feature-tour:since-0.9.2:v1");
+  localStorage.removeItem("trellis:onboarding:v2");
+  localStorage.removeItem("trellis:feature-tour:since-0.9.2:v1");
   mocks.getConfig.mockReset().mockResolvedValue({ worktreesDir: "/a/worktrees" });
   // Keep the server marker absent to exercise the failed-write fallback.
   mocks.save.mockReset().mockResolvedValue(false);
@@ -44,8 +44,8 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   for (const client of clients.splice(0)) client.clear();
-  localStorage.removeItem("synara:onboarding:v2");
-  localStorage.removeItem("synara:feature-tour:since-0.9.2:v1");
+  localStorage.removeItem("trellis:onboarding:v2");
+  localStorage.removeItem("trellis:feature-tour:since-0.9.2:v1");
 });
 
 async function renderOnboarding() {
@@ -65,9 +65,9 @@ describe("onboarding installation identity", () => {
     await vi.waitFor(() => expect(hook.result.current.isOpen).toBe(true));
     expect(useOnboardingDialogStore.getState().openReason).toBe("first-run");
     await act(async () => hook.result.current.complete());
-    expect(JSON.parse(localStorage.getItem("synara:feature-tour:since-0.9.2:v1") ?? "[]")).toEqual([
-      "/a/worktrees",
-    ]);
+    expect(JSON.parse(localStorage.getItem("trellis:feature-tour:since-0.9.2:v1") ?? "[]")).toEqual(
+      ["/a/worktrees"],
+    );
     await hook.unmount();
     const remounted = await renderOnboarding();
     await vi.waitFor(() => expect(remounted.hook.result.current.isOpen).toBe(false));
@@ -98,7 +98,7 @@ describe("onboarding installation identity", () => {
       });
     });
     await vi.waitFor(() => expect(hook.result.current.isOpen).toBe(false));
-    expect(localStorage.getItem("synara:feature-tour:since-0.9.2:v1")).toBeNull();
+    expect(localStorage.getItem("trellis:feature-tour:since-0.9.2:v1")).toBeNull();
     await hook.unmount();
   });
 
@@ -126,9 +126,9 @@ describe("onboarding installation identity", () => {
     );
     await hook.rerender();
     expect(hook.result.current.isOpen).toBe(false);
-    expect(localStorage.getItem("synara:feature-tour:since-0.9.2:v1")).toBeNull();
+    expect(localStorage.getItem("trellis:feature-tour:since-0.9.2:v1")).toBeNull();
     expect(
-      JSON.parse(localStorage.getItem("synara:onboarding:v2") ?? "null")?.completedAt ?? null,
+      JSON.parse(localStorage.getItem("trellis:onboarding:v2") ?? "null")?.completedAt ?? null,
     ).toBeNull();
     await act(async () => {
       client.setQueryData(["server", "config"], { worktreesDir: "/b/worktrees" });

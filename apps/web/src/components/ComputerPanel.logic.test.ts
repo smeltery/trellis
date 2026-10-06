@@ -3,7 +3,7 @@ import {
   type ComputerHealth,
   type ThreadComputerState,
   type ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import {

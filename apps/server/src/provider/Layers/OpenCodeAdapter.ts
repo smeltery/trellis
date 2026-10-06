@@ -26,7 +26,7 @@ import {
   type ToolLifecycleItemType,
   TurnId,
   type UserInputQuestion,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Cause, Deferred, Effect, Exit, Layer, Option, Queue, Ref, Scope, Stream } from "effect";
 import type {
   AssistantMessage,
@@ -48,14 +48,17 @@ import {
   ProviderAdapterValidationError,
 } from "../Errors.ts";
 import {
-  SYNARA_HARNESS_POLICY_VERSION,
-  takeSynaraHarnessPolicyForProviderSession,
+  TRELLIS_HARNESS_POLICY_VERSION,
+  takeTrellisHarnessPolicyForProviderSession,
 } from "../../agentGateway/harnessPolicy.ts";
 import {
-  isSynaraGatewayToolCall,
-  shouldAllowSynaraComputerProviderTool,
+  isTrellisGatewayToolCall,
+  shouldAllowTrellisComputerProviderTool,
 } from "../../agentGateway/computerToolPermission.ts";
-import { buildOpenCodeMcpServer, SYNARA_MCP_SERVER_NAME } from "../../agentGateway/mcpInjection.ts";
+import {
+  buildOpenCodeMcpServer,
+  TRELLIS_MCP_SERVER_NAME,
+} from "../../agentGateway/mcpInjection.ts";
 import { AgentGatewayCredentials } from "../../agentGateway/Services/AgentGatewayCredentials.ts";
 import {
   acquireAgentGatewaySessionLease,
@@ -115,7 +118,7 @@ export function resolveOpenCodePermissionPolicyReply(input: {
   readonly interactionMode: ProviderInteractionMode | undefined;
   readonly activeTurn: boolean;
   readonly computerControlEnabled: boolean;
-  readonly autoApproveSynaraTools?: boolean;
+  readonly autoApproveTrellisTools?: boolean;
   readonly gatewaySessionActive?: boolean;
   readonly permission: unknown;
   readonly metadata: unknown;
@@ -124,7 +127,7 @@ export function resolveOpenCodePermissionPolicyReply(input: {
     return "reject";
   }
   if (
-    shouldAllowSynaraComputerProviderTool({
+    shouldAllowTrellisComputerProviderTool({
       computerControlEnabled: input.computerControlEnabled,
       activeTurn: input.activeTurn,
       interactionMode: input.interactionMode,
@@ -135,12 +138,12 @@ export function resolveOpenCodePermissionPolicyReply(input: {
     return "once";
   }
   // Gateway tools are server-authorized by the session token; a session opted
-  // into `autoApproveSynaraTools` (e.g. a group coordinator) must not stall on
+  // into `autoApproveTrellisTools` (e.g. a group coordinator) must not stall on
   // an interactive prompt for them. Everything else keeps the ordinary path.
   if (
-    input.autoApproveSynaraTools === true &&
+    input.autoApproveTrellisTools === true &&
     input.gatewaySessionActive === true &&
-    isSynaraGatewayToolCall({ name: input.permission, metadata: input.metadata })
+    isTrellisGatewayToolCall({ name: input.permission, metadata: input.metadata })
   ) {
     return "once";
   }
@@ -208,7 +211,7 @@ interface OpenCodeSessionContext extends OpenCodeMessageState<Part> {
   pendingHarnessPolicyTurnId: TurnId | undefined;
   readonly gatewayControlAvailable: boolean;
   readonly enableComputerControl?: boolean;
-  readonly autoApproveSynaraTools?: boolean;
+  readonly autoApproveTrellisTools?: boolean;
   gatewaySessionLease?: AgentGatewaySessionLease;
   session: ProviderSession;
   readonly lifecycleGeneration?: string;
@@ -220,7 +223,7 @@ interface OpenCodeSessionContext extends OpenCodeMessageState<Part> {
   readonly pendingPermissions: Map<string, PermissionRequest>;
   readonly replyingPermissions: Map<string, "once" | "always" | "reject">;
   readonly settlingPermissions: Map<string, Deferred.Deferred<boolean>>;
-  /** Permission request ids resolved by Synara policy and never surfaced to the UI. */
+  /** Permission request ids resolved by Trellis policy and never surfaced to the UI. */
   readonly policyResolvedPermissionIds: Set<string>;
   /** Human replies settled from permission.list while their permission.replied echo is pending. */
   readonly locallyResolvedPermissionIds: Set<string>;
@@ -303,13 +306,13 @@ const installOpenCodeGatewayMcp = Effect.fn("installOpenCodeGatewayMcp")(functio
     input.client.mcp.add(
       {
         directory: input.directory,
-        name: SYNARA_MCP_SERVER_NAME,
+        name: TRELLIS_MCP_SERVER_NAME,
         config: buildOpenCodeMcpServer(input.connection),
       },
       { signal },
     ),
   ).pipe(Effect.timeout("10 seconds"));
-  const status = result.data?.[SYNARA_MCP_SERVER_NAME];
+  const status = result.data?.[TRELLIS_MCP_SERVER_NAME];
   if (status?.status === "connected") {
     return;
   }
@@ -317,8 +320,8 @@ const installOpenCodeGatewayMcp = Effect.fn("installOpenCodeGatewayMcp")(functio
     operation: "mcp.add",
     detail:
       status?.status === "failed"
-        ? `${input.displayName} Synara MCP connection failed: ${status.error}`
-        : `${input.displayName} Synara MCP connection did not become ready.`,
+        ? `${input.displayName} Trellis MCP connection failed: ${status.error}`
+        : `${input.displayName} Trellis MCP connection did not become ready.`,
   });
 });
 
@@ -1041,7 +1044,7 @@ function isMatchingHarnessPolicyDelivery(
 ): boolean {
   return (
     delivery?.sessionId === input.sessionId &&
-    delivery.policyVersion === SYNARA_HARNESS_POLICY_VERSION &&
+    delivery.policyVersion === TRELLIS_HARNESS_POLICY_VERSION &&
     delivery.gatewayControlAvailable === input.gatewayControlAvailable &&
     (delivery.enableComputerControl === true) === (input.enableComputerControl === true)
   );
@@ -1061,7 +1064,7 @@ function buildOpenCodeResumeCursor(input: {
       ? {
           harnessPolicyDelivery: {
             sessionId: input.openCodeSessionId,
-            policyVersion: SYNARA_HARNESS_POLICY_VERSION,
+            policyVersion: TRELLIS_HARNESS_POLICY_VERSION,
             gatewayControlAvailable: input.gatewayControlAvailable,
             enableComputerControl: input.enableComputerControl === true,
           },
@@ -1878,7 +1881,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                   turnId,
                   messageId: deferredFinalAssistantMessageId,
                   raw: {
-                    source: "synara.opencode.deferred-idle-completion",
+                    source: "trellis.opencode.deferred-idle-completion",
                     event: raw,
                   },
                 }))
@@ -1895,7 +1898,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                 yield* completeOpenCodeTurn(context, {
                   turnId,
                   raw: {
-                    source: "synara.opencode.deferred-idle-local-part",
+                    source: "trellis.opencode.deferred-idle-local-part",
                     event: raw,
                   },
                   totalCostUsd: context.latestTurnCostUsd,
@@ -1922,7 +1925,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                   turnId,
                   messageId: retriedFinalAssistantMessageId,
                   raw: {
-                    source: "synara.opencode.deferred-idle-completion-retry",
+                    source: "trellis.opencode.deferred-idle-completion-retry",
                     event: raw,
                   },
                 }))
@@ -1936,7 +1939,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                 yield* completeOpenCodeTurn(context, {
                   turnId,
                   raw: {
-                    source: "synara.opencode.deferred-idle-local-part-retry",
+                    source: "trellis.opencode.deferred-idle-local-part-retry",
                     event: raw,
                   },
                   totalCostUsd: context.latestTurnCostUsd,
@@ -1951,7 +1954,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
             const completed = yield* completeOpenCodeTurn(context, {
               turnId,
               raw: {
-                source: "synara.opencode.idle-after-tool-calls",
+                source: "trellis.opencode.idle-after-tool-calls",
                 event: raw,
               },
               errorMessage: message,
@@ -1962,7 +1965,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                 threadId: context.session.threadId,
                 turnId,
                 raw: {
-                  source: "synara.opencode.idle-after-tool-calls",
+                  source: "trellis.opencode.idle-after-tool-calls",
                   event: raw,
                 },
               }),
@@ -2621,7 +2624,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
               interactionMode: context.activeInteractionMode,
               activeTurn: turnId !== undefined && context.activeTurnId === turnId,
               computerControlEnabled: context.enableComputerControl === true,
-              autoApproveSynaraTools: context.autoApproveSynaraTools === true,
+              autoApproveTrellisTools: context.autoApproveTrellisTools === true,
               gatewaySessionActive: context.gatewaySessionLease !== undefined,
               permission: event.properties.permission,
               metadata: event.properties.metadata,
@@ -2691,7 +2694,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
 
           case "permission.replied": {
             if (context.policyResolvedPermissionIds.has(event.properties.requestID)) {
-              // Synara policy resolved this request; nothing was surfaced to the UI.
+              // Trellis policy resolved this request; nothing was surfaced to the UI.
               break;
             }
             if (context.locallyResolvedPermissionIds.has(event.properties.requestID)) {
@@ -2853,7 +2856,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
           }
 
           // Newer OpenCode servers can emit session.next.* events for the active
-          // agent loop. Mirror them into Synara's canonical transcript stream.
+          // agent loop. Mirror them into Trellis's canonical transcript stream.
           case "session.next.text.delta": {
             if (!turnId || event.properties.delta.length === 0) {
               break;
@@ -3649,7 +3652,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
             return yield* new ProviderAdapterValidationError({
               provider,
               operation: "session/start",
-              issue: `Computer Use requires a Synara-managed ${adapterConfig.displayName} server with a thread-scoped gateway. It is unavailable with an external server URL.`,
+              issue: `Computer Use requires a Trellis-managed ${adapterConfig.displayName} server with a thread-scoped gateway. It is unavailable with an external server URL.`,
             });
           }
           const serverPassword =
@@ -3687,7 +3690,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
 
           // OpenCode's MCP registry is process/directory scoped, not session
           // scoped. Issue a gateway token only for a managed server isolated to
-          // this exact Synara thread.
+          // this exact Trellis thread.
           const agentGatewaySessionLease = serverUrl
             ? undefined
             : acquireAgentGatewaySessionLease(
@@ -3702,7 +3705,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
               provider,
               method: "session/start",
               detail:
-                "Computer Use could not start because the thread-scoped Synara gateway is unavailable.",
+                "Computer Use could not start because the thread-scoped Trellis gateway is unavailable.",
             });
           }
           const poolIsolationKey = agentGatewayConnection ? randomUUID() : undefined;
@@ -3751,7 +3754,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                           input.enableComputerControl === true
                             ? new OpenCodeRuntimeError({
                                 operation: "mcp.add",
-                                detail: `Computer Use could not start because the thread-scoped Synara MCP connection is not ready: ${openCodeRuntimeErrorDetail(cause)}`,
+                                detail: `Computer Use could not start because the thread-scoped Trellis MCP connection is not ready: ${openCodeRuntimeErrorDetail(cause)}`,
                               })
                             : cause,
                         ),
@@ -3761,7 +3764,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                             : Effect.sync(() => agentGatewaySessionLease?.release()).pipe(
                                 Effect.andThen(
                                   Effect.logWarning(
-                                    `${adapterConfig.displayName} could not install thread-scoped Synara MCP control`,
+                                    `${adapterConfig.displayName} could not install thread-scoped Trellis MCP control`,
                                     Cause.squash(cause),
                                   ),
                                 ),
@@ -3772,10 +3775,10 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                     }
                     const createSessionId = resumedSessionId
                       ? // A resumed provider may still be executing an interrupted Plan turn.
-                        // Install the read-only ruleset until Synara dispatches a new turn with a
+                        // Install the read-only ruleset until Trellis dispatches a new turn with a
                         // known interaction mode. This must succeed before the event pump starts:
                         // otherwise an already-running Full Access session could mutate state
-                        // without ever emitting a permission request for Synara to reject.
+                        // without ever emitting a permission request for Trellis to reject.
                         runOpenCodeSdk("session.update", () =>
                           client.session.update({
                             sessionID: resumedSessionId,
@@ -3802,7 +3805,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                               : {}),
                             ...(initialAgent ? { agent: initialAgent } : {}),
                             permission: buildOpenCodePermissionRules(input.runtimeMode),
-                            title: `Synara ${input.threadId}`,
+                            title: `Trellis ${input.threadId}`,
                           };
                           return client.session.create(
                             sessionCreateInput as unknown as Parameters<
@@ -3917,7 +3920,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
                   session,
                   gatewayControlAvailable: started.gatewayControlAvailable,
                   enableComputerControl: input.enableComputerControl === true,
-                  autoApproveSynaraTools: input.autoApproveSynaraTools === true,
+                  autoApproveTrellisTools: input.autoApproveTrellisTools === true,
                   ...(started.gatewayControlAvailable && agentGatewaySessionLease
                     ? {
                         gatewaySessionLease: agentGatewaySessionLease,
@@ -4055,7 +4058,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
             issue: `${adapterConfig.displayName} turns require text input or at least one attachment.`,
           });
         }
-        const harnessPolicy = takeSynaraHarnessPolicyForProviderSession(
+        const harnessPolicy = takeTrellisHarnessPolicyForProviderSession(
           {
             ...(context.harnessPolicyDelivered ? { harnessPolicyDelivered: true } : {}),
             enableComputerControl: context.enableComputerControl === true,
@@ -4090,9 +4093,9 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
         context.activeTurnFinalAssistantMessageId = undefined;
         context.activeTurnToolCallIdleWatchdogStarted = false;
         context.activeInteractionMode = interactionMode;
-        // Always pin Synara's interaction mode to OpenCode's primary agent.
+        // Always pin Trellis's interaction mode to OpenCode's primary agent.
         // Otherwise a user config with default agent=plan (or a stale options.agent=plan
-        // after leaving Synara plan mode) can trap default turns in plan mode.
+        // after leaving Trellis plan mode) can trap default turns in plan mode.
         const modePinnedAgent =
           interactionMode === "plan" ? adapterConfig.planAgent : adapterConfig.defaultAgent;
         context.activeAgent =
@@ -4562,7 +4565,7 @@ export function makeOpenCodeAdapterLive(options?: OpenCodeAdapterLiveOptions) {
             return yield* new ProviderAdapterValidationError({
               provider,
               operation: "forkThread",
-              issue: `The source ${adapterConfig.displayName} session has a turn in flight; Synara will rebuild the fork from its retained transcript.`,
+              issue: `The source ${adapterConfig.displayName} session has a turn in flight; Trellis will rebuild the fork from its retained transcript.`,
             });
           }
           const sourceSessionId =

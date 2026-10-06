@@ -8,7 +8,7 @@ import { createBatchExecutableResolver, resolveExecutable } from "./executable";
 const tempDirs: string[] = [];
 
 function makeTempDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), "synara-executable-"));
+  const dir = mkdtempSync(join(tmpdir(), "trellis-executable-"));
   tempDirs.push(dir);
   return dir;
 }

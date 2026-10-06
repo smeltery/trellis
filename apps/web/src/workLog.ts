@@ -11,31 +11,31 @@ import {
   type ProviderKind,
   type ToolLifecycleItemType,
   type TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   decodeSubagentAgentStates,
   extractSubagentIdentityHints,
   decodeSubagentReceiverAgents,
   decodeSubagentReceiverThreadIds,
-} from "@synara/shared/subagents";
+} from "@trellis/shared/subagents";
 import {
   approvalRequestKindFromRequestType,
   type ApprovalRequestKind,
-} from "@synara/shared/threadSummary";
+} from "@trellis/shared/threadSummary";
 import {
   stripTrailingToolExitCode,
   summarizeToolRawOutput,
-} from "@synara/shared/toolOutputSummary";
-import { pluralize, stripTerminalControlSequences } from "@synara/shared/text";
-import { suppressCoordinatorCheckinMessages } from "@synara/shared/coordinatorCheckin";
-import { PROVIDER_DESCRIPTORS } from "@synara/shared/providerMetadata";
+} from "@trellis/shared/toolOutputSummary";
+import { pluralize, stripTerminalControlSequences } from "@trellis/shared/text";
+import { suppressCoordinatorCheckinMessages } from "@trellis/shared/coordinatorCheckin";
+import { PROVIDER_DESCRIPTORS } from "@trellis/shared/providerMetadata";
 import {
   deriveReadableToolTitle,
-  deriveSynaraMcpToolTitle,
+  deriveTrellisMcpToolTitle,
   isGenericToolTitle,
   normalizeCompactToolLabel,
   normalizeToolTextForComparison,
-  type SynaraMcpToolStatus,
+  type TrellisMcpToolStatus,
 } from "./lib/toolCallLabel";
 import { toolArgumentSummaryToolName } from "./lib/toolArgumentSummary";
 import { computerToolName, describeComputerToolCall } from "./lib/computerToolPresentation";
@@ -106,10 +106,10 @@ export interface WorkLogComputerSetupRequired {
    */
   buildSignature?: ComputerBuildSignature;
   /**
-   * The app macOS files this Synara's grants against, when a desktop shell told
+   * The app macOS files this Trellis's grants against, when a desktop shell told
    * the server which flavor it is. The card's `tccutil` advice names it, and
    * absent means that advice is withheld rather than guessed — a guessed
-   * identifier resets a different Synara's grants.
+   * identifier resets a different Trellis's grants.
    */
   bundleId?: string;
 }
@@ -130,7 +130,7 @@ export interface WorkLogEntry {
   toolTitle?: string;
   toolName?: string;
   toolCallId?: string;
-  toolStatus?: SynaraMcpToolStatus;
+  toolStatus?: TrellisMcpToolStatus;
   liveActivity?: WorkLogLiveActivity;
   toolDetails?: WorkLogToolDetails;
   itemType?: ToolLifecycleItemType;
@@ -138,11 +138,11 @@ export interface WorkLogEntry {
   subagents?: ReadonlyArray<WorkLogSubagent>;
   subagentAction?: WorkLogSubagentAction;
   automation?: WorkLogAutomation;
-  synaraThreadCreation?: WorkLogSynaraThreadCreation;
+  trellisThreadCreation?: WorkLogTrellisThreadCreation;
   // Deterministic coordinator-monitor rows (worker settled / stuck /
   // batch roll-up) render as compact centered pills in the coordinator
   // conversation, each carrying a link into the reported thread.
-  synaraWorkerNotice?: WorkLogSynaraWorkerNotice;
+  trellisWorkerNotice?: WorkLogTrellisWorkerNotice;
   // A task the agent moved to the background finished. Its completion wakes the
   // agent into a new turn, so the row also marks where that new response starts.
   backgroundTaskCompletion?: WorkLogBackgroundTaskCompletion;
@@ -194,7 +194,7 @@ export interface WorkLogComputerControlDenied {
   toolName: string | null;
 }
 
-export interface WorkLogSynaraCreatedThread {
+export interface WorkLogTrellisCreatedThread {
   threadId: string;
   title: string;
   provider: ProviderKind;
@@ -203,14 +203,14 @@ export interface WorkLogSynaraCreatedThread {
   status: string;
 }
 
-export interface WorkLogSynaraThreadCreation {
+export interface WorkLogTrellisThreadCreation {
   operationId: string;
   requestedCount: number;
   createdCount: number;
-  threads: ReadonlyArray<WorkLogSynaraCreatedThread>;
+  threads: ReadonlyArray<WorkLogTrellisCreatedThread>;
 }
 
-export interface WorkLogSynaraWorkerNoticeThread {
+export interface WorkLogTrellisWorkerNoticeThread {
   threadId: string;
   title: string;
   outcome: string | null;
@@ -226,12 +226,12 @@ export interface WorkLogBackgroundTaskCompletion {
   description: string | null;
 }
 
-export interface WorkLogSynaraWorkerNotice {
+export interface WorkLogTrellisWorkerNotice {
   kind: "settled" | "stuck" | "needs-you" | "rollup";
   marker: string | null;
   phrase: string | null;
-  threads: ReadonlyArray<WorkLogSynaraWorkerNoticeThread>;
-  /** Synara-native action ids on a needs-you card (retry / stop / open). */
+  threads: ReadonlyArray<WorkLogTrellisWorkerNoticeThread>;
+  /** Trellis-native action ids on a needs-you card (retry / stop / open). */
   actions?: ReadonlyArray<"retry" | "stop" | "open">;
 }
 
@@ -546,10 +546,10 @@ function shouldKeepActivityForWorkLog(
   // coordinator conversation is all turns, so the turn filter would hide every
   // settle/stuck/roll-up pill.
   if (
-    activity.kind === "synara.worker.settled" ||
-    activity.kind === "synara.worker.stuck" ||
-    activity.kind === "synara.worker.needs-you" ||
-    activity.kind === "synara.workers.settled"
+    activity.kind === "trellis.worker.settled" ||
+    activity.kind === "trellis.worker.stuck" ||
+    activity.kind === "trellis.worker.needs-you" ||
+    activity.kind === "trellis.workers.settled"
   ) {
     return true;
   }
@@ -632,9 +632,9 @@ function extractWorkLogAutomation(
   };
 }
 
-function extractWorkLogSynaraThreadCreation(
+function extractWorkLogTrellisThreadCreation(
   payload: Record<string, unknown> | null,
-): WorkLogSynaraThreadCreation | null {
+): WorkLogTrellisThreadCreation | null {
   if (!payload) {
     return null;
   }
@@ -643,7 +643,7 @@ function extractWorkLogSynaraThreadCreation(
   if (!operationId || rawThreads.length === 0) {
     return null;
   }
-  const threads = rawThreads.flatMap((value): WorkLogSynaraCreatedThread[] => {
+  const threads = rawThreads.flatMap((value): WorkLogTrellisCreatedThread[] => {
     const thread = asRecord(value);
     const threadId = asTrimmedString(thread?.threadId);
     const title = asTrimmedString(thread?.title);
@@ -679,18 +679,18 @@ function extractWorkLogSynaraThreadCreation(
   return { operationId, requestedCount, createdCount, threads };
 }
 
-function extractWorkLogSynaraWorkerNotice(
+function extractWorkLogTrellisWorkerNotice(
   payload: Record<string, unknown> | null,
   activityKind: OrchestrationThreadActivity["kind"],
-): WorkLogSynaraWorkerNotice | null {
+): WorkLogTrellisWorkerNotice | null {
   if (!payload || payload.source !== "worker_monitor") {
     return null;
   }
-  const parseThreads = (values: unknown): WorkLogSynaraWorkerNoticeThread[] => {
+  const parseThreads = (values: unknown): WorkLogTrellisWorkerNoticeThread[] => {
     if (!Array.isArray(values)) {
       return [];
     }
-    return values.flatMap((value): WorkLogSynaraWorkerNoticeThread[] => {
+    return values.flatMap((value): WorkLogTrellisWorkerNoticeThread[] => {
       const thread = asRecord(value);
       const threadId = asTrimmedString(thread?.threadId);
       const title = asTrimmedString(thread?.title);
@@ -709,14 +709,14 @@ function extractWorkLogSynaraWorkerNotice(
       ];
     });
   };
-  if (activityKind === "synara.workers.settled") {
+  if (activityKind === "trellis.workers.settled") {
     const threads = parseThreads(payload.threads);
     return threads.length > 0 ? { kind: "rollup", marker: null, phrase: null, threads } : null;
   }
   if (
-    activityKind === "synara.worker.settled" ||
-    activityKind === "synara.worker.stuck" ||
-    activityKind === "synara.worker.needs-you"
+    activityKind === "trellis.worker.settled" ||
+    activityKind === "trellis.worker.stuck" ||
+    activityKind === "trellis.worker.needs-you"
   ) {
     const threads = parseThreads([payload.thread]);
     if (threads.length === 0) {
@@ -730,9 +730,9 @@ function extractWorkLogSynaraWorkerNotice(
       : undefined;
     return {
       kind:
-        activityKind === "synara.worker.needs-you"
+        activityKind === "trellis.worker.needs-you"
           ? "needs-you"
-          : activityKind === "synara.worker.stuck"
+          : activityKind === "trellis.worker.stuck"
             ? "stuck"
             : "settled",
       marker: asTrimmedString(payload.marker) ?? null,
@@ -1017,21 +1017,21 @@ function toDerivedWorkLogEntry(activity: OrchestrationThreadActivity): DerivedWo
       entry.automation = automation;
     }
   }
-  if (activity.kind === "synara.threads.created") {
-    const synaraThreadCreation = extractWorkLogSynaraThreadCreation(payload);
-    if (synaraThreadCreation) {
-      entry.synaraThreadCreation = synaraThreadCreation;
+  if (activity.kind === "trellis.threads.created") {
+    const trellisThreadCreation = extractWorkLogTrellisThreadCreation(payload);
+    if (trellisThreadCreation) {
+      entry.trellisThreadCreation = trellisThreadCreation;
     }
   }
   if (
-    activity.kind === "synara.worker.settled" ||
-    activity.kind === "synara.worker.stuck" ||
-    activity.kind === "synara.worker.needs-you" ||
-    activity.kind === "synara.workers.settled"
+    activity.kind === "trellis.worker.settled" ||
+    activity.kind === "trellis.worker.stuck" ||
+    activity.kind === "trellis.worker.needs-you" ||
+    activity.kind === "trellis.workers.settled"
   ) {
-    const notice = extractWorkLogSynaraWorkerNotice(payload, activity.kind);
+    const notice = extractWorkLogTrellisWorkerNotice(payload, activity.kind);
     if (notice) {
-      entry.synaraWorkerNotice = notice;
+      entry.trellisWorkerNotice = notice;
     }
   }
   if (activity.kind === COMPUTER_SETUP_REQUIRED_ACTIVITY_KIND) {
@@ -1073,7 +1073,7 @@ function toDerivedWorkLogEntry(activity: OrchestrationThreadActivity): DerivedWo
   const readableTitle =
     extractCollabActionTitle(payload) ??
     computerToolDescription?.summary ??
-    deriveSynaraMcpToolTitle({
+    deriveTrellisMcpToolTitle({
       toolName,
       title: commandActionDisplay?.title ?? title,
       fallbackLabel: activity.summary,
@@ -1172,7 +1172,7 @@ function deriveProviderRuntimeReconciliationCollapseKey(
 function deriveToolLifecycleStatus(
   activityKind: OrchestrationThreadActivity["kind"],
   payload: Record<string, unknown> | null,
-): SynaraMcpToolStatus | undefined {
+): TrellisMcpToolStatus | undefined {
   if (!isRenderableToolLifecycleActivity(activityKind)) return undefined;
   if (isFailedToolLifecyclePayload(payload)) return "failed";
   if (isCancelledToolLifecyclePayload(payload)) return "cancelled";
@@ -1605,7 +1605,7 @@ function mergeDerivedWorkLogEntries(
     : (next.requestKind ?? previous.requestKind);
   const subagents = next.subagents ?? previous.subagents;
   const subagentAction = next.subagentAction ?? previous.subagentAction;
-  const synaraThreadCreation = next.synaraThreadCreation ?? previous.synaraThreadCreation;
+  const trellisThreadCreation = next.trellisThreadCreation ?? previous.trellisThreadCreation;
   const collapseKey = next.collapseKey ?? previous.collapseKey;
   const toolName = next.toolName ?? previous.toolName;
   const toolCallId = next.toolCallId ?? previous.toolCallId;
@@ -1639,7 +1639,7 @@ function mergeDerivedWorkLogEntries(
     ...(requestKind ? { requestKind } : {}),
     ...(subagents ? { subagents } : {}),
     ...(subagentAction ? { subagentAction } : {}),
-    ...(synaraThreadCreation ? { synaraThreadCreation } : {}),
+    ...(trellisThreadCreation ? { trellisThreadCreation } : {}),
     ...(collapseKey ? { collapseKey } : {}),
     ...(toolName ? { toolName } : {}),
     ...(toolCallId ? { toolCallId } : {}),

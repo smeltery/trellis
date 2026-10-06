@@ -1,4 +1,4 @@
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 import type { WebContents } from "electron";
 import { EventEmitter } from "node:events";
 import { describe, expect, it, vi } from "vitest";

@@ -1,7 +1,7 @@
 import { appendAppSnapPromptContext } from "../../provider/appSnapPromptContext.ts";
 import { isServerBetaFeatureEnabled } from "../../betaFeatureGate";
 import { computerActivationMetadata } from "../../computer/computerActivation.ts";
-import { parseComputerInvocation } from "@synara/shared/computerInvocation";
+import { parseComputerInvocation } from "@trellis/shared/computerInvocation";
 import { AgentGatewaySessionRegistry } from "../../agentGateway/Services/AgentGatewaySessionRegistry";
 import { ComputerService } from "../../computer/Services/ComputerService";
 import { providerWorkspaceChanged } from "../projectRelocationPaths.ts";
@@ -40,7 +40,7 @@ import {
   type ProviderSession,
   type RuntimeMode,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   Cache,
   Cause,
@@ -63,23 +63,23 @@ import {
   buildThreadTitleConversationContext,
   isGenericChatThreadTitle,
   isUsableGeneratedThreadTitle,
-} from "@synara/shared/chatThreads";
+} from "@trellis/shared/chatThreads";
 import {
   collectTailTurnIds,
   resolveTailUserMessageEditTarget,
-} from "@synara/shared/conversationEdit";
-import { isTemporaryWorktreeBranch, WORKTREE_BRANCH_PREFIX } from "@synara/shared/git";
-import { claudeSelectionRequiresRestart, resolveApiModelId } from "@synara/shared/model";
-import { assessClaudeCache } from "@synara/shared/claudeCache";
+} from "@trellis/shared/conversationEdit";
+import { isTemporaryWorktreeBranch, WORKTREE_BRANCH_PREFIX } from "@trellis/shared/git";
+import { claudeSelectionRequiresRestart, resolveApiModelId } from "@trellis/shared/model";
+import { assessClaudeCache } from "@trellis/shared/claudeCache";
 import { claudeCacheForModel } from "../../provider/claudeCacheObservation.ts";
-import { providerSupportsNativeTurnSteering } from "@synara/shared/providerMetadata";
+import { providerSupportsNativeTurnSteering } from "@trellis/shared/providerMetadata";
 import {
   formatProviderDeliveryBlockDetail,
   isProviderDeliveryBlockDetail,
   PROVIDER_DELIVERY_BLOCK_SUMMARY,
-} from "@synara/shared/providerDeliveryBlock";
-import { buildStalePendingRequestFailureDetail } from "@synara/shared/threadSummary";
-import { resolveThreadWorkspaceState } from "@synara/shared/threadEnvironment";
+} from "@trellis/shared/providerDeliveryBlock";
+import { buildStalePendingRequestFailureDetail } from "@trellis/shared/threadSummary";
+import { resolveThreadWorkspaceState } from "@trellis/shared/threadEnvironment";
 
 import {
   checkpointRefForThreadMessageStart,
@@ -143,7 +143,7 @@ import {
 import { QueuedTurnPromotionRepository } from "../../persistence/Services/QueuedTurnPromotions.ts";
 import { ManagedAttachmentRepository } from "../../persistence/Services/ManagedAttachments.ts";
 import { ServerConfig } from "../../config.ts";
-import { diagnosticIssueReason } from "@synara/shared/diagnosticIssue";
+import { diagnosticIssueReason } from "@trellis/shared/diagnosticIssue";
 import { reportBetaOperationalIssue } from "../../betaOperationalIssue.ts";
 import { ServerSettingsService } from "../../serverSettings.ts";
 import {
@@ -152,8 +152,8 @@ import {
   providerStartOptionsFromInstance,
   resolveModelSelectionInstanceId,
   resolveProviderInstance,
-} from "@synara/shared/providerInstances";
-import { providerStartOptionsFromServerSettings } from "@synara/shared/serverSettings";
+} from "@trellis/shared/providerInstances";
+import { providerStartOptionsFromServerSettings } from "@trellis/shared/serverSettings";
 import { clearWorkspaceIndexCache } from "../../workspaceEntries.ts";
 import {
   buildPriorTranscriptBootstrapText,
@@ -687,7 +687,7 @@ function withProviderThreadStatePrompts(input: {
 function providerPromptOverflowIssue(goalPromptOverheadChars: number): string {
   return goalPromptOverheadChars > 0
     ? "The latest message is too long to include the persistent thread goal. Shorten the message and retry."
-    : "The latest message is too long to include Synara Debug mode instructions. Shorten the message and retry.";
+    : "The latest message is too long to include Trellis Debug mode instructions. Shorten the message and retry.";
 }
 
 function isUnavailableInteractionRuntime(cause: Cause.Cause<ProviderServiceError>): boolean {
@@ -825,7 +825,7 @@ function buildGeneratedWorktreeBranchName(raw: string): string {
     .replace(/^refs\/heads\//, "")
     .replace(/['"`]/g, "");
 
-  const withoutPrefix = normalized.replace(/^synara\//, "");
+  const withoutPrefix = normalized.replace(/^trellis\//, "");
 
   const branchFragment = withoutPrefix
     .replace(/[^a-z0-9/_-]+/g, "-")
@@ -850,7 +850,7 @@ interface ProviderCommandReactorConfigShape {
 class ProviderCommandReactorConfig extends ServiceMap.Service<
   ProviderCommandReactorConfig,
   ProviderCommandReactorConfigShape
->()("synara/orchestration/Layers/ProviderCommandReactorConfig") {}
+>()("trellis/orchestration/Layers/ProviderCommandReactorConfig") {}
 
 const make = Effect.gen(function* () {
   const { commandEventTimeout } = yield* ProviderCommandReactorConfig;
@@ -960,7 +960,7 @@ const make = Effect.gen(function* () {
   // Same contract as the computer-control flag: records the flag the session
   // was actually spawned with so a changed value restarts the runtime instead
   // of silently reusing a session provisioned under the old approval set.
-  const threadSessionAutoApproveSynaraTools = new Map<string, boolean>();
+  const threadSessionAutoApproveTrellisTools = new Map<string, boolean>();
   // Seeded from the engine's in-memory command read model, not a second snapshot query.
   // The engine loads that model once after the projection bootstrap and keeps it current
   // as commands commit, so reading it here is both free and strictly fresher than
@@ -1949,8 +1949,8 @@ const make = Effect.gen(function* () {
       );
     }
     const desiredRuntimeMode = options?.runtimeMode ?? thread.runtimeMode;
-    const previousAutoApproveSynaraTools =
-      threadSessionAutoApproveSynaraTools.get(threadId) ?? false;
+    const previousAutoApproveTrellisTools =
+      threadSessionAutoApproveTrellisTools.get(threadId) ?? false;
     const currentProvider: ProviderKind | undefined = Schema.is(ProviderKind)(
       thread.session?.providerName,
     )
@@ -2111,11 +2111,11 @@ const make = Effect.gen(function* () {
       });
     }
     // A group coordinator must not stall its turn on interactive approval for
-    // the Synara group tools — the gateway authorizes every call server-side
-    // anyway. File edits, shell, and every non-Synara tool still ask.
+    // the Trellis group tools — the gateway authorizes every call server-side
+    // anyway. File edits, shell, and every non-Trellis tool still ask.
     // The coordinator check reads the persisted config directly — the same
     // lookup the service's principal resolver performs first.
-    const autoApproveSynaraTools =
+    const autoApproveTrellisTools =
       !isServerGroupsEnabled() || Option.isNone(projectAgentRepository)
         ? false
         : yield* projectAgentRepository.value.getConfigByCoordinatorThread(threadId).pipe(
@@ -2140,10 +2140,11 @@ const make = Effect.gen(function* () {
       ...(options?.enableComputerControl !== undefined
         ? { enableComputerControl: options.enableComputerControl }
         : {}),
-      ...(autoApproveSynaraTools ? { autoApproveSynaraTools: true } : {}),
+      ...(autoApproveTrellisTools ? { autoApproveTrellisTools: true } : {}),
       runtimeMode: desiredRuntimeMode,
     };
-    const autoApproveSynaraToolsChanged = autoApproveSynaraTools !== previousAutoApproveSynaraTools;
+    const autoApproveTrellisToolsChanged =
+      autoApproveTrellisTools !== previousAutoApproveTrellisTools;
 
     const providerSessionStartInput = (resumeCursor?: unknown) => ({
       ...providerSessionOptions,
@@ -2286,7 +2287,7 @@ const make = Effect.gen(function* () {
         !shouldRestartForModelChange &&
         !shouldRestartForModelSelectionChange &&
         !computerControlChanged &&
-        !autoApproveSynaraToolsChanged &&
+        !autoApproveTrellisToolsChanged &&
         !providerOptionsChanged
       ) {
         return {
@@ -2318,7 +2319,7 @@ const make = Effect.gen(function* () {
         !providerOptionsChanged &&
         !shouldRestartForModelChange &&
         !shouldRestartForModelSelectionChange &&
-        !autoApproveSynaraToolsChanged &&
+        !autoApproveTrellisToolsChanged &&
         (yield* hasLiveProviderTurn(threadId))
       ) {
         return {
@@ -2444,7 +2445,7 @@ const make = Effect.gen(function* () {
         ...providerSessionOptions,
         sourceThreadId: thread.forkSourceThreadId,
         enableComputerControl: forkComputerControl,
-        ...(autoApproveSynaraTools ? { autoApproveSynaraTools: true } : {}),
+        ...(autoApproveTrellisTools ? { autoApproveTrellisTools: true } : {}),
       });
       if (forked) {
         if (
@@ -2458,7 +2459,7 @@ const make = Effect.gen(function* () {
         }
         threadSessionModelSelections.set(threadId, desiredModelSelection);
         threadSessionComputerControl.set(threadId, forkComputerControl);
-        threadSessionAutoApproveSynaraTools.set(threadId, autoApproveSynaraTools);
+        threadSessionAutoApproveTrellisTools.set(threadId, autoApproveTrellisTools);
         setThreadProviderOptions(threadId, resolvedProviderOptions);
         const forkedSession =
           (yield* resolveActiveSession(threadId)) ??
@@ -2560,7 +2561,7 @@ const make = Effect.gen(function* () {
     // restart-necessity checks compare against the live spawn state even when
     // the spawning dispatch carried no explicit model selection.
     threadSessionModelSelections.set(threadId, desiredModelSelection);
-    threadSessionAutoApproveSynaraTools.set(threadId, autoApproveSynaraTools);
+    threadSessionAutoApproveTrellisTools.set(threadId, autoApproveTrellisTools);
     if (options?.enableComputerControl !== undefined) {
       threadSessionComputerControl.set(threadId, options.enableComputerControl);
     }
@@ -2798,10 +2799,10 @@ const make = Effect.gen(function* () {
       input.dispatchOrigin === undefined || input.dispatchOrigin === "user"
         ? parseComputerInvocation(input.messageText)
         : null;
-    // Synara owns this command. Keep it in durable user text for provenance,
+    // Trellis owns this command. Keep it in durable user text for provenance,
     // but do not ask the provider to interpret a native slash command.
     const authoredMessageText = computerInvocation
-      ? computerInvocation.prompt || "Use Synara Computer for this task."
+      ? computerInvocation.prompt || "Use Trellis Computer for this task."
       : input.messageText;
     // The project packet is ambient context, not user words: it prefixes the
     // assembled provider input rather than joining `<latest_user_message>`.
@@ -3557,7 +3558,7 @@ const make = Effect.gen(function* () {
       ) =>
         Effect.gen(function* () {
           // Claude cannot continue from a missing native session; clear the
-          // dead cursor and replay once with Synara transcript context.
+          // dead cursor and replay once with Trellis transcript context.
           yield* clearStaleProviderResumeState({
             threadId: input.threadId,
             cause,
@@ -7977,7 +7978,7 @@ const make = Effect.gen(function* () {
                 threadId: blocker.threadId,
                 kind: "provider.turn.start.failed",
                 summary: "Previous messages were not sent",
-                detail: `Synara recovered an earlier provider failure, but ${skippedPromptCount} ${noun} skipped while the thread was blocked. Resend ${skippedPromptCount === 1 ? "it" : "them"} to continue.`,
+                detail: `Trellis recovered an earlier provider failure, but ${skippedPromptCount} ${noun} skipped while the thread was blocked. Resend ${skippedPromptCount === 1 ? "it" : "them"} to continue.`,
                 turnId: null,
                 createdAt,
               });
