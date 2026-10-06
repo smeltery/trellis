@@ -9,7 +9,6 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { serializeReleaseGithubOutput } from "./lib/release-github-output.ts";
-import { releasePackageFiles } from "./update-release-package-versions.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const [version, tag, publishRelease, expectedCommit, refType, refName] = process.argv.slice(2);
@@ -51,15 +50,12 @@ if (gitStatus.stdout.trim().length > 0) {
   );
 }
 
-for (const relativePath of releasePackageFiles) {
-  const packageJson = JSON.parse(readFileSync(resolve(repoRoot, relativePath), "utf8")) as {
-    version?: string;
-  };
-  if (packageJson.version !== version) {
-    throw new Error(
-      `${relativePath} version ${packageJson.version ?? "<missing>"} does not match release ${version}. Commit the aligned version before running the release.`,
-    );
-  }
+// Auto releases assign a version to an already-tested commit. Builders receive
+// that version explicitly; package manifests are updated only after publication.
+if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version) || tag !== `v${version}`) {
+  throw new Error(
+    `Release version ${version} and tag ${tag} must identify the same semantic version.`,
+  );
 }
 
 let sourceTag = "";

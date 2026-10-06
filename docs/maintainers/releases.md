@@ -6,6 +6,8 @@ create the tag, and explicitly dispatch the release build. Prerelease tags are
 excluded. With no fork release tags, the initial version comes from the desktop
 package manifest, keeping it above the inherited compatibility floor. The tag points to the exact tested commit, not a newer main HEAD.
 Re-running dispatch for an existing tag supports recovery from a failed build.
+The tag supplies the artifact version explicitly to desktop and server builders;
+source package versions may lag until post-publication version synchronization.
 
 ```mermaid
 sequenceDiagram
