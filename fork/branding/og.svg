@@ -26,7 +26,7 @@
 <text x="60" y="435" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#62665e" >A local-first home for coding agents.</text>
 <text x="60" y="466" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#62665e" >Bring your providers. Keep your flow.</text>
 <rect x="60" y="505" width="166" height="36" rx="18" fill="#e5eddf" />
-<text x="80" y="529" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#36543b" >Web + desktop</text>
+<text x="143" y="523" text-anchor="middle" dominant-baseline="central" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#36543b">Web + desktop</text>
 <rect x="510" y="119" width="632" height="390" rx="14" fill="#ffffff" filter="url(#shadow)" stroke="#d7ded2"/>
 <rect x="511" y="120" width="630" height="35" rx="13" fill="#f3f5f0" />
 <circle cx="530" cy="137" r="4" fill="#d99b92"/>
