@@ -173,7 +173,7 @@ const defaultListTags = (pattern: string): readonly string[] => {
 export function resolveReleaseTags(
   listTags: (pattern: string) => readonly string[] = defaultListTags,
 ): string[] {
-  return [...listTags("v[0-9]*")];
+  return [...new Set([...listTags("v[0-9]*"), ...listTags("upstream/v[0-9]*")])];
 }
 
 interface TaggedViolation {

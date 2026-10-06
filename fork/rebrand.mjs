@@ -84,31 +84,23 @@ export function main() {
         .digest("hex");
     }
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
-    rmSync("apps/marketing", { recursive: true, force: true });
+    // Delete only tracked upstream site files absent from the canonical overlay.
+    // Preserve ignored local files, credentials, dependencies, and build output.
+    for (const path of files.filter((path) => path.startsWith("apps/marketing/"))) {
+      if (!existsSync(path.replace("apps/marketing/", "fork/marketing/"))) {
+        const tracked = execFileSync("git", ["ls-files", "--", path], { encoding: "utf8" }).trim();
+        if (tracked) rmSync(path, { force: true });
+      }
+    }
     cpSync("fork/marketing", "apps/marketing", { recursive: true });
     cpSync("fork/branding", "assets", { recursive: true });
-    const copies = {
-      "apps/web/public/trellis-logo.svg": "trellis-logo.svg",
-      "apps/web/public/trellis.png": "trellis-universal-1024.png",
-      "apps/web/public/favicon.ico": "trellis-web-favicon.ico",
-      "apps/web/public/favicon-16x16.png": "trellis-web-favicon-16x16.png",
-      "apps/web/public/favicon-32x32.png": "trellis-web-favicon-32x32.png",
-      "apps/web/public/apple-touch-icon.png": "trellis-web-apple-touch-180.png",
-      "apps/web/public/app-icons/default.png": "trellis-macos-1024.png",
-      "apps/web/public/app-icons/dark.png": "black-macos-1024.png",
-      "apps/web/public/app-icons/beta.png": "trellis-macos-1024.png",
-      "apps/desktop/resources/trellis.png": "trellis-universal-1024.png",
-      "apps/desktop/resources/icon.png": "trellis-universal-1024.png",
-      "apps/desktop/resources/app-icon-linux.png": "trellis-universal-1024.png",
-      "apps/desktop/resources/app-icon-macos.png": "trellis-macos-1024.png",
-      "apps/desktop/resources/dock-icon.png": "trellis-macos-1024.png",
-      "apps/desktop/resources/dock-icon-dark.png": "black-macos-1024.png",
-      "apps/desktop/resources/icon.ico": "trellis-windows.ico",
-      "apps/desktop/resources/app-icon-windows.ico": "trellis-windows.ico",
-      "apps/desktop/resources/dmgly/assets/app-icon.png": "trellis-macos-1024.png",
-    };
+    const copies = JSON.parse(readFileSync("fork/asset-map.json", "utf8"));
     for (const [destination, source] of Object.entries(copies))
-      cpSync(`fork/branding/prod/${source}`, destination);
+      cpSync(`fork/branding/${source}`, destination);
+    for (const base of ["apps/server", "apps/desktop/resources"]) {
+      cpSync("LICENSE", `${base}/LICENSE`);
+      cpSync("fork/UPSTREAM-LICENSE", `${base}/UPSTREAM-LICENSE`);
+    }
   }
   if (check && changes) process.exitCode = 1;
   else

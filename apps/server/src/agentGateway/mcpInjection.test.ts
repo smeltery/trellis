@@ -159,7 +159,7 @@ describe("agent gateway MCP injection", () => {
     assert.isTrue(configHasTomlTableHeader('[mcp_servers."trellis"]', "[mcp_servers.trellis]"));
     assert.isTrue(configHasTomlTableHeader("['mcp_servers'.'trellis']", "[mcp_servers.trellis]"));
     assert.isTrue(
-      configHasTomlTableHeader('[mcp_servers."syn\\u0061ra"]', "[mcp_servers.trellis]"),
+      configHasTomlTableHeader('[mcp_servers."tre\\u006clis"]', "[mcp_servers.trellis]"),
     );
     assert.isTrue(
       configHasTomlTableHeader('["shell_environment_policy"]', "[shell_environment_policy]"),

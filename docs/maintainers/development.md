@@ -33,7 +33,7 @@ flowchart LR
 | `bun run docs:check`       | Markdown style, real Mermaid parsing, local link existence                                          |
 | `bun run test`             | Vitest workspace tests; do not substitute `bun test`                                                |
 | `bun run migrations:check` | Released migration lineage; requires fetched release tags                                           |
-| `actionlint`               | GitHub Actions syntax and shell validation                                                          |
+| `actionlint`               | GitHub Actions syntax validation                                                                    |
 
 Hooks call the same commands as CI through Flox. Browser and native OS checks run
 in CI on their intended platforms. Install Chromium before running browser tests

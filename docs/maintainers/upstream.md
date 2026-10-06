@@ -23,7 +23,8 @@ flox activate
 bun run upstream:sync
 ```
 
-The command verifies the upstream remote, fetches `upstream/main`, creates a sync
+The command verifies the upstream remote, fetches `upstream/main` and release tags
+into the local `upstream/v*` namespace, creates a sync
 branch, enables Git rerere, and prepares an uncommitted merge. It never pushes,
 force-resets, or automatically chooses a side in a conflict. If already current,
 it exits without creating a branch.
@@ -49,9 +50,13 @@ Keep package metadata and the Bun lockfile synchronized. Commit the merge with a
 conventional message, push the sync branch, and open a PR. Wait for all CI lanes.
 Use `git merge --abort` to abandon a merge before committing.
 
-`brand:apply` replaces `apps/marketing` from its canonical copy, so edit
-`fork/marketing` first and run the overlay before installing dependencies.
+`brand:apply` updates tracked `apps/marketing` files from its canonical copy while
+preserving ignored local files and dependencies, so edit
+`fork/marketing` first and run the overlay before updating dependencies.
 The overlay is deterministic but cannot resolve semantic conflicts. It must never
 be used as a substitute for reviewing provider, migration, or process changes.
 Historical docs, evidence, and upstream license notices intentionally retain their
 original names. `brand:check` checks active source identities and key asset bytes.
+
+Inherited tags stay in a separate local namespace for migration checks; they are
+never pushed to the fork or counted as Trellis auto-release versions.

@@ -3,43 +3,22 @@ import Layout from "../layouts/Layout.astro";
 import { RELEASES_URL, REPO_URL } from "../lib/releases";
 ---
 
-<Layout title="Download Trellis" description="Download the latest Trellis desktop release or inspect release artifacts on GitHub.">
-  <section class="content download">
-    <div>
-      <p class="eyebrow">Desktop releases</p>
-      <h1>Download Trellis</h1>
-      <p>
-        Get the latest signed desktop builds from GitHub Releases. Pick your platform below, or
-        inspect all artifacts and checksums on the release page.
-      </p>
-      <p class="release-status" data-release-status>Loading latest release...</p>
-      <div class="download-grid" data-download-grid>
-        <a class="download-card" href={RELEASES_URL} data-release-platform="mac-arm64">
-          <span>macOS</span>
-          <strong>Apple Silicon</strong>
-          <small>.dmg</small>
-        </a>
-        <a class="download-card" href={RELEASES_URL} data-release-platform="mac-x64">
-          <span>macOS</span>
-          <strong>Intel</strong>
-          <small>.dmg</small>
-        </a>
-        <a class="download-card" href={RELEASES_URL} data-release-platform="windows-x64">
-          <span>Windows</span>
-          <strong>Windows 10, 11</strong>
-          <small>.exe</small>
-        </a>
-        <a class="download-card" href={RELEASES_URL} data-release-platform="linux-x64">
-          <span>Linux</span>
-          <strong>x64</strong>
-          <small>AppImage</small>
-        </a>
-      </div>
-      <div class="actions">
-        <a class="button" href={RELEASES_URL}>All release artifacts</a>
-        <a class="button secondary" href={REPO_URL}>Repository</a>
-      </div>
+<Layout title="Download Trellis" description="Find Trellis for macOS, Windows, or Linux. A local-first workspace for your coding agents.">
+  <section class="hero shell download-hero">
+    <p class="eyebrow"><span></span> Make yourself at home.</p>
+    <h1>Your next idea.<br /><em>Your kind of machine.</em></h1>
+    <p class="hero-description">A little room for your coding agents.<br />Choose a download to get started.</p>
+    <p class="fine" data-release-status aria-live="polite">Finding the latest release…</p>
+  </section>
+  <section class="shell downloads" aria-label="Download Trellis">
+    <div class="download-grid" data-download-grid>
+      <a class="download-card" href={RELEASES_URL} data-release-platform="mac-arm64"><span>macOS</span><strong>Apple Silicon</strong><small>M-series Macs <span aria-hidden="true">↗</span></small></a>
+      <a class="download-card" href={RELEASES_URL} data-release-platform="mac-x64"><span>macOS</span><strong>Intel</strong><small>Intel-based Macs <span aria-hidden="true">↗</span></small></a>
+      <a class="download-card" href={RELEASES_URL} data-release-platform="windows-x64"><span>Windows</span><strong>x64 installer</strong><small>Windows 10 & 11 <span aria-hidden="true">↗</span></small></a>
+      <a class="download-card" href={RELEASES_URL} data-release-platform="linux-x64"><span>Linux</span><strong>x64 AppImage</strong><small>Your Linux desktop <span aria-hidden="true">↗</span></small></a>
     </div>
+    <p class="download-note">Install a supported provider CLI and sign in before your first thread.<br /><a href={`${REPO_URL}/blob/main/docs/user/getting-started.md`}>Read the getting started guide ↗</a></p>
+    <div class="download-links"><a href={RELEASES_URL}>All releases ↗</a><a href={`${REPO_URL}/blob/main/docs/maintainers/development.md`}>Build from source ↗</a></div>
   </section>
 </Layout>
 

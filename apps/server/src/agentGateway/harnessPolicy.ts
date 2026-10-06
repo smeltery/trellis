@@ -57,7 +57,7 @@ export function renderTrellisHarnessPolicy(capabilities: TrellisHarnessCapabilit
 
   return [
     TRELLIS_HARNESS_POLICY_MARKER,
-    "You are running inside Trellis. Trellis is the host and harness for this session.",
+    "Trellis is the host and harness for this session.",
     "For known local files in user-facing Markdown, use readable labels and absolute file URLs, such as [config.ts](file:///absolute/path/config.ts). Relative links are only for the session working directory; otherwise use plain text and never invent a path.",
     'Trellis collapses progress and tools under "Worked for...". Final responses must restate every needed scope, plan, decision, result, caveat, instruction, or question. Never request approval using "this", "the above", or another referent available only in collapsed content.',
     "When a structured user-input tool is available for a genuine decision, prefer it and include all decision context in its question or card.",

@@ -87,7 +87,7 @@ jobs:
         run: flox activate -- actionlint -shellcheck=
 
       - name: Verify CI contracts
-        run: node --test .github/scripts/ci-contracts.test.mjs
+        run: node --test .github/scripts/ci-contracts.test.mjs fork/*.test.mjs
 
       - name: Validate Markdown, Mermaid, and local links
         run: bun run docs:check
@@ -408,5 +408,6 @@ jobs:
 
       - name: Verify released migration lineage
         run: |
-          test -n "$(git tag --list 'v[0-9]*')" || { echo "::error::Release tags are missing; lineage cannot be verified."; exit 1; }
+          node fork/fetch-upstream-tags.mjs
+          test -n "$(git tag --list 'v[0-9]*' 'upstream/v[0-9]*')" || { echo "::error::Release tags are missing; lineage cannot be verified."; exit 1; }
           node scripts/check-migration-lineage.ts

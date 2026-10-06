@@ -71,7 +71,7 @@
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules scripts/node_modules apps/*/dist apps/*/dist-electron packages/*/dist .turbo apps/*/.turbo packages/*/.turbo",
     "brand:apply": "node fork/rebrand.mjs",
     "docs:check": "node fork/check-docs.mjs",
-    "check:static": "node --test fork/*.test.mjs && bun run brand:check && bun run docs:check && bun run fmt:check && bun run lint && node --test .github/scripts/ci-contracts.test.mjs && bun run windows-runtime:check && bun run release:smoke",
+    "check:static": "actionlint -shellcheck= && node --test fork/*.test.mjs && bun run brand:check && bun run docs:check && bun run fmt:check && bun run lint && node --test .github/scripts/ci-contracts.test.mjs && bun run windows-runtime:check && bun run release:smoke",
     "check": "bun run check:static && bun run typecheck && bun run test && bun run build:desktop && bun run build:marketing",
     "hooks:install": "pre-commit install --install-hooks && pre-commit install --hook-type pre-push",
     "upstream:sync": "node fork/sync.mjs"

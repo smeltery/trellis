@@ -7,6 +7,7 @@ if (!remote.includes("upstream")) git("remote", "add", "upstream", expected);
 if (git("remote", "get-url", "upstream") !== expected)
   throw new Error("Unexpected upstream remote; inspect it before syncing.");
 git("fetch", "upstream", "main");
+execFileSync("node", ["fork/fetch-upstream-tags.mjs"], { stdio: "inherit" });
 const commit = git("rev-parse", "upstream/main");
 if (spawnSync("git", ["merge-base", "--is-ancestor", commit, "HEAD"]).status === 0) {
   console.log("Already contains the latest upstream commit.");

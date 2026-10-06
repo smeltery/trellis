@@ -25,11 +25,13 @@ for (const base of ["apps/desktop/resources", "apps/server"]) {
   assert.equal(read(`${base}/LICENSE`), read("LICENSE"));
   assert.equal(read(`${base}/UPSTREAM-LICENSE`), read("fork/UPSTREAM-LICENSE"));
 }
-for (const [source, target] of [
-  ["trellis-web-favicon.ico", "apps/web/public/favicon.ico"],
-  ["trellis-logo.svg", "apps/web/public/trellis-logo.svg"],
-  ["trellis-windows.ico", "apps/desktop/resources/icon.ico"],
-  ["trellis-macos-1024.png", "apps/desktop/resources/app-icon-macos.png"],
-])
-  assert.deepEqual(readFileSync(target), readFileSync(`fork/branding/prod/${source}`), target);
+for (const [target, source] of Object.entries(JSON.parse(read("fork/asset-map.json")))) {
+  assert.deepEqual(readFileSync(target), readFileSync(`fork/branding/${source}`), target);
+}
 console.log("Trellis identity, assets, native patch digests, and license notices passed.");
+
+assert.equal(
+  createHash("sha256").update(readFileSync("LICENSE")).digest("hex"),
+  "5fce31b74a03790580196c1324b975d086c4281e9f9260123ae63ae09c63be11",
+  "License must match the exact Hab source",
+);
