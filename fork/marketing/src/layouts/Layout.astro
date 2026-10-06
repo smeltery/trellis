@@ -23,11 +23,11 @@ const docs = `${REPO_URL}/tree/main/docs`;
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <nav class="nav" aria-label="Primary">
-        <a class="brand" href="/">trellis<span aria-hidden="true">.</span></a>
+        <a class="brand" href="/"><img src="/icon.png" width="22" height="22" alt="" /><span>trellis<span aria-hidden="true">.</span></span></a>
         <a href="/#workspace">Workspace</a>
         <a href="/#providers">Providers</a>
         <a href={docs}>Docs</a>
-        <a href={REPO_URL}>GitHub ↗</a>
+        <a class="nav-github" href={REPO_URL} aria-label="Trellis on GitHub"><img src="/brands/github.svg" width="15" height="15" alt="" /><span>GitHub ↗</span></a>
       </nav>
     </header>
     <main id="main"><slot /></main>

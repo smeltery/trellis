@@ -1165,3 +1165,35 @@ span.avatar {
     padding-top: 35px;
   }
 }
+
+.nav .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+}
+.nav .brand > img {
+  border-radius: 5px;
+}
+.nav .brand > span {
+  color: var(--ink);
+}
+.nav-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-github > img {
+  opacity: 0.7;
+}
+@media (max-width: 480px) {
+  .nav a {
+    padding: 10px 11px;
+  }
+  .nav .brand {
+    padding: 6px 10px;
+  }
+  .nav-github > span {
+    display: none;
+  }
+}
