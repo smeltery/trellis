@@ -1,5 +1,5 @@
-import type { ClaudeCacheObservation } from "@synara/contracts";
-import { assessClaudeCache } from "@synara/shared/claudeCache";
+import type { ClaudeCacheObservation } from "@trellis/contracts";
+import { assessClaudeCache } from "@trellis/shared/claudeCache";
 import { formatContextWindowTokens } from "~/lib/contextWindow";
 
 export function ClaudeCacheDetails({

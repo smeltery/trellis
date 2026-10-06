@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Effect } from "effect";
 
-import type { ProviderKind } from "@synara/contracts";
+import type { ProviderKind } from "@trellis/contracts";
 
 import { DeviceBackendError } from "../device/DeviceBackend.ts";
 import { DeviceManager } from "../device/DeviceManager.ts";
@@ -125,7 +125,7 @@ describe("agent gateway device tool handlers", () => {
     expect(description("device_list")).toContain("use an already-booted device");
     expect(description("device_boot")).toContain("only when device_list finds nothing booted");
     expect(description("device_boot")).toContain("boot-limit-reached");
-    expect(description("device_install")).toContain("Synara never builds");
+    expect(description("device_install")).toContain("Trellis never builds");
     expect(description("device_install")).toContain("xcodebuild");
     expect(description("device_launch")).toContain("com.apple.Preferences");
     expect(description("device_open_url")).toContain("exp://127.0.0.1:8081");
@@ -169,7 +169,7 @@ describe("agent gateway device tool handlers", () => {
     };
 
     expect(result.availability).toEqual({ kind: "available" });
-    expect(result.devices.find((device) => device.udid === DEVICE)?.bootSource).toBe("synara");
+    expect(result.devices.find((device) => device.udid === DEVICE)?.bootSource).toBe("trellis");
   });
 
   it("taps a label at the control's own point and reports its prior state", async () => {

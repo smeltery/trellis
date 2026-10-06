@@ -460,27 +460,27 @@ function makeIsolatedServerEnvironment(input: {
 }): NodeJS.ProcessEnv {
   const environment: NodeJS.ProcessEnv = { ...process.env };
   for (const key of [
-    "SYNARA_ALLOW_INSECURE_REMOTE",
-    "SYNARA_AUTH_TOKEN",
-    "SYNARA_HOME",
-    "SYNARA_HOST",
-    "SYNARA_MODE",
-    "SYNARA_PORT",
-    "SYNARA_PUBLIC_URL",
+    "TRELLIS_ALLOW_INSECURE_REMOTE",
+    "TRELLIS_AUTH_TOKEN",
+    "TRELLIS_HOME",
+    "TRELLIS_HOST",
+    "TRELLIS_MODE",
+    "TRELLIS_PORT",
+    "TRELLIS_PUBLIC_URL",
     "VITE_DEV_SERVER_URL",
   ]) {
     delete environment[key];
   }
   return {
     ...environment,
-    SYNARA_AUTO_BOOTSTRAP_PROJECT_FROM_CWD: "0",
-    SYNARA_CLAUDE_KEEPALIVE: "0",
-    SYNARA_DESKTOP_SHUTDOWN_TOKEN: input.shutdownToken,
-    SYNARA_HOME: input.homeDir,
-    SYNARA_HOST: "127.0.0.1",
-    SYNARA_MODE: "desktop",
-    SYNARA_NO_BROWSER: "1",
-    SYNARA_PORT: String(input.port),
+    TRELLIS_AUTO_BOOTSTRAP_PROJECT_FROM_CWD: "0",
+    TRELLIS_CLAUDE_KEEPALIVE: "0",
+    TRELLIS_DESKTOP_SHUTDOWN_TOKEN: input.shutdownToken,
+    TRELLIS_HOME: input.homeDir,
+    TRELLIS_HOST: "127.0.0.1",
+    TRELLIS_MODE: "desktop",
+    TRELLIS_NO_BROWSER: "1",
+    TRELLIS_PORT: String(input.port),
   };
 }
 
@@ -563,7 +563,7 @@ describeWindows("Windows desktop backend shutdown integration", () => {
   it("authenticates a real server, deduplicates shutdown, drains its runtime, and clears its finalizer artifact", async () => {
     const resources = new TestResources();
     try {
-      const homeDir = await resources.makeTempDir("synara-windows-shutdown-");
+      const homeDir = await resources.makeTempDir("trellis-windows-shutdown-");
       const port = await reserveLoopbackPort(resources);
       const shutdownToken = Crypto.randomBytes(32).toString("hex");
       const runtimeStatePath = Path.join(homeDir, RUNTIME_STATE_RELATIVE_PATH);

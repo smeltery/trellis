@@ -10,8 +10,8 @@ import {
   type ProviderModelOptions,
   type RuntimeMode,
   type ThreadId,
-} from "@synara/contracts";
-import { deriveAssociatedWorktreeMetadata } from "@synara/shared/threadWorkspace";
+} from "@trellis/contracts";
+import { deriveAssociatedWorktreeMetadata } from "@trellis/shared/threadWorkspace";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { newCommandId, newMessageId, newThreadId } from "../lib/utils";
 import { readNativeApi } from "../nativeApi";
@@ -57,7 +57,7 @@ import {
   sendSidechatPrompt,
   type SidechatCreationFlight,
 } from "../lib/sidechatCreation";
-import { isSidechatThread } from "@synara/shared/sidechatThread";
+import { isSidechatThread } from "@trellis/shared/sidechatThread";
 
 type ComposerSnapshot = {
   value: string;
@@ -820,7 +820,7 @@ export function useComposerSlashCommands(input: {
     const params = new URLSearchParams({ threadId: threadId });
     void downloadUrlAsBlob({
       url: resolveWsHttpUrl(`/api/thread-export?${params.toString()}`),
-      filename: `synara-thread-${threadId}.zip`,
+      filename: `trellis-thread-${threadId}.zip`,
     }).catch((error: unknown) => {
       toastManager.add({
         type: "error",

@@ -15,11 +15,11 @@ import type {
   GitHubInboxSort,
   PullRequestDetailInput,
   ProjectId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   coalescePullRequestListEntries,
   isValidGitHubRepositoryNameWithOwner,
-} from "@synara/shared/githubRepository";
+} from "@trellis/shared/githubRepository";
 
 import type {
   AppSettings,

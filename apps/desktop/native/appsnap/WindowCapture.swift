@@ -68,7 +68,7 @@ private let windowListUnavailableFailure = AppSnapFailure(
 
 private let excludedFrontmostApplicationFailure = AppSnapFailure(
     code: "excluded_frontmost_application",
-    message: "Synara cannot capture its own window."
+    message: "Trellis cannot capture its own window."
 )
 
 private func onScreenWindowInfo() -> [[String: Any]]? {
@@ -422,7 +422,7 @@ final class AppSnapCaptureCoordinator {
     private let outputDirectory: URL
     private let excludedBundleIdentifier: String
     private let captureFeedback = AppSnapCaptureFeedback()
-    private let queue = DispatchQueue(label: "dev.synara.appsnap.capture")
+    private let queue = DispatchQueue(label: "dev.trellis.smeltery.devsnap.capture")
     private var activeCapture: OneFrameWindowCapture?
 
     init(

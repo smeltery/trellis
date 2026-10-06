@@ -4,7 +4,7 @@ import {
   type HubWorkItem,
   type ProjectAgentOverview,
   type ProjectAgentStreamEvent,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { page } from "vitest/browser";

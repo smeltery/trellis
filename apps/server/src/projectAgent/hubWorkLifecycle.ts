@@ -2,11 +2,11 @@ import type {
   HubWorkRecord,
   OrchestrationThreadShell,
   ProjectManagedWorker,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   canSessionAnswerPendingRequests,
   isThreadActivelyWorking,
-} from "@synara/shared/groupThreadState";
+} from "@trellis/shared/groupThreadState";
 import type { ProjectionThreadMessage } from "../persistence/Services/ProjectionThreadMessages";
 
 export interface HubWorkLifecycleInput {

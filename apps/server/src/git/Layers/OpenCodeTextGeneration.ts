@@ -12,10 +12,10 @@ import type {
   OpenCodeModelSelection,
   OpenCodeModelOptions,
   ProviderStartOptions,
-} from "@synara/contracts";
-import { sanitizeGeneratedThreadTitle } from "@synara/shared/chatThreads";
-import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@synara/shared/git";
-import { getModelSelectionStringOptionValue } from "@synara/shared/model";
+} from "@trellis/contracts";
+import { sanitizeGeneratedThreadTitle } from "@trellis/shared/chatThreads";
+import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@trellis/shared/git";
+import { getModelSelectionStringOptionValue } from "@trellis/shared/model";
 
 import { resolveProviderAttachmentPath } from "../../provider/providerAttachmentPaths.ts";
 import { ServerConfig } from "../../config.ts";
@@ -448,7 +448,7 @@ const makeOpenCodeCompatibleTextGeneration = (config: OpenCodeCompatibleTextGene
               cliSpec: config.cliSpec,
             });
             const sessionCreateInput = {
-              title: `Synara ${input.operation}`,
+              title: `Trellis ${input.operation}`,
               model: {
                 providerID: providerId,
                 id: modelId,

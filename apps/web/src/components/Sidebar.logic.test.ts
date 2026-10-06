@@ -50,7 +50,7 @@ import {
   sortProjectsForSidebar,
   sortThreadsForSidebar,
 } from "./Sidebar.logic";
-import { ProjectId, SpaceId, ThreadId } from "@synara/contracts";
+import { ProjectId, SpaceId, ThreadId } from "@trellis/contracts";
 import { buildActivityViewModel } from "./SidebarActivityView.logic";
 import {
   DEFAULT_INTERACTION_MODE,
@@ -224,12 +224,12 @@ describe("resolveSidebarThreadPullRequest", () => {
     const live = openPr(575, "feat/current-branch");
     expect(
       resolveSidebarThreadPullRequest({
-        threadBranch: "synara/stale-branch",
+        threadBranch: "trellis/stale-branch",
         liveBranch: "feat/current-branch",
         hasLiveStatus: true,
         hasDedicatedWorktree: true,
         livePullRequest: live,
-        persistedPullRequest: openPr(574, "synara/stale-branch"),
+        persistedPullRequest: openPr(574, "trellis/stale-branch"),
       }),
     ).toBe(live);
   });
@@ -402,24 +402,24 @@ describe("resolveThreadHoverCardMetadata", () => {
     const metadata = resolveThreadHoverCardMetadata({
       thread: makeSidebarThreadSummary({
         envMode: "worktree",
-        branch: "codex/synara-mobile",
+        branch: "codex/trellis-mobile",
         worktreePath: "/Users/me/.codex/worktrees/1234/Remodex",
         associatedWorktreePath: "/Users/me/.codex/worktrees/1234/Remodex",
-        associatedWorktreeBranch: "codex/synara-mobile",
+        associatedWorktreeBranch: "codex/trellis-mobile",
       }),
       project: {
         kind: "project",
-        name: "synara-mobile",
+        name: "trellis-mobile",
         folderName: "Remodex",
         cwd: "/Users/me/Developer/Remodex",
       },
     });
 
     expect(metadata).toEqual({
-      projectName: "synara-mobile",
+      projectName: "trellis-mobile",
       projectCwd: "/Users/me/Developer/Remodex",
       sourceProjectName: "Remodex",
-      branch: "codex/synara-mobile",
+      branch: "codex/trellis-mobile",
       worktreeName: "Remodex",
     });
   });
@@ -431,15 +431,15 @@ describe("resolveThreadHoverCardMetadata", () => {
       }),
       project: {
         kind: "project",
-        name: "synara",
-        folderName: "synara",
-        cwd: "/Users/me/Developer/synara",
+        name: "trellis",
+        folderName: "trellis",
+        cwd: "/Users/me/Developer/trellis",
       },
     });
 
     expect(metadata).toEqual({
-      projectName: "synara",
-      projectCwd: "/Users/me/Developer/synara",
+      projectName: "trellis",
+      projectCwd: "/Users/me/Developer/trellis",
       sourceProjectName: null,
       branch: "main",
       worktreeName: null,
@@ -451,7 +451,7 @@ describe("resolveThreadHoverCardMetadata", () => {
       envMode: "worktree",
       branch: "feat/current-branch",
       worktreePath: "/repo/.worktrees/thread",
-      associatedWorktreeBranch: "synara/stale-branch",
+      associatedWorktreeBranch: "trellis/stale-branch",
     });
 
     expect(resolveThreadDisplayBranch(thread)).toBe("feat/current-branch");
@@ -460,8 +460,8 @@ describe("resolveThreadHoverCardMetadata", () => {
         thread,
         project: {
           kind: "project",
-          name: "synara",
-          folderName: "synara",
+          name: "trellis",
+          folderName: "trellis",
           cwd: "/repo",
         },
       }).branch,
@@ -481,18 +481,18 @@ describe("resolveThreadHoverCardMetadata", () => {
     ).toBeNull();
   });
 
-  it("labels project-less chat containers as Synara instead of the slug folder", () => {
+  it("labels project-less chat containers as Trellis instead of the slug folder", () => {
     const metadata = resolveThreadHoverCardMetadata({
       thread: makeSidebarThreadSummary({ branch: null }),
       project: {
         kind: "chat",
         name: "open-the-browser-search-house-music",
         folderName: "open-the-browser-search-house-music",
-        cwd: "/Users/me/Documents/Synara/2026-08-01/open-the-browser-search-house-music",
+        cwd: "/Users/me/Documents/Trellis/2026-08-01/open-the-browser-search-house-music",
       },
     });
 
-    expect(metadata.projectName).toBe("Synara");
+    expect(metadata.projectName).toBe("Trellis");
   });
 });
 
@@ -785,7 +785,7 @@ describe("add-project error helpers", () => {
 
   it("explains root-absolute add-project paths that probably missed the home directory", () => {
     expect(
-      describeAddProjectError("Failed to create project directory: /Developer/Testing/synara"),
+      describeAddProjectError("Failed to create project directory: /Developer/Testing/trellis"),
     ).toContain("/Users/<name>/Developer");
   });
 

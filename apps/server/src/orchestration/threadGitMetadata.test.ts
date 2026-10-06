@@ -1,4 +1,4 @@
-import type { OrchestrationThreadPullRequest } from "@synara/contracts";
+import type { OrchestrationThreadPullRequest } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import { deriveThreadGitMetadataPatch } from "./threadGitMetadata.ts";
@@ -6,7 +6,7 @@ import { deriveThreadGitMetadataPatch } from "./threadGitMetadata.ts";
 const pullRequest: OrchestrationThreadPullRequest = {
   number: 574,
   title: "Cache provider usage",
-  url: "https://github.com/Emanuele-web04/synara/pull/574",
+  url: "https://github.com/smeltery/trellis/pull/574",
   baseBranch: "main",
   headBranch: "feat/provider-usage-snapshot-cache",
   state: "open",
@@ -26,7 +26,7 @@ const dedicatedWorktree = {
 const otherPullRequest: OrchestrationThreadPullRequest = {
   ...pullRequest,
   number: 575,
-  url: "https://github.com/Emanuele-web04/synara/pull/575",
+  url: "https://github.com/smeltery/trellis/pull/575",
   headBranch: "feat/next-change",
 };
 
@@ -118,7 +118,7 @@ describe("deriveThreadGitMetadataPatch", () => {
       deriveThreadGitMetadataPatch({
         currentBranch: pullRequest.headBranch,
         currentPullRequest: pullRequest,
-        observedBranch: "synara/deadbeef",
+        observedBranch: "trellis/deadbeef",
         pullRequestLookup: { status: "resolved", pullRequest: null },
       }),
     ).toBeNull();
@@ -145,7 +145,7 @@ describe("deriveThreadGitMetadataPatch", () => {
         dedicatedWorktree: {
           cwd: "/repo/.worktrees/thread",
           currentPath: "/repo/.worktrees/thread",
-          currentBranch: "synara/stale-branch",
+          currentBranch: "trellis/stale-branch",
         },
       }),
     ).toEqual({

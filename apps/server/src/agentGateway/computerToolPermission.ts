@@ -2,10 +2,10 @@ import {
   BROWSER_TOOL_NAMES,
   type ProviderInteractionMode,
   type RuntimeMode,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
-/** Exact tool names owned by Synara's capability-gated Computer gateway. */
-export const SYNARA_COMPUTER_TOOL_NAMES = [
+/** Exact tool names owned by Trellis's capability-gated Computer gateway. */
+export const TRELLIS_COMPUTER_TOOL_NAMES = [
   "computer_activate_window",
   "computer_click",
   "computer_drag",
@@ -56,9 +56,9 @@ export const SYNARA_COMPUTER_TOOL_NAMES = [
   "computer_browser_press",
 ] as const;
 
-export type SynaraComputerToolName = (typeof SYNARA_COMPUTER_TOOL_NAMES)[number];
+export type TrellisComputerToolName = (typeof TRELLIS_COMPUTER_TOOL_NAMES)[number];
 
-const SYNARA_COMPUTER_TOOL_NAME_SET = new Set<string>(SYNARA_COMPUTER_TOOL_NAMES);
+const TRELLIS_COMPUTER_TOOL_NAME_SET = new Set<string>(TRELLIS_COMPUTER_TOOL_NAMES);
 
 function recordString(value: unknown, key: string): string | undefined {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return undefined;
@@ -68,38 +68,38 @@ function recordString(value: unknown, key: string): string | undefined {
 
 /**
  * Accept only the canonical gateway name or the exact provider qualifications
- * used for Synara's reserved MCP server. A similarly named tool from another
+ * used for Trellis's reserved MCP server. A similarly named tool from another
  * MCP server must continue through the provider's ordinary permission policy.
  */
-export function canonicalSynaraComputerToolName(
+export function canonicalTrellisComputerToolName(
   value: unknown,
-): SynaraComputerToolName | undefined {
+): TrellisComputerToolName | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
-  const canonical = normalized.startsWith("mcp__synara__")
-    ? normalized.slice("mcp__synara__".length)
-    : normalized.startsWith("synara_")
-      ? normalized.slice("synara_".length)
+  const canonical = normalized.startsWith("mcp__trellis__")
+    ? normalized.slice("mcp__trellis__".length)
+    : normalized.startsWith("trellis_")
+      ? normalized.slice("trellis_".length)
       : normalized;
-  return SYNARA_COMPUTER_TOOL_NAME_SET.has(canonical)
-    ? (canonical as SynaraComputerToolName)
+  return TRELLIS_COMPUTER_TOOL_NAME_SET.has(canonical)
+    ? (canonical as TrellisComputerToolName)
     : undefined;
 }
 
 /**
- * Provider callbacks must carry Synara's namespace themselves. Bare canonical
+ * Provider callbacks must carry Trellis's namespace themselves. Bare canonical
  * names are safe only after a separate protocol field has proved the server
  * identity (for example Codex's `serverName`).
  */
-export function qualifiedSynaraComputerToolName(
+export function qualifiedTrellisComputerToolName(
   value: unknown,
-): SynaraComputerToolName | undefined {
+): TrellisComputerToolName | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
-  if (!normalized.startsWith("mcp__synara__") && !normalized.startsWith("synara_")) {
+  if (!normalized.startsWith("mcp__trellis__") && !normalized.startsWith("trellis_")) {
     return undefined;
   }
-  return canonicalSynaraComputerToolName(normalized);
+  return canonicalTrellisComputerToolName(normalized);
 }
 
 /**
@@ -116,7 +116,7 @@ export function qualifiedSynaraComputerToolName(
  * `apps/server/src/agentGateway/Layers/AgentGateway.ts` as the catalog
  * membership test OR this family matcher, so a prefixed spelling from a
  * session that never saw the catalog —
- * `synara_computer_click`, `mcp__synara__computer_click` — still reaches
+ * `trellis_computer_click`, `mcp__trellis__computer_click` — still reaches
  * the denial hook and the card.
  *
  * Pi's native projection adds specialist forwarders only when its leased
@@ -130,8 +130,8 @@ export function qualifiedSynaraComputerToolName(
  * permission policy — so this matcher accepts only exact owned names in any
  * of the three spellings, never prose around them.
  */
-export function isSynaraComputerToolFamilyName(value: unknown): boolean {
-  return canonicalSynaraComputerToolName(value) !== undefined;
+export function isTrellisComputerToolFamilyName(value: unknown): boolean {
+  return canonicalTrellisComputerToolName(value) !== undefined;
 }
 
 function firstRecordString(value: unknown, keys: ReadonlyArray<string>): string | undefined {
@@ -147,86 +147,86 @@ export function computerToolNameFromProviderPermission(input: {
   readonly title?: unknown;
   readonly rawInput?: unknown;
   readonly metadata?: unknown;
-}): SynaraComputerToolName | undefined {
+}): TrellisComputerToolName | undefined {
   const explicitName = typeof input.name === "string" ? input.name : undefined;
-  if (explicitName !== undefined) return qualifiedSynaraComputerToolName(explicitName);
+  if (explicitName !== undefined) return qualifiedTrellisComputerToolName(explicitName);
 
   const rawToolName = firstRecordString(input.rawInput, ["_toolName", "toolName", "tool_name"]);
-  if (rawToolName !== undefined) return qualifiedSynaraComputerToolName(rawToolName);
+  if (rawToolName !== undefined) return qualifiedTrellisComputerToolName(rawToolName);
 
   const metadataToolName = firstRecordString(input.metadata, [
     "_toolName",
     "toolName",
     "tool_name",
   ]);
-  if (metadataToolName !== undefined) return qualifiedSynaraComputerToolName(metadataToolName);
+  if (metadataToolName !== undefined) return qualifiedTrellisComputerToolName(metadataToolName);
 
   // The display `title` is provider-composed text, not a tool name — a
-  // request that only *renders* as a Synara computer call names no such tool
+  // request that only *renders* as a Trellis computer call names no such tool
   // and must keep the ordinary permission path.
   return undefined;
 }
 
 /**
- * The `synara_*` catalog served by Synara's agent gateway: thread read/write,
+ * The `trellis_*` catalog served by Trellis's agent gateway: thread read/write,
  * project agent, automation, diagnostics, and review tools. Kept exact — a
- * look-alike MCP server (`synara_fs`, `synara_tools`) must never inherit the
- * auto-approve path the reserved `synara` server gets.
+ * look-alike MCP server (`trellis_fs`, `trellis_tools`) must never inherit the
+ * auto-approve path the reserved `trellis` server gets.
  */
-const SYNARA_GATEWAY_OWNED_TOOL_NAMES = [
+const TRELLIS_GATEWAY_OWNED_TOOL_NAMES = [
   // Thread read tools (threadReadTools.ts)
-  "synara_context",
-  "synara_capabilities",
-  "synara_list_projects",
-  "synara_list_threads",
-  "synara_read_thread",
-  "synara_wait_for_threads",
+  "trellis_context",
+  "trellis_capabilities",
+  "trellis_list_projects",
+  "trellis_list_threads",
+  "trellis_read_thread",
+  "trellis_wait_for_threads",
   // Kanban tools (kanbanTools.ts)
-  "synara_read_kanban_board",
-  "synara_read_kanban_card",
-  "synara_create_kanban_task",
-  "synara_create_kanban_draft",
-  "synara_move_kanban_card",
-  "synara_update_kanban_card",
-  "synara_set_kanban_goal",
-  "synara_delete_kanban_card",
+  "trellis_read_kanban_board",
+  "trellis_read_kanban_card",
+  "trellis_create_kanban_task",
+  "trellis_create_kanban_draft",
+  "trellis_move_kanban_card",
+  "trellis_update_kanban_card",
+  "trellis_set_kanban_goal",
+  "trellis_delete_kanban_card",
   // Thread write tools (Layers/AgentGateway.ts)
-  "synara_create_threads",
-  "synara_create_thread",
-  "synara_send_message",
-  "synara_interrupt_thread",
-  "synara_set_thread_title",
-  "synara_set_thread_pull_request",
-  "synara_set_thread_archived",
-  "synara_set_thread_goal",
+  "trellis_create_threads",
+  "trellis_create_thread",
+  "trellis_send_message",
+  "trellis_interrupt_thread",
+  "trellis_set_thread_title",
+  "trellis_set_thread_pull_request",
+  "trellis_set_thread_archived",
+  "trellis_set_thread_goal",
   // Thread diagnostics (threadDiagnosticTools.ts)
-  "synara_read_thread_activity",
-  "synara_diagnose_thread",
-  "synara_read_thread_events",
-  "synara_read_thread_runtime_events",
+  "trellis_read_thread_activity",
+  "trellis_diagnose_thread",
+  "trellis_read_thread_events",
+  "trellis_read_thread_runtime_events",
   // Automations (automationTools.ts)
-  "synara_create_automation",
-  "synara_list_automations",
-  "synara_view_automation",
-  "synara_update_automation",
-  "synara_update_automation_memory",
-  "synara_cancel_automation",
-  "synara_report_automation_result",
+  "trellis_create_automation",
+  "trellis_list_automations",
+  "trellis_view_automation",
+  "trellis_update_automation",
+  "trellis_update_automation_memory",
+  "trellis_cancel_automation",
+  "trellis_report_automation_result",
   // Project agent tools (projectAgentTools.ts)
-  "synara_project_context",
-  "synara_project_forget",
-  "synara_project_get_overview",
-  "synara_project_library_add",
-  "synara_project_library_list",
-  "synara_project_link_repository",
-  "synara_project_list_tasks",
-  "synara_project_list_threads",
-  "synara_project_read_document",
-  "synara_project_remember",
-  "synara_project_report_result",
-  "synara_project_write_document",
+  "trellis_project_context",
+  "trellis_project_forget",
+  "trellis_project_get_overview",
+  "trellis_project_library_add",
+  "trellis_project_library_list",
+  "trellis_project_link_repository",
+  "trellis_project_list_tasks",
+  "trellis_project_list_threads",
+  "trellis_project_read_document",
+  "trellis_project_remember",
+  "trellis_project_report_result",
+  "trellis_project_write_document",
   // Browser review tool (browserTools.ts)
-  "synara_e2e_review",
+  "trellis_e2e_review",
   // Capability-gated device tools (deviceTools.ts — not in contracts)
   "device_boot",
   "device_describe_ui",
@@ -243,48 +243,48 @@ const SYNARA_GATEWAY_OWNED_TOOL_NAMES = [
 ] as const;
 
 /** Every tool name the agent gateway serves, from the shared catalogs. */
-const SYNARA_GATEWAY_TOOL_NAME_SET: ReadonlySet<string> = new Set<string>([
-  ...SYNARA_GATEWAY_OWNED_TOOL_NAMES,
-  ...SYNARA_COMPUTER_TOOL_NAMES,
+const TRELLIS_GATEWAY_TOOL_NAME_SET: ReadonlySet<string> = new Set<string>([
+  ...TRELLIS_GATEWAY_OWNED_TOOL_NAMES,
+  ...TRELLIS_COMPUTER_TOOL_NAMES,
   ...BROWSER_TOOL_NAMES,
 ]);
 
-const SYNARA_MCP_QUALIFIED_PREFIX = "mcp__synara__";
-const SYNARA_MCP_SERVER_PREFIX = "synara_";
+const TRELLIS_MCP_QUALIFIED_PREFIX = "mcp__trellis__";
+const TRELLIS_MCP_SERVER_PREFIX = "trellis_";
 
 /**
- * Any tool Synara's agent gateway serves under its reserved MCP server name —
+ * Any tool Trellis's agent gateway serves under its reserved MCP server name —
  * the whole gateway catalog (thread, project, automation, diagnostics,
  * computer, browser, device). The session token is what authorizes each call
  * server-side, so providers that were granted the gateway may let these names
  * skip their own interactive permission prompt when the start input opts in
- * (`ProviderSessionStartInput.autoApproveSynaraTools`).
+ * (`ProviderSessionStartInput.autoApproveTrellisTools`).
  *
  * Providers report MCP calls two ways, and both must pin the server identity:
- * Claude-style `mcp__synara__<tool>` matches on the exact `mcp__synara__`
- * prefix (a `synara_fs` server produces `mcp__synara_fs__*`, which fails it);
- * `<server>_<tool>` reports like OpenCode's `synara_computer_click` match only
- * when the name — or the part after the `synara_` server prefix — is in the
- * served catalog. A bare `synara_*` catalog name (`synara_list_threads`) also
+ * Claude-style `mcp__trellis__<tool>` matches on the exact `mcp__trellis__`
+ * prefix (a `trellis_fs` server produces `mcp__trellis_fs__*`, which fails it);
+ * `<server>_<tool>` reports like OpenCode's `trellis_computer_click` match only
+ * when the name — or the part after the `trellis_` server prefix — is in the
+ * served catalog. A bare `trellis_*` catalog name (`trellis_list_threads`) also
  * matches because the name itself carries the namespace; capability families
  * (`computer_*`, `browser_*`, `device_*`) must arrive server-qualified.
  * Everything else keeps the ordinary permission path.
  */
-export function isSynaraGatewayToolName(value: unknown): boolean {
+export function isTrellisGatewayToolName(value: unknown): boolean {
   if (typeof value !== "string") return false;
   const normalized = value.trim().toLowerCase();
-  if (normalized.startsWith(SYNARA_MCP_QUALIFIED_PREFIX)) {
-    // The `mcp__synara__` prefix pins the server, not the tool — only a real
+  if (normalized.startsWith(TRELLIS_MCP_QUALIFIED_PREFIX)) {
+    // The `mcp__trellis__` prefix pins the server, not the tool — only a real
     // catalog name after the prefix may take the auto-approve path, so a
     // look-alike tool name on the same server cannot ride it.
-    return SYNARA_GATEWAY_TOOL_NAME_SET.has(normalized.slice(SYNARA_MCP_QUALIFIED_PREFIX.length));
+    return TRELLIS_GATEWAY_TOOL_NAME_SET.has(normalized.slice(TRELLIS_MCP_QUALIFIED_PREFIX.length));
   }
-  if (SYNARA_GATEWAY_TOOL_NAME_SET.has(normalized)) {
-    return normalized.startsWith(SYNARA_MCP_SERVER_PREFIX);
+  if (TRELLIS_GATEWAY_TOOL_NAME_SET.has(normalized)) {
+    return normalized.startsWith(TRELLIS_MCP_SERVER_PREFIX);
   }
   return (
-    normalized.startsWith(SYNARA_MCP_SERVER_PREFIX) &&
-    SYNARA_GATEWAY_TOOL_NAME_SET.has(normalized.slice(SYNARA_MCP_SERVER_PREFIX.length))
+    normalized.startsWith(TRELLIS_MCP_SERVER_PREFIX) &&
+    TRELLIS_GATEWAY_TOOL_NAME_SET.has(normalized.slice(TRELLIS_MCP_SERVER_PREFIX.length))
   );
 }
 
@@ -296,7 +296,7 @@ export function isSynaraGatewayToolName(value: unknown): boolean {
  * presentational text the provider composes, so it can look like a gateway
  * name without one ever being called.
  */
-export function isSynaraGatewayToolCall(input: {
+export function isTrellisGatewayToolCall(input: {
   readonly name?: unknown;
   // Accepted for call-site shape compatibility but never consulted.
   readonly title?: unknown;
@@ -304,27 +304,27 @@ export function isSynaraGatewayToolCall(input: {
   readonly metadata?: unknown;
 }): boolean {
   const explicitName = typeof input.name === "string" ? input.name : undefined;
-  if (explicitName !== undefined) return isSynaraGatewayToolName(explicitName);
+  if (explicitName !== undefined) return isTrellisGatewayToolName(explicitName);
 
   const rawToolName = firstRecordString(input.rawInput, ["_toolName", "toolName", "tool_name"]);
-  if (rawToolName !== undefined) return isSynaraGatewayToolName(rawToolName);
+  if (rawToolName !== undefined) return isTrellisGatewayToolName(rawToolName);
 
   const metadataToolName = firstRecordString(input.metadata, [
     "_toolName",
     "toolName",
     "tool_name",
   ]);
-  if (metadataToolName !== undefined) return isSynaraGatewayToolName(metadataToolName);
+  if (metadataToolName !== undefined) return isTrellisGatewayToolName(metadataToolName);
 
   return false;
 }
 
 /**
- * Provider permission prompts are redundant for an active Synara Computer
+ * Provider permission prompts are redundant for an active Trellis Computer
  * capability: the gateway performs the authoritative task-scoped approval.
  * Plan mode and requests outside an active turn remain fail-closed.
  */
-export function shouldAllowSynaraComputerProviderTool(input: {
+export function shouldAllowTrellisComputerProviderTool(input: {
   readonly computerControlEnabled: boolean;
   readonly activeTurn: boolean;
   readonly interactionMode: ProviderInteractionMode | undefined;

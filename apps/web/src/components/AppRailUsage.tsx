@@ -5,8 +5,8 @@
 // Depends on: the shared provider-usage menu model and panel content, so the rail reads the
 //             same numbers as the chat header chip, the Environment panel, and Settings.
 
-import type { ProviderKind, ServerProviderUsageSnapshot } from "@synara/contracts";
-import { providerUsageDisplayName } from "@synara/shared/providerUsage";
+import type { ProviderKind, ServerProviderUsageSnapshot } from "@trellis/contracts";
+import { providerUsageDisplayName } from "@trellis/shared/providerUsage";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAppSettings, type RailUsageWindow } from "~/appSettings";

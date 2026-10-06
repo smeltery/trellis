@@ -9,9 +9,9 @@ import {
   PROVIDER_DISPLAY_NAMES,
   type ProviderKind,
   type StatsGetRecapResult,
-} from "@synara/contracts";
-import { formatModelDisplayName } from "@synara/shared/model";
-import { pluralize } from "@synara/shared/text";
+} from "@trellis/contracts";
+import { formatModelDisplayName } from "@trellis/shared/model";
+import { pluralize } from "@trellis/shared/text";
 
 import type { ProviderUsageProgressTrackProps } from "~/lib/providerUsageDisplay";
 import { formatClockDuration } from "../../session-logic";

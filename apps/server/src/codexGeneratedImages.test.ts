@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { afterEach, describe, it } from "vitest";
 
-import { DEFAULT_SERVER_SETTINGS, type ProviderRuntimeEvent } from "@synara/contracts";
+import { DEFAULT_SERVER_SETTINGS, type ProviderRuntimeEvent } from "@trellis/contracts";
 
 import {
   CODEX_GENERATED_IMAGE_ARTIFACT_KIND,
@@ -74,58 +74,58 @@ describe("generatedImagePathFromRuntimeEvent", () => {
 });
 
 describe("resolveCodexGeneratedImagesRoot(s)", () => {
-  const previousSynaraHome = process.env.SYNARA_HOME;
+  const previousTrellisHome = process.env.TRELLIS_HOME;
 
   afterEach(() => {
-    if (previousSynaraHome === undefined) delete process.env.SYNARA_HOME;
-    else process.env.SYNARA_HOME = previousSynaraHome;
+    if (previousTrellisHome === undefined) delete process.env.TRELLIS_HOME;
+    else process.env.TRELLIS_HOME = previousTrellisHome;
   });
 
   it("returns the overlay generated_images directory as the active write root by default", () => {
-    process.env.SYNARA_HOME = "/synara-test/runtime";
+    process.env.TRELLIS_HOME = "/trellis-test/runtime";
     assert.equal(
       resolveCodexGeneratedImagesRoot("/codex-test/.codex"),
-      path.join("/synara-test/runtime", "codex-home-overlay", "generated_images"),
+      path.join("/trellis-test/runtime", "codex-home-overlay", "generated_images"),
     );
   });
 
   it("predicts against the account overlay for account-scoped instance context", () => {
-    process.env.SYNARA_HOME = "/synara-test/runtime";
+    process.env.TRELLIS_HOME = "/trellis-test/runtime";
     const root = resolveCodexGeneratedImagesRoot({
       homePath: "/codex-test/.codex",
       accountId: "codex_2",
     });
     assert.ok(
       root.startsWith(
-        path.join("/synara-test/runtime", "codex-home-overlay", "accounts", "codex_2-"),
+        path.join("/trellis-test/runtime", "codex-home-overlay", "accounts", "codex_2-"),
       ),
       `expected account overlay root, got ${root}`,
     );
     assert.ok(root.endsWith(path.join("generated_images")));
   });
 
-  it("honors a per-instance SYNARA_HOME when predicting the managed overlay", () => {
-    process.env.SYNARA_HOME = "/synara-test/runtime";
+  it("honors a per-instance TRELLIS_HOME when predicting the managed overlay", () => {
+    process.env.TRELLIS_HOME = "/trellis-test/runtime";
     const root = resolveCodexGeneratedImagesRoot({
       homePath: "/codex-test/.codex-work",
-      environment: { SYNARA_HOME: "/synara-test/instance-runtime" },
+      environment: { TRELLIS_HOME: "/trellis-test/instance-runtime" },
     });
     assert.equal(
       root,
-      path.join("/synara-test/instance-runtime", "codex-home-overlay", "generated_images"),
+      path.join("/trellis-test/instance-runtime", "codex-home-overlay", "generated_images"),
     );
   });
 
   it("returns both source and overlay generated_images roots for the allowlist", () => {
-    process.env.SYNARA_HOME = "/synara-test/runtime";
+    process.env.TRELLIS_HOME = "/trellis-test/runtime";
     assert.deepEqual(resolveCodexGeneratedImagesRoots("/codex-test/.codex"), [
       path.join("/codex-test/.codex", "generated_images"),
-      path.join("/synara-test/runtime", "codex-home-overlay", "generated_images"),
+      path.join("/trellis-test/runtime", "codex-home-overlay", "generated_images"),
     ]);
   });
 
   it("keeps account overlay roots for the full instance context", () => {
-    process.env.SYNARA_HOME = "/synara-test/runtime";
+    process.env.TRELLIS_HOME = "/trellis-test/runtime";
 
     const roots = resolveCodexGeneratedImagesRoots({
       homePath: "/codex-test/.codex-work",
@@ -137,7 +137,7 @@ describe("resolveCodexGeneratedImagesRoot(s)", () => {
       roots.some(
         (root) =>
           root.startsWith(
-            path.join("/synara-test/runtime", "codex-home-overlay", "accounts", "codex_work-"),
+            path.join("/trellis-test/runtime", "codex-home-overlay", "accounts", "codex_work-"),
           ) && root.endsWith(path.join("generated_images")),
       ),
       `expected account overlay generated_images root, got ${JSON.stringify(roots)}`,
@@ -146,11 +146,11 @@ describe("resolveCodexGeneratedImagesRoot(s)", () => {
 });
 
 describe("codexConfiguredHomePathsFromSettings", () => {
-  const previousSynaraHome = process.env.SYNARA_HOME;
+  const previousTrellisHome = process.env.TRELLIS_HOME;
 
   afterEach(() => {
-    if (previousSynaraHome === undefined) delete process.env.SYNARA_HOME;
-    else process.env.SYNARA_HOME = previousSynaraHome;
+    if (previousTrellisHome === undefined) delete process.env.TRELLIS_HOME;
+    else process.env.TRELLIS_HOME = previousTrellisHome;
   });
 
   it("keeps the enabled default Codex home when it has no overrides", () => {
@@ -166,7 +166,7 @@ describe("codexConfiguredHomePathsFromSettings", () => {
         codex_env: {
           driver: "codex" as const,
           enabled: true,
-          environment: [{ name: "SYNARA_HOME", value: "/instance-env/runtime", sensitive: false }],
+          environment: [{ name: "TRELLIS_HOME", value: "/instance-env/runtime", sensitive: false }],
         },
       },
     };
@@ -188,7 +188,7 @@ describe("codexConfiguredHomePathsFromSettings", () => {
   });
 
   it("preserves configured account context for generated-image roots", () => {
-    process.env.SYNARA_HOME = "/synara-test/runtime";
+    process.env.TRELLIS_HOME = "/trellis-test/runtime";
     const settings = {
       ...DEFAULT_SERVER_SETTINGS,
       providerInstances: {
@@ -211,7 +211,7 @@ describe("codexConfiguredHomePathsFromSettings", () => {
       roots.some(
         (root) =>
           root.startsWith(
-            path.join("/synara-test/runtime", "codex-home-overlay", "accounts", "codex_work-"),
+            path.join("/trellis-test/runtime", "codex-home-overlay", "accounts", "codex_work-"),
           ) && root.endsWith(path.join("generated_images")),
       ),
       `expected configured account overlay generated_images root, got ${JSON.stringify(roots)}`,
@@ -219,7 +219,7 @@ describe("codexConfiguredHomePathsFromSettings", () => {
   });
 
   it("excludes disabled Codex instance homes from the generated-image allowlist", () => {
-    process.env.SYNARA_HOME = "/synara-disabled/runtime";
+    process.env.TRELLIS_HOME = "/trellis-disabled/runtime";
     const settings = {
       ...DEFAULT_SERVER_SETTINGS,
       providerInstances: {
@@ -260,7 +260,7 @@ describe("codexConfiguredHomePathsFromSettings", () => {
   });
 
   it("excludes disabled default Codex homes from the generated-image allowlist", () => {
-    process.env.SYNARA_HOME = "/synara-disabled-default/runtime";
+    process.env.TRELLIS_HOME = "/trellis-disabled-default/runtime";
     const settings = {
       ...DEFAULT_SERVER_SETTINGS,
       providers: {
@@ -284,7 +284,7 @@ describe("codexConfiguredHomePathsFromSettings", () => {
   });
 
   it("excludes generic-disabled default Codex homes from the generated-image allowlist", () => {
-    process.env.SYNARA_HOME = "/synara-disabled-generic/runtime";
+    process.env.TRELLIS_HOME = "/trellis-disabled-generic/runtime";
     const settings = {
       ...DEFAULT_SERVER_SETTINGS,
       providers: {

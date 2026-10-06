@@ -9,7 +9,7 @@ import {
   type OrchestrationReadModel,
   type OrchestrationSession,
   type PendingClaudeCacheReview,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 

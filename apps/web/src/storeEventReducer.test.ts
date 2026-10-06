@@ -13,7 +13,7 @@ import {
   ThreadId,
   TurnId,
   type PendingClaudeCacheReview,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { describe, expect, it, vi } from "vitest";
 
 import { applyOrchestrationEvents, applyOrchestrationEventsHotPath } from "./storeEventReducer";
@@ -726,11 +726,11 @@ describe("store event reducer", () => {
       makeThread({
         title: "Old title",
         envMode: "worktree",
-        branch: "synara/tmp-working",
+        branch: "trellis/tmp-working",
         worktreePath: "/tmp/project/.worktrees/tmp-working",
         associatedWorktreePath: "/tmp/project/.worktrees/tmp-working",
-        associatedWorktreeBranch: "synara/tmp-working",
-        associatedWorktreeRef: "synara/tmp-working",
+        associatedWorktreeBranch: "trellis/tmp-working",
+        associatedWorktreeRef: "trellis/tmp-working",
         session: {
           provider: "codex",
           status: "ready",
@@ -745,22 +745,22 @@ describe("store event reducer", () => {
       makeDomainEvent("thread.meta-updated", {
         threadId: ThreadId.makeUnsafe("thread-1"),
         title: "New title",
-        branch: "synara/app-startup-crash",
+        branch: "trellis/app-startup-crash",
         worktreePath: "/tmp/project/.worktrees/app-startup-crash",
         associatedWorktreePath: "/tmp/project/.worktrees/app-startup-crash",
-        associatedWorktreeBranch: "synara/app-startup-crash",
-        associatedWorktreeRef: "synara/app-startup-crash",
+        associatedWorktreeBranch: "trellis/app-startup-crash",
+        associatedWorktreeRef: "trellis/app-startup-crash",
         updatedAt: "2026-02-27T00:01:00.000Z",
       }),
     ]);
 
     expect(threadsOf(next)[0]).toMatchObject({
       title: "New title",
-      branch: "synara/app-startup-crash",
+      branch: "trellis/app-startup-crash",
       worktreePath: "/tmp/project/.worktrees/app-startup-crash",
       associatedWorktreePath: "/tmp/project/.worktrees/app-startup-crash",
-      associatedWorktreeBranch: "synara/app-startup-crash",
-      associatedWorktreeRef: "synara/app-startup-crash",
+      associatedWorktreeBranch: "trellis/app-startup-crash",
+      associatedWorktreeRef: "trellis/app-startup-crash",
       session: null,
       updatedAt: "2026-02-27T00:01:00.000Z",
     });

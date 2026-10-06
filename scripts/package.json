@@ -1,5 +1,5 @@
 {
-  "name": "@synara/scripts",
+  "name": "@trellis/scripts",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@effect/platform-node": "catalog:",
-    "@synara/contracts": "workspace:*",
-    "@synara/shared": "workspace:*",
+    "@trellis/contracts": "workspace:*",
+    "@trellis/shared": "workspace:*",
     "effect": "catalog:"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@
 // Purpose: Verify missing telemetry stays visible in profile rankings and exported cards.
 // Layer: web profile feature tests.
 
-import type { ProfileTokenStats } from "@synara/contracts";
+import type { ProfileTokenStats } from "@trellis/contracts";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProfileSettingsPanel } from "../settings/ProfileSettingsPanel";
@@ -30,8 +30,8 @@ function renderCard() {
     <ShareCard
       stats={baseStats}
       tokenStats={queryState.tokenStats}
-      displayName="Synara"
-      handle="@synara"
+      displayName="Trellis"
+      handle="@trellis"
       avatarColor="#000000"
       avatarImage={null}
     />,

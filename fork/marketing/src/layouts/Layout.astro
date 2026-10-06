@@ -1,0 +1,45 @@
+---
+import { REPO_URL } from "../lib/releases";
+import "../styles.css";
+interface Props { title?: string; description?: string; }
+const { title = "Trellis — a little room for your next big idea", description = "A local-first workspace for coding agents. Bring your providers, keep your projects together, and give every idea room to grow." } = Astro.props;
+const docs = `${REPO_URL}/tree/main/docs`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f6f6f3" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary">
+        <a class="brand" href="/"><img src="/icon.png" width="22" height="22" alt="" /><span>trellis<span aria-hidden="true">.</span></span></a>
+        <a href="/#workspace">Workspace</a>
+        <a href="/#providers">Providers</a>
+        <a href={docs}>Docs</a>
+        <a class="nav-github" href={REPO_URL} aria-label="Trellis on GitHub"><img src="/brands/github.svg" width="15" height="15" alt="" /><span>GitHub ↗</span></a>
+      </nav>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer">
+      <div class="footer-main shell">
+        <div class="footer-about"><a class="footer-brand" href="/"><img src="/icon.png" width="32" height="32" alt="" /><span>trellis.</span></a><p>A calmer place for your coding agents.<br />A little more room to make things.</p><a class="footer-github" href={REPO_URL}><img src="/brands/github.svg" width="16" height="16" alt="" /> Find us on GitHub ↗</a></div>
+        <nav aria-label="Product"><h2>Product</h2><a href="/#workspace">The workspace</a><a href="/#providers">Providers</a><a href="/download/">Download</a><a href={`${REPO_URL}/releases`}>Release notes</a></nav>
+        <nav aria-label="Resources"><h2>Resources</h2><a href={`${docs}/user/getting-started.md`}>Getting started</a><a href={docs}>Documentation</a><a href={`${docs}/user/configuration.md`}>Data & privacy</a><a href="/#faq">Common questions</a></nav>
+        <nav aria-label="Project"><h2>Project</h2><a href={REPO_URL}>Source code</a><a href={`${REPO_URL}/issues`}>Report an issue</a><a href={`${docs}/maintainers/development.md`}>Contribute</a><a href="https://github.com/smeltery">More from smeltery ↗</a></nav>
+      </div>
+      <div class="footer-bottom shell"><span>© {new Date().getFullYear()} smeltery</span><p>Made for the work you want to do.</p><a href={`${REPO_URL}/blob/main/LICENSE`}>PolyForm Shield License</a></div>
+      <p class="brand-notice shell">Product names and logos belong to their respective owners. Trellis is an independent project.</p>
+    </footer>
+  </body>
+</html>

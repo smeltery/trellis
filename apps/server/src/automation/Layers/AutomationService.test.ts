@@ -18,9 +18,9 @@ import {
   type OrchestrationProjectShell,
   type OrchestrationThreadShell,
   type ProviderInstanceId,
-} from "@synara/contracts";
-import { isTemporaryWorktreeBranch } from "@synara/shared/git";
-import { unresolvedAutomationInstanceId } from "@synara/shared/providerInstances";
+} from "@trellis/contracts";
+import { isTemporaryWorktreeBranch } from "@trellis/shared/git";
+import { unresolvedAutomationInstanceId } from "@trellis/shared/providerInstances";
 import { Duration, Effect, Layer, Option, Stream } from "effect";
 import { TestClock } from "effect/testing";
 import { afterEach, vi } from "vitest";
@@ -6251,7 +6251,7 @@ layer("Stable saved Groups automations", (it) => {
         const savedDefinition = yield* repository.getDefinitionById({ id: definition.id });
         const result = yield* service.runNow({ automationId: definition.id }).pipe(Effect.result);
         assert.equal(result._tag, "Failure");
-        if (result._tag === "Failure") assert.match(result.failure.message, /Synara Beta/);
+        if (result._tag === "Failure") assert.match(result.failure.message, /Trellis Beta/);
         assert.deepEqual(
           yield* repository.getDefinitionById({ id: definition.id }),
           savedDefinition,

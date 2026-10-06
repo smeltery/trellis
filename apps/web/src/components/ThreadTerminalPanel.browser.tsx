@@ -4,7 +4,7 @@ import {
   type NativeApi,
   type TerminalCloseInput,
   type TerminalOpenInput,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { afterEach, expect, it, vi } from "vitest";
 import { page } from "vitest/browser";
 import { render } from "vitest-browser-react";

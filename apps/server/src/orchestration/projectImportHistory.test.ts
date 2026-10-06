@@ -1,4 +1,4 @@
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 import { Effect } from "effect";
 import { expect, it, vi } from "vitest";
 import type { ProviderAdapterRegistryShape } from "../provider/Services/ProviderAdapterRegistry";

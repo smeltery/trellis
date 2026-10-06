@@ -474,7 +474,7 @@ export interface DesktopBetaInstallProgress {
   readonly message?: string;
 }
 
-/** Result of a stable-side probe for a parallel Synara Beta install. */
+/** Result of a stable-side probe for a parallel Trellis Beta install. */
 export interface DesktopBetaChannelState {
   /** False on web builds and unsupported probing environments. */
   readonly supported: boolean;
@@ -493,7 +493,7 @@ export interface DesktopBetaChannelState {
   readonly downloadUrl: string;
   /** Live download/install progress; an `error` phase stays until the next attempt. */
   readonly install: DesktopBetaInstallProgress | null;
-  /** Beta only: a stable Synara app was found to switch back to. */
+  /** Beta only: a stable Trellis app was found to switch back to. */
   readonly stableInstalled: boolean;
   /** Beta only: leaving can also move the beta app to the Trash (macOS). */
   readonly canMoveBetaToTrash: boolean;
@@ -816,7 +816,7 @@ export const DesktopMenuShortcuts = Schema.Struct({
 });
 export type DesktopMenuShortcuts = typeof DesktopMenuShortcuts.Type;
 
-export interface SynaraStorageSnapshot {
+export interface TrellisStorageSnapshot {
   readonly version: 1;
   readonly exportedAt: string;
   readonly entries: Readonly<Record<string, string>>;
@@ -940,7 +940,7 @@ export const DesktopDiagnosticIssue = Schema.Struct({
   durationMs: Schema.optional(Schema.Finite),
 });
 export type DesktopDiagnosticIssue = typeof DesktopDiagnosticIssue.Type;
-export const DESKTOP_DIAGNOSTIC_ISSUE_PREFIX = "SYNARA_DIAGNOSTIC_ISSUE ";
+export const DESKTOP_DIAGNOSTIC_ISSUE_PREFIX = "TRELLIS_DIAGNOSTIC_ISSUE ";
 export type DesktopDiagnosticReportStatus = "queued" | "sent" | "unavailable";
 
 export interface DesktopBridge {
@@ -1058,16 +1058,16 @@ export interface DesktopBridge {
   /** Stable→Beta opt-in surface. Absent on builds that do not ship it. */
   beta?: {
     getState: () => Promise<DesktopBetaChannelState>;
-    /** Downloads and installs Synara Beta when missing (macOS), then opens it. */
+    /** Downloads and installs Trellis Beta when missing (macOS), then opens it. */
     install: () => Promise<DesktopBetaActionResult>;
     /**
-     * Installs Synara Beta when missing (macOS), writes the import marker, and
+     * Installs Trellis Beta when missing (macOS), writes the import marker, and
      * launches it to consume the import.
      */
     importAndLaunch: () => Promise<DesktopBetaActionResult>;
     launch: () => Promise<DesktopBetaActionResult>;
     /**
-     * Beta only: opens stable Synara, optionally moves the beta app to the
+     * Beta only: opens stable Trellis, optionally moves the beta app to the
      * Trash (macOS), then quits beta. Beta data stays in the beta home.
      */
     leave: (input: { readonly moveToTrash: boolean }) => Promise<DesktopBetaActionResult>;
@@ -1115,7 +1115,7 @@ export interface DesktopBridge {
     onState: (listener: (state: DesktopAppSnapState) => void) => () => void;
   };
   storageMigration: {
-    readSnapshot: () => SynaraStorageSnapshot | null;
+    readSnapshot: () => TrellisStorageSnapshot | null;
     acknowledgeSnapshot: () => Promise<void>;
   };
   server?: {

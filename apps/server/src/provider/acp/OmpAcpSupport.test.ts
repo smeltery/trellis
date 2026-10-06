@@ -10,7 +10,7 @@ import { Effect } from "effect";
 import * as AcpErrors from "./AcpErrors.ts";
 import type * as Acp from "@agentclientprotocol/sdk";
 import { describe, expect, it } from "vitest";
-import { OMP_THINKING_LEVEL_OPTIONS } from "@synara/contracts";
+import { OMP_THINKING_LEVEL_OPTIONS } from "@trellis/contracts";
 
 import {
   applyOmpAcpInteractionMode,

@@ -34,9 +34,9 @@ import { join, resolve } from "node:path";
 import {
   BETA_IMPORT_REQUEST_FILE_NAME,
   BETA_IMPORT_RESULT_FILE_NAME,
-  SYNARA_STABLE_HOME_ENV,
+  TRELLIS_STABLE_HOME_ENV,
   type BetaImportRequest,
-} from "@synara/shared/betaChannel";
+} from "@trellis/shared/betaChannel";
 
 /** Entries that describe this install's live runtime, not user data. */
 const EXCLUDED_STATE_ENTRIES = new Set([
@@ -232,7 +232,7 @@ export function copyLiveDatabase(
     }
     if (signature(sourceDbPath) === before) return stagedDbPath;
   }
-  throw new Error("Synara kept rewriting its database during the copy. Try again in a moment.");
+  throw new Error("Trellis kept rewriting its database during the copy. Try again in a moment.");
 }
 
 async function snapshotStableDatabase(
@@ -260,7 +260,7 @@ async function snapshotStableDatabase(
     const sourceMigration = await readMigrationHighWaterMark(stagingPath);
     if (sourceMigration !== null && sourceMigration > latestMigrationId) {
       throw new Error(
-        "Synara is newer than this Synara Beta. Update Synara Beta, then copy your data again.",
+        "Trellis is newer than this Trellis Beta. Update Trellis Beta, then copy your data again.",
       );
     }
     // A leftover WAL from an earlier unclean beta exit is not tied to a
@@ -328,8 +328,8 @@ function commitStagedImport(
 
 /** Stable homes a beta may import from: the one stable handed over, else the default. */
 export function allowedImportSourceHomes(env: NodeJS.ProcessEnv = process.env): string[] {
-  const handedOver = env[SYNARA_STABLE_HOME_ENV]?.trim();
-  return [handedOver ? resolve(handedOver) : resolve(homedir(), ".synara")];
+  const handedOver = env[TRELLIS_STABLE_HOME_ENV]?.trim();
+  return [handedOver ? resolve(handedOver) : resolve(homedir(), ".trellis")];
 }
 
 export async function runBetaImportIfRequested(input: {
@@ -383,7 +383,7 @@ export async function runBetaImportIfRequested(input: {
     return finish(false, "import source points at the beta home itself");
   }
   if (!(input.allowedSourceHomes ?? allowedImportSourceHomes()).includes(sourceHomeDir)) {
-    return finish(false, "import source is not the Synara data folder");
+    return finish(false, "import source is not the Trellis data folder");
   }
 
   const sourceStateDir = join(sourceHomeDir, "userdata");

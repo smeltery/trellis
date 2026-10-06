@@ -27,16 +27,16 @@ import {
   type ServerSettings,
   type ThreadEnvironmentMode,
   type TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   automationContinuationThreadId,
   automationContinuesThread,
   automationOwnsItsThread,
   automationRequiresTargetThread,
-} from "@synara/shared/automationMode";
-import { buildTemporaryWorktreeBranchName } from "@synara/shared/git";
-import { providerStartOptionsFromServerSettings } from "@synara/shared/serverSettings";
-import { autoRuntimeModeSelectionIssue } from "@synara/shared/runtimeMode";
+} from "@trellis/shared/automationMode";
+import { buildTemporaryWorktreeBranchName } from "@trellis/shared/git";
+import { providerStartOptionsFromServerSettings } from "@trellis/shared/serverSettings";
+import { autoRuntimeModeSelectionIssue } from "@trellis/shared/runtimeMode";
 import { Cause, Effect, Layer, Option, PubSub, Queue, Stream } from "effect";
 import {
   isUnresolvedAutomationInstanceId,
@@ -44,7 +44,7 @@ import {
   type ResolvedProviderInstance,
   resolveModelSelectionInstanceId,
   resolveProviderInstance,
-} from "@synara/shared/providerInstances";
+} from "@trellis/shared/providerInstances";
 
 import { GitCore } from "../../git/Services/GitCore.ts";
 import { TextGeneration } from "../../git/Services/TextGeneration.ts";
@@ -797,7 +797,7 @@ export const AutomationServiceLive = Layer.effect(
       }
       return instance.instanceId === instance.driver
         ? providerDisabledSettingsMessage(instance.driver)
-        : `Provider instance '${instance.displayName}' is disabled in Synara settings.`;
+        : `Provider instance '${instance.displayName}' is disabled in Trellis settings.`;
     };
     const providerDisabledReason = (definition: AutomationDefinition) =>
       serverSettings.getSettings.pipe(

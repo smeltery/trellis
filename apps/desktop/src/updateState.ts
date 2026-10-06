@@ -1,5 +1,5 @@
-import type { DesktopUpdateState } from "@synara/contracts";
-import type { SynaraDesktopFlavor } from "@synara/shared/desktopIdentity";
+import type { DesktopUpdateState } from "@trellis/contracts";
+import type { TrellisDesktopFlavor } from "@trellis/shared/desktopIdentity";
 
 export type DownloadProgressSample = {
   readonly percent?: number | null;
@@ -144,7 +144,7 @@ export function isUpdateVersionNewer(currentVersion: string, candidateVersion: s
  */
 export function isUpdateVersionAllowedForFlavor(
   candidateVersion: string,
-  flavor: SynaraDesktopFlavor,
+  flavor: TrellisDesktopFlavor,
 ): boolean {
   const candidate = parseUpdateVersion(candidateVersion);
   if (!candidate) {
@@ -217,7 +217,7 @@ export function getAutoUpdateDisabledReason(args: {
     return "Automatic updates are only available in packaged production builds.";
   }
   if (args.disabledByEnv) {
-    return "Automatic updates are disabled by the SYNARA_DISABLE_AUTO_UPDATE setting.";
+    return "Automatic updates are disabled by the TRELLIS_DISABLE_AUTO_UPDATE setting.";
   }
   if (args.platform === "linux" && !args.appImage) {
     return "Automatic updates on Linux require running the AppImage build.";

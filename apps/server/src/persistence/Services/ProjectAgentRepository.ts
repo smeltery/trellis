@@ -18,7 +18,7 @@ import {
   ProjectTaskId,
   ProjectThreadIndexEntry,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Option, Schema, ServiceMap } from "effect";
 import type { Effect } from "effect";
 
@@ -281,7 +281,7 @@ export interface ProjectAgentRepositoryShape {
 export class ProjectAgentRepository extends ServiceMap.Service<
   ProjectAgentRepository,
   ProjectAgentRepositoryShape
->()("synara/persistence/Services/ProjectAgentRepository") {}
+>()("trellis/persistence/Services/ProjectAgentRepository") {}
 
 // Digest errors are raw provider/CLI output (ANSI colour codes, multi-KB
 // banners). The contract caps `lastError` at 2,000 characters; an oversize

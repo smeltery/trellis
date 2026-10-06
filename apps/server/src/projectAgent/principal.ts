@@ -4,11 +4,11 @@ import type {
   ProjectId,
   ProjectTaskId,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   resolveGroupCoordinatorStatus,
   type GroupThreadStateThread,
-} from "@synara/shared/groupThreadState";
+} from "@trellis/shared/groupThreadState";
 
 export type ProjectAgentPrincipal =
   | { readonly kind: "user" }

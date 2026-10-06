@@ -3,9 +3,9 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  SYNARA_DESKTOP_SMOKE_USER_DATA_ENV,
-  SYNARA_SOURCE_DESKTOP_BUILD_MARKER,
-} from "@synara/shared/desktopIdentity";
+  TRELLIS_DESKTOP_SMOKE_USER_DATA_ENV,
+  TRELLIS_SOURCE_DESKTOP_BUILD_MARKER,
+} from "@trellis/shared/desktopIdentity";
 import { spawnSourceDesktop } from "./source-desktop-launch.mjs";
 
 function captureSourceDesktopSpawn(environment, overrides = {}) {
@@ -18,7 +18,7 @@ function captureSourceDesktopSpawn(environment, overrides = {}) {
     environment,
     homeDirectory: "/Users/tester",
     platform: "darwin",
-    readBuiltMain: () => SYNARA_SOURCE_DESKTOP_BUILD_MARKER,
+    readBuiltMain: () => TRELLIS_SOURCE_DESKTOP_BUILD_MARKER,
     spawnProcess,
     ...overrides,
   });
@@ -30,11 +30,11 @@ describe("source desktop launch", () => {
   it("launches normal macOS starts through LaunchServices without secrets in argv", () => {
     const { spawnProcess } = captureSourceDesktopSpawn(
       {
-        SYNARA_HOME: "/tmp/isolated",
-        SYNARA_AUTH_TOKEN: "synthetic-secret",
+        TRELLIS_HOME: "/tmp/isolated",
+        TRELLIS_AUTH_TOKEN: "synthetic-secret",
         ELECTRON_RUN_AS_NODE: "1",
       },
-      { electronPath: "/runtime/Synara (Dev).app/Contents/MacOS/Electron", launchViaMacOS: true },
+      { electronPath: "/runtime/Trellis (Dev).app/Contents/MacOS/Electron", launchViaMacOS: true },
     );
     expect(spawnProcess).toHaveBeenCalledWith(
       "/usr/bin/open",
@@ -42,14 +42,14 @@ describe("source desktop launch", () => {
         "-W",
         "-n",
         "-a",
-        "/runtime/Synara (Dev).app",
+        "/runtime/Trellis (Dev).app",
         "--args",
         "/workspace/apps/desktop/dist-electron/main.js",
       ],
       expect.objectContaining({
         env: expect.objectContaining({
-          SYNARA_HOME: "/tmp/isolated",
-          SYNARA_AUTH_TOKEN: "synthetic-secret",
+          TRELLIS_HOME: "/tmp/isolated",
+          TRELLIS_AUTH_TOKEN: "synthetic-secret",
         }),
       }),
     );
@@ -58,7 +58,7 @@ describe("source desktop launch", () => {
   });
 
   it.each([
-    { platform: "linux", electronPath: "/runtime/Synara.app/Contents/MacOS/Electron" },
+    { platform: "linux", electronPath: "/runtime/Trellis.app/Contents/MacOS/Electron" },
     { platform: "darwin", electronPath: "/runtime/electron" },
   ])("rejects an invalid LaunchServices target before spawning", (overrides) => {
     expect(() => captureSourceDesktopSpawn({}, { ...overrides, launchViaMacOS: true })).toThrow(
@@ -79,9 +79,9 @@ describe("source desktop launch", () => {
       cwd: "/workspace/apps/desktop",
       env: {
         PATH: "/usr/bin",
-        SYNARA_DESKTOP_FLAVOR: "development",
-        SYNARA_HOME: join("/Users/tester", ".synara-dev"),
-        SYNARA_SOURCE_DESKTOP_BUILD_MARKER,
+        TRELLIS_DESKTOP_FLAVOR: "development",
+        TRELLIS_HOME: join("/Users/tester", ".trellis-dev"),
+        TRELLIS_SOURCE_DESKTOP_BUILD_MARKER,
       },
       stdio: "inherit",
     });
@@ -91,64 +91,64 @@ describe("source desktop launch", () => {
     });
   });
 
-  it("preserves an explicit Synara home", () => {
+  it("preserves an explicit Trellis home", () => {
     const readWindowsEnvironment = vi.fn(() => ({
-      SYNARA_HOME: "C:\\Users\\tester\\persisted-synara-home",
+      TRELLIS_HOME: "C:\\Users\\tester\\persisted-trellis-home",
     }));
     const { spawnProcess } = captureSourceDesktopSpawn(
-      { SYNARA_HOME: "/tmp/custom-synara-home" },
+      { TRELLIS_HOME: "/tmp/custom-trellis-home" },
       { platform: "win32", readWindowsEnvironment },
     );
 
     expect(spawnProcess.mock.calls[0][2].env).toMatchObject({
-      SYNARA_DESKTOP_FLAVOR: "development",
-      SYNARA_HOME: "/tmp/custom-synara-home",
+      TRELLIS_DESKTOP_FLAVOR: "development",
+      TRELLIS_HOME: "/tmp/custom-trellis-home",
     });
     expect(readWindowsEnvironment).not.toHaveBeenCalled();
   });
 
-  it("preserves a persisted Windows Synara home", () => {
+  it("preserves a persisted Windows Trellis home", () => {
     const { spawnProcess } = captureSourceDesktopSpawn(
       {},
       {
         platform: "win32",
         readWindowsEnvironment: () => ({
-          Synara_Home: "C:\\Users\\tester\\persisted-synara-home",
+          Trellis_Home: "C:\\Users\\tester\\persisted-trellis-home",
         }),
       },
     );
 
-    expect(spawnProcess.mock.calls[0][2].env.SYNARA_HOME).toBe(
-      "C:\\Users\\tester\\persisted-synara-home",
+    expect(spawnProcess.mock.calls[0][2].env.TRELLIS_HOME).toBe(
+      "C:\\Users\\tester\\persisted-trellis-home",
     );
   });
 
   it("preserves Canary flavor and storage defaults", () => {
     const { spawnProcess } = captureSourceDesktopSpawn({
-      SYNARA_DESKTOP_FLAVOR: "canary",
+      TRELLIS_DESKTOP_FLAVOR: "canary",
     });
 
     expect(spawnProcess.mock.calls[0][2].env).toMatchObject({
-      SYNARA_DESKTOP_FLAVOR: "canary",
-      SYNARA_HOME: join("/Users/tester", ".synara-canary"),
+      TRELLIS_DESKTOP_FLAVOR: "canary",
+      TRELLIS_HOME: join("/Users/tester", ".trellis-canary"),
     });
   });
 
   it("guards and spawns the smoke desktop with its isolated environment", () => {
-    const smokeHome = "/tmp/synara-desktop-smoke";
+    const smokeHome = "/tmp/trellis-desktop-smoke";
     const smokeUserData = join(smokeHome, "electron-user-data");
     const stdio = ["pipe", "pipe", "pipe"];
     const { spawnProcess } = captureSourceDesktopSpawn(
       {
-        SYNARA_HOME: smokeHome,
-        [SYNARA_DESKTOP_SMOKE_USER_DATA_ENV]: smokeUserData,
+        TRELLIS_HOME: smokeHome,
+        [TRELLIS_DESKTOP_SMOKE_USER_DATA_ENV]: smokeUserData,
       },
       { stdio },
     );
 
     expect(spawnProcess.mock.calls[0][2].env).toMatchObject({
-      SYNARA_HOME: smokeHome,
-      [SYNARA_DESKTOP_SMOKE_USER_DATA_ENV]: smokeUserData,
+      TRELLIS_HOME: smokeHome,
+      [TRELLIS_DESKTOP_SMOKE_USER_DATA_ENV]: smokeUserData,
     });
     expect(spawnProcess.mock.calls[0][2].stdio).toBe(stdio);
   });

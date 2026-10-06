@@ -5,10 +5,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { app, BrowserWindow } from "electron";
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 import { DesktopBrowserManager } from "../src/browserManager";
 
-const home = mkdtempSync(join(tmpdir(), "synara-browser-viewport-"));
+const home = mkdtempSync(join(tmpdir(), "trellis-browser-viewport-"));
 app.setPath("userData", home);
 const deadline = setTimeout(() => app.exit(1), 30_000);
 

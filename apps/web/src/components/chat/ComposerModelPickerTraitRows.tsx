@@ -10,7 +10,7 @@ import {
   type ProviderKind,
   type ProviderModelDescriptor,
   type ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useState, type ReactNode } from "react";
 
 import { cn } from "~/lib/utils";

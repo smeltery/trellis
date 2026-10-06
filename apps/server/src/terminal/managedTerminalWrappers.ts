@@ -8,11 +8,11 @@ import path from "node:path";
 import {
   defaultTerminalTitleForCliKind,
   managedTerminalCommandNameForCliKind,
-  SYNARA_TERMINAL_HOOK_OSC_PREFIX,
-  SYNARA_TERMINAL_CLI_KIND_ENV_KEY,
+  TRELLIS_TERMINAL_HOOK_OSC_PREFIX,
+  TRELLIS_TERMINAL_CLI_KIND_ENV_KEY,
   type TerminalAgentHookEventType,
   type ManagedTerminalCliKind,
-} from "@synara/shared/terminalThreads";
+} from "@trellis/shared/terminalThreads";
 
 import { envPathKeyFor, resolveExecutable } from "../executableLookup.ts";
 import {
@@ -46,56 +46,56 @@ function shellQuote(value: string): string {
 }
 
 function buildHookOscSequence(eventType: TerminalAgentHookEventType): string {
-  return `\\033]${SYNARA_TERMINAL_HOOK_OSC_PREFIX}${eventType}\\007`;
+  return `\\033]${TRELLIS_TERMINAL_HOOK_OSC_PREFIX}${eventType}\\007`;
 }
 
 function buildNotifyHookScript(): string {
   return `#!/bin/sh
 set -eu
 if [ "$#" -gt 0 ]; then
-  _synara_hook_input="$1"
+  _trellis_hook_input="$1"
 else
-  _synara_hook_input="$(cat)"
+  _trellis_hook_input="$(cat)"
 fi
 
-_synara_extract_event() {
-  printf '%s' "$_synara_hook_input" | sed -n "s/.*\\\"$1\\\"[[:space:]]*:[[:space:]]*\\\"\\([^\\\"]*\\)\\\".*/\\1/p" | head -n 1
+_trellis_extract_event() {
+  printf '%s' "$_trellis_hook_input" | sed -n "s/.*\\\"$1\\\"[[:space:]]*:[[:space:]]*\\\"\\([^\\\"]*\\)\\\".*/\\1/p" | head -n 1
 }
 
-_synara_event="$(_synara_extract_event hook_event_name)"
-if [ -z "$_synara_event" ]; then
-  _synara_type="$(_synara_extract_event type)"
-  case "$_synara_type" in
+_trellis_event="$(_trellis_extract_event hook_event_name)"
+if [ -z "$_trellis_event" ]; then
+  _trellis_type="$(_trellis_extract_event type)"
+  case "$_trellis_type" in
     task_started|userPromptSubmitted|user_prompt_submit)
-      _synara_event="Start"
+      _trellis_event="Start"
       ;;
     task_complete|agent-turn-complete|stop|session_end|sessionEnd)
-      _synara_event="Stop"
+      _trellis_event="Stop"
       ;;
     exec_approval_request|apply_patch_approval_request|request_user_input)
-      _synara_event="PermissionRequest"
+      _trellis_event="PermissionRequest"
       ;;
   esac
 fi
 
-_synara_emit_osc() {
-  _synara_sequence="$1"
+_trellis_emit_osc() {
+  _trellis_sequence="$1"
   if [ -w /dev/tty ]; then
-    printf '%b' "$_synara_sequence" > /dev/tty 2>/dev/null || printf '%b' "$_synara_sequence"
+    printf '%b' "$_trellis_sequence" > /dev/tty 2>/dev/null || printf '%b' "$_trellis_sequence"
     return
   fi
-  printf '%b' "$_synara_sequence"
+  printf '%b' "$_trellis_sequence"
 }
 
-case "$_synara_event" in
+case "$_trellis_event" in
   UserPromptSubmit|PostToolUse|PostToolUseFailure|Start)
-    _synara_emit_osc '${buildHookOscSequence("Start")}'
+    _trellis_emit_osc '${buildHookOscSequence("Start")}'
     ;;
   Stop)
-    _synara_emit_osc '${buildHookOscSequence("Stop")}'
+    _trellis_emit_osc '${buildHookOscSequence("Stop")}'
     ;;
   PermissionRequest|PreToolUse|Notification)
-    _synara_emit_osc '${buildHookOscSequence("PermissionRequest")}'
+    _trellis_emit_osc '${buildHookOscSequence("PermissionRequest")}'
     ;;
 esac
 `;
@@ -144,78 +144,78 @@ function buildCodexWrapperScript(input: {
     `if [ -f ${shellQuote(notifyHookPath)} ]; then`,
     "  export CODEX_TUI_RECORD_SESSION=1",
     '  if [ -z "${CODEX_TUI_SESSION_LOG_PATH:-}" ]; then',
-    '    _synara_codex_ts="$(date +%s 2>/dev/null || echo "$$")"',
-    '    export CODEX_TUI_SESSION_LOG_PATH="${TMPDIR:-/tmp}/synara-codex-session-$$_${_synara_codex_ts}.jsonl"',
+    '    _trellis_codex_ts="$(date +%s 2>/dev/null || echo "$$")"',
+    '    export CODEX_TUI_SESSION_LOG_PATH="${TMPDIR:-/tmp}/trellis-codex-session-$$_${_trellis_codex_ts}.jsonl"',
     "  fi",
     "  (",
-    '    _synara_log="$CODEX_TUI_SESSION_LOG_PATH"',
-    `    _synara_notify=${shellQuote(notifyHookPath)}`,
-    '    _synara_last_turn_id=""',
-    '    _synara_last_approval_id=""',
-    '    _synara_last_exec_call_id=""',
-    "    _synara_approval_fallback_seq=0",
+    '    _trellis_log="$CODEX_TUI_SESSION_LOG_PATH"',
+    `    _trellis_notify=${shellQuote(notifyHookPath)}`,
+    '    _trellis_last_turn_id=""',
+    '    _trellis_last_approval_id=""',
+    '    _trellis_last_exec_call_id=""',
+    "    _trellis_approval_fallback_seq=0",
     "",
-    "    _synara_emit_event() {",
-    '      _synara_event="$1"',
-    `      _synara_payload=$(printf '{"hook_event_name":"%s"}' "$_synara_event")`,
-    '      "$_synara_notify" "$_synara_payload" >/dev/null 2>&1 || true',
+    "    _trellis_emit_event() {",
+    '      _trellis_event="$1"',
+    `      _trellis_payload=$(printf '{"hook_event_name":"%s"}' "$_trellis_event")`,
+    '      "$_trellis_notify" "$_trellis_payload" >/dev/null 2>&1 || true',
     "    }",
     "",
-    "    _synara_i=0",
-    '    while [ ! -f "$_synara_log" ] && [ "$_synara_i" -lt 200 ]; do',
-    "      _synara_i=$((_synara_i + 1))",
+    "    _trellis_i=0",
+    '    while [ ! -f "$_trellis_log" ] && [ "$_trellis_i" -lt 200 ]; do',
+    "      _trellis_i=$((_trellis_i + 1))",
     "      sleep 0.05",
     "    done",
-    '    if [ ! -f "$_synara_log" ]; then',
+    '    if [ ! -f "$_trellis_log" ]; then',
     "      exit 0",
     "    fi",
     "",
-    '    tail -n 0 -F "$_synara_log" 2>/dev/null | while IFS= read -r _synara_line; do',
-    '      case "$_synara_line" in',
+    '    tail -n 0 -F "$_trellis_log" 2>/dev/null | while IFS= read -r _trellis_line; do',
+    '      case "$_trellis_line" in',
     `        *'"dir":"to_tui"'*'"kind":"codex_event"'*'"msg":{"type":"task_started"'*)`,
-    `          _synara_turn_id=$(printf '%s\n' "$_synara_line" | awk -F'"turn_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
-    '          [ -n "$_synara_turn_id" ] || _synara_turn_id="task_started"',
-    '          if [ "$_synara_turn_id" != "$_synara_last_turn_id" ]; then',
-    '            _synara_last_turn_id="$_synara_turn_id"',
-    '            _synara_emit_event "Start"',
+    `          _trellis_turn_id=$(printf '%s\n' "$_trellis_line" | awk -F'"turn_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
+    '          [ -n "$_trellis_turn_id" ] || _trellis_turn_id="task_started"',
+    '          if [ "$_trellis_turn_id" != "$_trellis_last_turn_id" ]; then',
+    '            _trellis_last_turn_id="$_trellis_turn_id"',
+    '            _trellis_emit_event "Start"',
     "          fi",
     "          ;;",
     `        *'"dir":"to_tui"'*'"kind":"codex_event"'*'"msg":{"type":"'*'_approval_request"'*)`,
-    `          _synara_approval_id=$(printf '%s\n' "$_synara_line" | awk -F'"id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
-    `          [ -n "$_synara_approval_id" ] || _synara_approval_id=$(printf '%s\n' "$_synara_line" | awk -F'"approval_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
-    `          [ -n "$_synara_approval_id" ] || _synara_approval_id=$(printf '%s\n' "$_synara_line" | awk -F'"call_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
-    '          if [ -z "$_synara_approval_id" ]; then',
-    "            _synara_approval_fallback_seq=$((_synara_approval_fallback_seq + 1))",
-    '            _synara_approval_id="approval_request_${_synara_approval_fallback_seq}"',
+    `          _trellis_approval_id=$(printf '%s\n' "$_trellis_line" | awk -F'"id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
+    `          [ -n "$_trellis_approval_id" ] || _trellis_approval_id=$(printf '%s\n' "$_trellis_line" | awk -F'"approval_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
+    `          [ -n "$_trellis_approval_id" ] || _trellis_approval_id=$(printf '%s\n' "$_trellis_line" | awk -F'"call_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
+    '          if [ -z "$_trellis_approval_id" ]; then',
+    "            _trellis_approval_fallback_seq=$((_trellis_approval_fallback_seq + 1))",
+    '            _trellis_approval_id="approval_request_${_trellis_approval_fallback_seq}"',
     "          fi",
-    '          if [ "$_synara_approval_id" != "$_synara_last_approval_id" ]; then',
-    '            _synara_last_approval_id="$_synara_approval_id"',
-    '            _synara_emit_event "PermissionRequest"',
+    '          if [ "$_trellis_approval_id" != "$_trellis_last_approval_id" ]; then',
+    '            _trellis_last_approval_id="$_trellis_approval_id"',
+    '            _trellis_emit_event "PermissionRequest"',
     "          fi",
     "          ;;",
     `        *'"dir":"to_tui"'*'"kind":"codex_event"'*'"msg":{"type":"exec_command_begin"'*)`,
-    `          _synara_exec_call_id=$(printf '%s\n' "$_synara_line" | awk -F'"call_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
-    '          if [ -n "$_synara_exec_call_id" ]; then',
-    '            if [ "$_synara_exec_call_id" != "$_synara_last_exec_call_id" ]; then',
-    '              _synara_last_exec_call_id="$_synara_exec_call_id"',
-    '              _synara_emit_event "Start"',
+    `          _trellis_exec_call_id=$(printf '%s\n' "$_trellis_line" | awk -F'"call_id":"' 'NF > 1 { sub(/".*/, "", $2); print $2; exit }')`,
+    '          if [ -n "$_trellis_exec_call_id" ]; then',
+    '            if [ "$_trellis_exec_call_id" != "$_trellis_last_exec_call_id" ]; then',
+    '              _trellis_last_exec_call_id="$_trellis_exec_call_id"',
+    '              _trellis_emit_event "Start"',
     "            fi",
     "          else",
-    '            _synara_emit_event "Start"',
+    '            _trellis_emit_event "Start"',
     "          fi",
     "          ;;",
     "      esac",
     "    done",
     "  ) &",
-    "  SYNARA_CODEX_START_WATCHER_PID=$!",
+    "  TRELLIS_CODEX_START_WATCHER_PID=$!",
     "fi",
     `${shellQuote(targetPath)} --enable codex_hooks -c ${shellQuote(`notify=["bash",${JSON.stringify(notifyHookPath)}]`)} "$@"`,
-    "_synara_status=$?",
-    'if [ -n "${SYNARA_CODEX_START_WATCHER_PID:-}" ]; then',
-    '  kill "$SYNARA_CODEX_START_WATCHER_PID" >/dev/null 2>&1 || true',
-    '  wait "$SYNARA_CODEX_START_WATCHER_PID" 2>/dev/null || true',
+    "_trellis_status=$?",
+    'if [ -n "${TRELLIS_CODEX_START_WATCHER_PID:-}" ]; then',
+    '  kill "$TRELLIS_CODEX_START_WATCHER_PID" >/dev/null 2>&1 || true',
+    '  wait "$TRELLIS_CODEX_START_WATCHER_PID" 2>/dev/null || true',
     "fi",
-    'exit "$_synara_status"',
+    'exit "$_trellis_status"',
   ].join("\n");
 }
 
@@ -235,9 +235,9 @@ function buildWrapperScript(input: {
       : buildCodexWrapperScript({ codexHomeDir, notifyHookPath, targetPath });
   return [
     "#!/bin/sh",
-    `# Managed ${commandName} wrapper injected by synara terminal sessions.`,
+    `# Managed ${commandName} wrapper injected by trellis terminal sessions.`,
     `printf '\\033]0;%s\\007' ${shellQuote(title)}`,
-    `export ${SYNARA_TERMINAL_CLI_KIND_ENV_KEY}=${shellQuote(cliKind)}`,
+    `export ${TRELLIS_TERMINAL_CLI_KIND_ENV_KEY}=${shellQuote(cliKind)}`,
     commandBody,
     "",
   ].join("\n");
@@ -313,7 +313,7 @@ export function buildProviderProfileWrapperScript(profile: ManagedTerminalProfil
       ];
   return [
     "#!/bin/sh",
-    `# Synara provider profile: ${profile.commandName}`,
+    `# Trellis provider profile: ${profile.commandName}`,
     ...(profile.omittedSensitiveEnvironmentNames?.length
       ? [
           `# Sensitive environment is intentionally not serialized: ${profile.omittedSensitiveEnvironmentNames.join(
@@ -382,41 +382,41 @@ function synchronizeProviderProfileWrappers(
 }
 
 function buildManagedZshRc(quotedZshDir: string): string {
-  return `# Synara zsh rc wrapper
-_synara_home="\${SYNARA_ORIGINAL_ZDOTDIR:-$HOME}"
-export ZDOTDIR="$_synara_home"
-[[ -f "$_synara_home/.zshrc" ]] && source "$_synara_home/.zshrc"
+  return `# Trellis zsh rc wrapper
+_trellis_home="\${TRELLIS_ORIGINAL_ZDOTDIR:-$HOME}"
+export ZDOTDIR="$_trellis_home"
+[[ -f "$_trellis_home/.zshrc" ]] && source "$_trellis_home/.zshrc"
 export ZDOTDIR=${quotedZshDir}
-if [ -n "\${SYNARA_MANAGED_BIN_DIR:-}" ] && [ -d "\${SYNARA_MANAGED_BIN_DIR}" ]; then
+if [ -n "\${TRELLIS_MANAGED_BIN_DIR:-}" ] && [ -d "\${TRELLIS_MANAGED_BIN_DIR}" ]; then
   case ":$PATH:" in
-    *:\${SYNARA_MANAGED_BIN_DIR}:*) ;;
-    *) export PATH="\${SYNARA_MANAGED_BIN_DIR}:$PATH" ;;
+    *:\${TRELLIS_MANAGED_BIN_DIR}:*) ;;
+    *) export PATH="\${TRELLIS_MANAGED_BIN_DIR}:$PATH" ;;
   esac
   unalias claude 2>/dev/null || true
   claude() {
-    if [ -x "\${SYNARA_MANAGED_BIN_DIR}/claude" ] && [ ! -d "\${SYNARA_MANAGED_BIN_DIR}/claude" ]; then
-      "\${SYNARA_MANAGED_BIN_DIR}/claude" "$@"
+    if [ -x "\${TRELLIS_MANAGED_BIN_DIR}/claude" ] && [ ! -d "\${TRELLIS_MANAGED_BIN_DIR}/claude" ]; then
+      "\${TRELLIS_MANAGED_BIN_DIR}/claude" "$@"
     else
       command claude "$@"
     fi
   }
   unalias codex 2>/dev/null || true
   codex() {
-    if [ -x "\${SYNARA_MANAGED_BIN_DIR}/codex" ] && [ ! -d "\${SYNARA_MANAGED_BIN_DIR}/codex" ]; then
-      "\${SYNARA_MANAGED_BIN_DIR}/codex" "$@"
+    if [ -x "\${TRELLIS_MANAGED_BIN_DIR}/codex" ] && [ ! -d "\${TRELLIS_MANAGED_BIN_DIR}/codex" ]; then
+      "\${TRELLIS_MANAGED_BIN_DIR}/codex" "$@"
     else
       command codex "$@"
     fi
   }
   typeset -ga precmd_functions 2>/dev/null || true
-  _synara_ensure_managed_bin() {
+  _trellis_ensure_managed_bin() {
     case ":$PATH:" in
-      *:\${SYNARA_MANAGED_BIN_DIR}:*) ;;
-      *) PATH="\${SYNARA_MANAGED_BIN_DIR}:$PATH" ;;
+      *:\${TRELLIS_MANAGED_BIN_DIR}:*) ;;
+      *) PATH="\${TRELLIS_MANAGED_BIN_DIR}:$PATH" ;;
     esac
   }
   {
-    precmd_functions=(\${precmd_functions:#_synara_ensure_managed_bin} _synara_ensure_managed_bin)
+    precmd_functions=(\${precmd_functions:#_trellis_ensure_managed_bin} _trellis_ensure_managed_bin)
   } 2>/dev/null || true
 fi
 `;
@@ -427,20 +427,20 @@ function ensureManagedZshWrappers(zshDir: string): void {
   const quotedZshDir = shellQuote(zshDir);
   writeFileIfChanged(
     path.join(zshDir, ".zshenv"),
-    `# Synara zsh env wrapper
-_synara_home="\${SYNARA_ORIGINAL_ZDOTDIR:-$HOME}"
-export ZDOTDIR="$_synara_home"
-[[ -f "$_synara_home/.zshenv" ]] && source "$_synara_home/.zshenv"
+    `# Trellis zsh env wrapper
+_trellis_home="\${TRELLIS_ORIGINAL_ZDOTDIR:-$HOME}"
+export ZDOTDIR="$_trellis_home"
+[[ -f "$_trellis_home/.zshenv" ]] && source "$_trellis_home/.zshenv"
 export ZDOTDIR=${quotedZshDir}
 `,
     PRIVATE_FILE_MODE,
   );
   writeFileIfChanged(
     path.join(zshDir, ".zprofile"),
-    `# Synara zsh profile wrapper
-_synara_home="\${SYNARA_ORIGINAL_ZDOTDIR:-$HOME}"
-export ZDOTDIR="$_synara_home"
-[[ -f "$_synara_home/.zprofile" ]] && source "$_synara_home/.zprofile"
+    `# Trellis zsh profile wrapper
+_trellis_home="\${TRELLIS_ORIGINAL_ZDOTDIR:-$HOME}"
+export ZDOTDIR="$_trellis_home"
+[[ -f "$_trellis_home/.zprofile" ]] && source "$_trellis_home/.zprofile"
 export ZDOTDIR=${quotedZshDir}
 `,
     PRIVATE_FILE_MODE,
@@ -562,8 +562,8 @@ function applyManagedTerminalWrapperEnvState(
 
   return {
     ...env,
-    SYNARA_MANAGED_BIN_DIR: wrapperState.binDir,
-    SYNARA_ORIGINAL_ZDOTDIR: env.ZDOTDIR ?? env.HOME ?? "",
+    TRELLIS_MANAGED_BIN_DIR: wrapperState.binDir,
+    TRELLIS_ORIGINAL_ZDOTDIR: env.ZDOTDIR ?? env.HOME ?? "",
     ...(wrapperState.zshDir ? { ZDOTDIR: wrapperState.zshDir } : {}),
     [envPathKey]: currentEntries.join(path.delimiter),
   };

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ServerProviderStatus } from "@synara/contracts";
+import type { ServerProviderStatus } from "@trellis/contracts";
 import {
   findProviderStatus,
   isProviderUsable,
@@ -69,7 +69,7 @@ describe("normalizeProviderStatusForLocalConfig", () => {
       available: false,
       authStatus: "unknown",
       checkedAt: BASE_STATUS.checkedAt,
-      message: "Provider is disabled in Synara settings.",
+      message: "Provider is disabled in Trellis settings.",
     });
   });
 
@@ -157,7 +157,7 @@ describe("normalizeProviderStatusForLocalConfig", () => {
       instanceId: "antigravity_work",
       displayName: "Antigravity Work",
       enabled: false,
-      message: "Provider is disabled in Synara settings.",
+      message: "Provider is disabled in Trellis settings.",
     };
 
     expect(

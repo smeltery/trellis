@@ -4,8 +4,8 @@ import type {
   GitPullRequestSnapshotResult,
   GitStatusResult,
   PullRequestDetailInput,
-} from "@synara/contracts";
-import { parseGitHubRepositoryNameWithOwnerFromPullRequestUrl } from "@synara/shared/githubRepository";
+} from "@trellis/contracts";
+import { parseGitHubRepositoryNameWithOwnerFromPullRequestUrl } from "@trellis/shared/githubRepository";
 import type { QueryClient, QueryFilters, QueryKey } from "@tanstack/react-query";
 
 import type { PullRequestActionListPatch } from "./pullRequestCache";

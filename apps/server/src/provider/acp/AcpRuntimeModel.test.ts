@@ -168,7 +168,7 @@ describe("AcpRuntimeModel", () => {
     "projects the authoritative %s Computer name on initial calls and updates",
     (nameKey) => {
       const rawInput = {
-        [nameKey]: " mcp__synara__computer_type_text ",
+        [nameKey]: " mcp__trellis__computer_type_text ",
         label: "Message",
         text: "private typed value",
       };
@@ -196,7 +196,7 @@ describe("AcpRuntimeModel", () => {
 
   it.each([
     { _toolName: "computer_future_tool" },
-    { _toolName: "Click mcp__synara__computer_click" },
+    { _toolName: "Click mcp__trellis__computer_click" },
     { _toolName: "mcp__other__computer_click" },
     { _toolName: "computer_click\nprivate value" },
     { _toolName: 123, toolName: "computer_click" },
@@ -209,7 +209,7 @@ describe("AcpRuntimeModel", () => {
       update: {
         sessionUpdate: "tool_call",
         toolCallId: "tool-unnamed",
-        title: "mcp__synara__computer_click",
+        title: "mcp__trellis__computer_click",
         kind: "other",
         rawInput,
       },

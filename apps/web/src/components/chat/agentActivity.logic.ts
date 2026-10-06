@@ -174,7 +174,7 @@ export function deriveAgentActivityTimelineState(
     const reasoningPreview = isReasoningUpdateWorkEntry(entry)
       ? formatAgentActivityEntryPreview(entry)
       : null;
-    // Old Synara builds persisted a literal placeholder for every empty Codex
+    // Old Trellis builds persisted a literal placeholder for every empty Codex
     // reasoning lifecycle. Match Codex history semantics and hide those rows.
     if (isReasoningUpdateWorkEntry(entry) && !reasoningPreview) {
       continue;

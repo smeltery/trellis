@@ -18,13 +18,13 @@ const root = document.documentElement;
 let previousTheme: string | null;
 
 beforeEach(() => {
-  previousTheme = localStorage.getItem("synara:theme");
+  previousTheme = localStorage.getItem("trellis:theme");
 });
 
 afterEach(() => {
-  if (previousTheme === null) localStorage.removeItem("synara:theme");
-  else localStorage.setItem("synara:theme", previousTheme);
-  window.dispatchEvent(new StorageEvent("storage", { key: "synara:theme" }));
+  if (previousTheme === null) localStorage.removeItem("trellis:theme");
+  else localStorage.setItem("trellis:theme", previousTheme);
+  window.dispatchEvent(new StorageEvent("storage", { key: "trellis:theme" }));
 });
 
 async function selectLightPreset(label: string) {
@@ -33,7 +33,7 @@ async function selectLightPreset(label: string) {
 }
 
 it("applies and persists Vercel light colors on an opaque desktop, then restores Codex", async () => {
-  localStorage.setItem("synara:theme", JSON.stringify({ ...DEFAULT_THEME_STATE, mode: "light" }));
+  localStorage.setItem("trellis:theme", JSON.stringify({ ...DEFAULT_THEME_STATE, mode: "light" }));
   await render(<ThemePackEditor variant="light" />);
   await expect.poll(() => root.getAttribute("data-code-theme-id")).toBe("codex");
   expect(root.getAttribute("data-window-material")).toBe("opaque");
@@ -42,7 +42,7 @@ it("applies and persists Vercel light colors on an opaque desktop, then restores
   await expect.poll(() => root.style.getPropertyValue("--codex-base-accent")).toBe("#006aff");
   expect(getComputedStyle(root).getPropertyValue("--color-text-foreground").trim()).toBe("#171717");
   expect(root.style.getPropertyValue("--codex-base-surface")).toBe("#ffffff");
-  expect(parseStoredThemeState(localStorage.getItem("synara:theme")).codeThemeIds.light).toBe(
+  expect(parseStoredThemeState(localStorage.getItem("trellis:theme")).codeThemeIds.light).toBe(
     "vercel",
   );
   await expect
@@ -55,7 +55,7 @@ it("applies and persists Vercel light colors on an opaque desktop, then restores
 });
 
 it("previews an inactive light preset and applies it only when the user chooses Use light theme", async () => {
-  localStorage.setItem("synara:theme", JSON.stringify({ ...DEFAULT_THEME_STATE, mode: "dark" }));
+  localStorage.setItem("trellis:theme", JSON.stringify({ ...DEFAULT_THEME_STATE, mode: "dark" }));
   await render(<ThemePackEditor variant="light" />);
   await selectLightPreset("Vercel");
 
@@ -68,7 +68,7 @@ it("previews an inactive light preset and applies it only when the user chooses 
   await page.getByRole("button", { name: "Use light theme" }).click();
   await expect.poll(() => root.getAttribute("data-theme-variant")).toBe("light");
   expect(root.getAttribute("data-code-theme-id")).toBe("vercel");
-  const saved = parseStoredThemeState(localStorage.getItem("synara:theme"));
+  const saved = parseStoredThemeState(localStorage.getItem("trellis:theme"));
   expect(saved.mode).toBe("light");
   expect(saved.codeThemeIds.dark).toBe("codex");
   expect(saved.systemUiFont).toBe(true);

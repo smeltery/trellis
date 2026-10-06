@@ -27,9 +27,9 @@ function recordValue(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-// Prompts Synara injected while hosting a session carry the harness policy
+// Prompts Trellis injected while hosting a session carry the harness policy
 // block; imported history should show only the user's text.
-const SYNARA_HOST_CONTEXT_PATTERN = /<synara_host_context>[\s\S]*?<\/synara_host_context>/gu;
+const TRELLIS_HOST_CONTEXT_PATTERN = /<trellis_host_context>[\s\S]*?<\/trellis_host_context>/gu;
 
 function visibleMessageText(content: unknown): string {
   if (typeof content === "string") return content.trim();
@@ -40,7 +40,7 @@ function visibleMessageText(content: unknown): string {
       return record?.type === "text" && typeof record.text === "string" ? [record.text] : [];
     })
     .join("\n\n")
-    .replace(SYNARA_HOST_CONTEXT_PATTERN, "")
+    .replace(TRELLIS_HOST_CONTEXT_PATTERN, "")
     .trim();
 }
 

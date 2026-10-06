@@ -20,7 +20,7 @@ import {
   RuntimeTaskId,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   Cause,
   DateTime,
@@ -41,10 +41,10 @@ import { ChildProcessSpawner } from "effect/unstable/process";
 import type * as Acp from "@agentclientprotocol/sdk";
 import { makeEffectProcessCommand } from "../../platform/effectProcessRuntime.ts";
 
-import { buildAcpSynaraMcpServers } from "../../agentGateway/mcpInjection.ts";
+import { buildAcpTrellisMcpServers } from "../../agentGateway/mcpInjection.ts";
 import {
-  type SynaraHarnessPolicyDeliveryState,
-  takeSynaraHarnessPolicyTextPartForProviderSession,
+  type TrellisHarnessPolicyDeliveryState,
+  takeTrellisHarnessPolicyTextPartForProviderSession,
 } from "../../agentGateway/harnessPolicy.ts";
 import { AgentGatewayCredentials } from "../../agentGateway/Services/AgentGatewayCredentials.ts";
 import {
@@ -138,18 +138,18 @@ import { createLogger } from "../../logger.ts";
 const PROVIDER = "omp" as const;
 const log = createLogger(PROVIDER);
 
-export const takeOmpSynaraHarnessPolicyTextPart = (
-  state: SynaraHarnessPolicyDeliveryState,
+export const takeOmpTrellisHarnessPolicyTextPart = (
+  state: TrellisHarnessPolicyDeliveryState,
   scopedGatewayConnectionAvailable: boolean,
 ) =>
-  takeSynaraHarnessPolicyTextPartForProviderSession(state, {
+  takeTrellisHarnessPolicyTextPartForProviderSession(state, {
     provider: PROVIDER,
     scopedGatewayConnectionAvailable,
   });
 const OMP_RESUME_VERSION = 1 as const;
 const OMP_ACP_TRANSPORT_DEBUG_MARKER = "omp-acp-meta-stripper-v2";
 const OMP_ACP_LOG_PAYLOAD_LIMIT = 4_000;
-const OMP_ACP_DEBUG_ENV = "SYNARA_OMP_ACP_DEBUG";
+const OMP_ACP_DEBUG_ENV = "TRELLIS_OMP_ACP_DEBUG";
 const OMP_RESUME_REPLAY_QUIET_MS = 350;
 // Bounds how long startSession blocks on the replay settling; the background
 // settle loop keeps suppression alive past this until the hard timeout.
@@ -160,9 +160,9 @@ const OMP_TURN_SETTLE_DRAIN_POLL_MS = 25;
 // Backstop for an alive-but-silent omp child: if a turn produces no ACP
 // activity for this long, force-fail it instead of showing "Working" forever.
 // Generous by design so legitimate long, quiet tool runs are not killed;
-// override with SYNARA_OMP_TURN_IDLE_TIMEOUT_MS when a workload needs longer.
+// override with TRELLIS_OMP_TURN_IDLE_TIMEOUT_MS when a workload needs longer.
 const OMP_TURN_IDLE_TIMEOUT_MS = resolveAcpTurnIdleTimeoutMs({
-  envVar: "SYNARA_OMP_TURN_IDLE_TIMEOUT_MS",
+  envVar: "TRELLIS_OMP_TURN_IDLE_TIMEOUT_MS",
   defaultMs: 600_000,
 });
 const OMP_TURN_WATCHDOG_INTERVAL_MS = 15_000;
@@ -173,7 +173,7 @@ const OMP_MODEL_DISCOVERY_CACHE_MS = 5 * 60_000;
 const OMP_MODEL_DISCOVERY_TIMEOUT_MS = 30_000;
 const OMP_DISCOVERY_CACHE_MAX_ENTRIES = 16;
 const OMP_PLAN_MODE_PROMPT_PREFIX = [
-  "Synara OMP plan mode is active.",
+  "Trellis OMP plan mode is active.",
   "Do not implement or mutate files in this turn.",
   "Do not ask follow-up questions or wait for confirmation; if scope is ambiguous, choose a reasonable default and state the assumption in the plan.",
   "When ready, create the final implementation plan.",
@@ -913,11 +913,11 @@ export function makeOmpAdapter(
             cwd,
             ...(resumeSessionId ? { resumeSessionId } : {}),
             clientCapabilities: { elicitation: { form: {} } },
-            clientInfo: { name: "Synara", version: "0.0.0" },
+            clientInfo: { name: "Trellis", version: "0.0.0" },
             ...(agentGatewayCredentials
               ? {
                   buildMcpServers: (initializeResult: Acp.InitializeResponse) =>
-                    buildAcpSynaraMcpServers({
+                    buildAcpTrellisMcpServers({
                       connection: gatewaySessionLease!.connection,
                       initializeResult,
                       stdioProxy: agentGatewayCredentials.stdioProxy,
@@ -1083,7 +1083,7 @@ export function makeOmpAdapter(
               provider: PROVIDER,
               method: "session/resume",
               detail:
-                "Omp could not resume the requested native session. Synara refused the fresh fallback to avoid silently losing conversation context.",
+                "Omp could not resume the requested native session. Trellis refused the fresh fallback to avoid silently losing conversation context.",
             });
           }
 
@@ -1665,7 +1665,7 @@ export function makeOmpAdapter(
             issue: "Turn requires non-empty text or attachments.",
           });
         }
-        const harnessPolicy = takeOmpSynaraHarnessPolicyTextPart(
+        const harnessPolicy = takeOmpTrellisHarnessPolicyTextPart(
           ctx,
           agentGatewayCredentials !== undefined,
         );
@@ -2050,7 +2050,7 @@ export function makeOmpAdapter(
                 provider: PROVIDER,
                 operation: "forkThread",
                 issue:
-                  "This Omp ACP version does not advertise session/fork; Synara will rebuild the fork from its retained transcript.",
+                  "This Omp ACP version does not advertise session/fork; Trellis will rebuild the fork from its retained transcript.",
               });
             }
             return yield* runtime.forkSession({ cwd: targetCwd, mcpServers: [] });
@@ -2072,7 +2072,7 @@ export function makeOmpAdapter(
             provider: PROVIDER,
             operation: "forkThread",
             issue:
-              "The source Omp session has a turn in flight; Synara will rebuild the fork from its retained transcript.",
+              "The source Omp session has a turn in flight; Trellis will rebuild the fork from its retained transcript.",
           });
         }
         const forked = activeSource
@@ -2104,7 +2104,7 @@ export function makeOmpAdapter(
                 childProcessSpawner,
                 cwd: sourceCwd,
                 resumeSessionId: sourceSessionId,
-                clientInfo: { name: "Synara Fork", version: "0.0.0" },
+                clientInfo: { name: "Trellis Fork", version: "0.0.0" },
               });
               yield* runtime.start().pipe(
                 Effect.timeoutOption(OMP_ACP_REQUEST_TIMEOUT_MS),
@@ -2338,7 +2338,7 @@ export function makeOmpAdapter(
             ...(input.agentDir ? { agentDir: input.agentDir } : {}),
             account,
             cwd,
-            clientName: "Synara Command Discovery",
+            clientName: "Trellis Command Discovery",
           });
           yield* runtime.start();
           let commands = yield* runtime.getAvailableCommands;

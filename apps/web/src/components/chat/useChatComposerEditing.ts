@@ -1,4 +1,4 @@
-import { ThreadId } from "@synara/contracts";
+import { ThreadId } from "@trellis/contracts";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 import {

@@ -1,5 +1,5 @@
 // Stable build: Groups is off, so a group folder reads as an ordinary project.
-import { type ProjectId } from "@synara/contracts";
+import { type ProjectId } from "@trellis/contracts";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock(import("../betaFeatures"), async (importOriginal) => ({
@@ -15,12 +15,12 @@ describe("isGroupContainerProject on Stable", () => {
     const project = {
       id: "project-group" as ProjectId,
       kind: "group",
-      cwd: "/Users/tester/Documents/Synara/Groups/release",
+      cwd: "/Users/tester/Documents/Trellis/Groups/release",
     } as unknown as Project;
     expect(
       isGroupContainerProject(project, {
         homeDir: "/Users/tester",
-        groupsWorkspaceRoot: "/Users/tester/Documents/Synara/Groups",
+        groupsWorkspaceRoot: "/Users/tester/Documents/Trellis/Groups",
       }),
     ).toBe(false);
   });

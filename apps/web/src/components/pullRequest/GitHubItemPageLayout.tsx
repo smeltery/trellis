@@ -12,7 +12,7 @@
 //          PullRequestDetailSkeleton
 
 import { useInPageGlassOverlay } from "~/hooks/useInPageGlassOverlay";
-import type { ProjectId, ThreadId } from "@synara/contracts";
+import type { ProjectId, ThreadId } from "@trellis/contracts";
 import { useState, type ReactNode } from "react";
 
 import {

@@ -11,7 +11,7 @@ import {
   MessageId,
   ProjectId,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect, Layer, ManagedRuntime } from "effect";
 import * as SqlClient from "effect/unstable/sql/SqlClient";
 import { expect, it } from "vitest";
@@ -32,14 +32,14 @@ const OrchestrationProjectionSnapshotQueryLive = OrchestrationProjectionSnapshot
 );
 
 // Opt-in only. Each invocation uses a fresh process and a disposable database.
-it.skipIf(!process.env.SYNARA_STREAMING_BENCHMARK_OUTPUT)(
+it.skipIf(!process.env.TRELLIS_STREAMING_BENCHMARK_OUTPUT)(
   "measures the production streaming engine",
   async () => {
-    const output = process.env.SYNARA_STREAMING_BENCHMARK_OUTPUT!;
-    const messageBytes = Number(process.env.SYNARA_STREAMING_BENCHMARK_BYTES ?? 200_000);
+    const output = process.env.TRELLIS_STREAMING_BENCHMARK_OUTPUT!;
+    const messageBytes = Number(process.env.TRELLIS_STREAMING_BENCHMARK_BYTES ?? 200_000);
     const chunkBytes = 40;
-    const threadCount = Number(process.env.SYNARA_STREAMING_BENCHMARK_THREADS ?? 1);
-    const dir = await mkdtemp(join(tmpdir(), "synara-streaming-benchmark-"));
+    const threadCount = Number(process.env.TRELLIS_STREAMING_BENCHMARK_THREADS ?? 1);
+    const dir = await mkdtemp(join(tmpdir(), "trellis-streaming-benchmark-"));
     const dbPath = join(dir, "state.sqlite");
     const runtime = ManagedRuntime.make(
       OrchestrationEngineLive.pipe(

@@ -43,12 +43,12 @@ import {
   type ProjectDocumentRevision,
   type ProjectTaskStatus,
   type ProviderSession,
-} from "@synara/contracts";
-import { groupThreadStateLabel, resolveGroupThreadState } from "@synara/shared/groupThreadState";
+} from "@trellis/contracts";
+import { groupThreadStateLabel, resolveGroupThreadState } from "@trellis/shared/groupThreadState";
 import { HubWorkRepository } from "../../persistence/Services/HubWorkRepository";
-import { coordinatorCheckinTurnReport } from "@synara/shared/coordinatorCheckin";
-import { resolveThreadWorkspaceCwd } from "@synara/shared/threadEnvironment";
-import { isOrdinaryProjectRow } from "@synara/shared/projectContainers";
+import { coordinatorCheckinTurnReport } from "@trellis/shared/coordinatorCheckin";
+import { resolveThreadWorkspaceCwd } from "@trellis/shared/threadEnvironment";
+import { isOrdinaryProjectRow } from "@trellis/shared/projectContainers";
 import {
   coordinatorWelcomeDisplayName,
   coordinatorWelcomeMessageId,
@@ -90,7 +90,7 @@ import {
   normalizeProjectDocumentPath,
   sanitizeProjectDigestSummary,
   truncateToContextBudget,
-} from "@synara/shared/projectAgent";
+} from "@trellis/shared/projectAgent";
 import {
   Cause,
   Clock,
@@ -522,9 +522,9 @@ export const makeProjectAgentService = Effect.gen(function* () {
           coordinatorThreadId: input.coordinatorThreadId,
           sourceKey: `stuck:${input.sourceEventId}`,
           tone: notice.tone,
-          // The needs-you row is a Synara-native action card (retry / stop /
+          // The needs-you row is a Trellis-native action card (retry / stop /
           // open thread) — NOT a fake provider user-input request.
-          kind: needsYou ? "synara.worker.needs-you" : "synara.worker.stuck",
+          kind: needsYou ? "trellis.worker.needs-you" : "trellis.worker.stuck",
           summary: formatWorkerMonitorRow({
             title: worker.title,
             marker: notice.marker,
@@ -595,7 +595,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
           coordinatorThreadId: input.coordinatorThreadId,
           sourceKey: `settle:${input.sourceEventId}`,
           tone: notice.tone,
-          kind: "synara.worker.settled",
+          kind: "trellis.worker.settled",
           summary: formatWorkerMonitorRow({
             title: worker.title,
             marker: notice.marker,
@@ -716,7 +716,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
             coordinatorThreadId: input.coordinatorThreadId,
             sourceKey: `rollup:${rollupKey}`,
             tone: allFinished ? "info" : "approval",
-            kind: "synara.workers.settled",
+            kind: "trellis.workers.settled",
             summary: [
               formatWorkerBatchRollup({ threads }),
               ...unstartedWork.map((item) => `${item.title}: ${item.state} before starting.`),
@@ -935,7 +935,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
         worker.settleOutcome === "missing";
 
       // "Waiting on you": the latch is the same for every path that reaches
-      // it — flag + Synara-native row with retry/stop actions (posted by the
+      // it — flag + Trellis-native row with retry/stop actions (posted by the
       // `worker.needs-you` ingest), never a fake provider request.
       const latchNeedsYou = (dedupeKey: string) =>
         Effect.gen(function* () {
@@ -2391,7 +2391,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
     });
 
   // Both link entry points (the user's linkProject and the coordinator's
-  // synara_project_link_repository) run this body; only the recorded actor
+  // trellis_project_link_repository) run this body; only the recorded actor
   // differs.
   const linkProjectIntoGroup = (input: {
     readonly requestId: string;
@@ -2990,7 +2990,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
             .pipe(Effect.mapError(toServiceError("Failed to resolve workspacePath.")));
           if (Option.isNone(project)) {
             return yield* Effect.fail(
-              fail(`No Synara project owns workspace "${input.workspacePath}".`, "not-found"),
+              fail(`No Trellis project owns workspace "${input.workspacePath}".`, "not-found"),
             );
           }
           return project.value.id;
@@ -3846,7 +3846,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
                 catch: toServiceError("Failed to remove hub context files."),
               });
               // The managed group workspace folder only gets removed when
-              // nothing but Synara-generated instructions remain inside; any
+              // nothing but Trellis-generated instructions remain inside; any
               // user files keep it on disk and the path goes back to the UI.
               const workspaceCleanup = yield* cleanupGroupWorkspaceRoot({
                 workspaceRoot: project.workspaceRoot,
@@ -4495,7 +4495,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
           if (diskHash !== syncedMarker && diskHash !== head.value.contentHash) {
             return yield* Effect.fail(
               fail(
-                "The Markdown file changed outside Synara. Import the external copy explicitly instead of overwriting it.",
+                "The Markdown file changed outside Trellis. Import the external copy explicitly instead of overwriting it.",
                 "conflict",
               ),
             );
@@ -4831,7 +4831,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
         const memoryIndexText =
           Option.isSome(memoryIndex) && memoryIndex.value.content.trim().length > 0
             ? memoryIndex.value.content.trim()
-            : "Empty. Save hub-wide memory with synara_project_remember.";
+            : "Empty. Save hub-wide memory with trellis_project_remember.";
         const groupLibraryRoot = Option.isSome(config)
           ? yield* resolveGroupLibraryRoot(principal.projectId)
               .pipe(Effect.map(({ root }) => root))
@@ -4878,7 +4878,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
             ? [
                 {
                   label: "Assigned Hub task",
-                  text: `Work item: ${workItem.id}\nTask: ${workItem.title}\nProgress revision: ${workItem.progress?.revision ?? 0}\nReport your own checklist with synara_hub_update_progress using this workItemId and expectedRevision. Read the current revision with synara_hub_list_work before updating after a conflict. Checklist completion does not finish the task or release its worker slot.`,
+                  text: `Work item: ${workItem.id}\nTask: ${workItem.title}\nProgress revision: ${workItem.progress?.revision ?? 0}\nReport your own checklist with trellis_hub_update_progress using this workItemId and expectedRevision. Read the current revision with trellis_hub_list_work before updating after a conflict. Checklist completion does not finish the task or release its worker slot.`,
                 },
               ]
             : []),
@@ -4907,7 +4907,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
             : [
                 {
                   label: "Hub tools",
-                  text: "Save shared hub memory with synara_project_remember; deliver files to the hub Library with synara_project_library_add — sources must be inside your own workspace.",
+                  text: "Save shared hub memory with trellis_project_remember; deliver files to the hub Library with trellis_project_library_add — sources must be inside your own workspace.",
                 },
               ]),
           {
@@ -4944,7 +4944,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
                   text:
                     workerReports.length > 0
                       ? workerReports.join("\n\n")
-                      : "None yet. Synara writes inbox/<threadId>/report.md when a worker finishes or dies.",
+                      : "None yet. Trellis writes inbox/<threadId>/report.md when a worker finishes or dies.",
                 },
               ]
             : []),
@@ -4956,7 +4956,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
           },
         ]);
         return [
-          "Hub context packet (server state, user-owned instructions and contextual documents; additional documents via synara_project_read_document):",
+          "Hub context packet (server state, user-owned instructions and contextual documents; additional documents via trellis_project_read_document):",
           isCoordinator
             ? "You are this hub's coordinator. This thread opened with a welcome message from you; the user may be replying to it."
             : principal.kind === "worker"
@@ -6199,7 +6199,7 @@ export const makeProjectAgentService = Effect.gen(function* () {
         // thread.create persists provenance before the worker's first turn
         // starts. Keep the same role while its final tracking transaction is
         // still pending, so a fast worker cannot delegate in that window.
-        if (shell.value.creationSource === "synara_mcp" && shell.value.sourceThreadId) {
+        if (shell.value.creationSource === "trellis_mcp" && shell.value.sourceThreadId) {
           const creator = yield* repository
             .getConfigByCoordinatorThread(shell.value.sourceThreadId)
             .pipe(Effect.mapError(toServiceError("Failed to resolve worker creator.")));

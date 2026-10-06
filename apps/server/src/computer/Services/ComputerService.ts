@@ -1,6 +1,6 @@
 import { ServiceMap } from "effect";
 
-import type { ComputerAvailability } from "@synara/contracts";
+import type { ComputerAvailability } from "@trellis/contracts";
 import type { ComputerManager } from "../ComputerManager.ts";
 
 export interface ComputerServiceShape {
@@ -10,5 +10,5 @@ export interface ComputerServiceShape {
 }
 
 export class ComputerService extends ServiceMap.Service<ComputerService, ComputerServiceShape>()(
-  "synara/computer/Services/ComputerService",
+  "trellis/computer/Services/ComputerService",
 ) {}

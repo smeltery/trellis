@@ -3,7 +3,7 @@ import {
   isWorkspaceRelativePathSafe,
   localPathsEqual,
   workspaceRelativePathOf,
-} from "@synara/shared/path";
+} from "@trellis/shared/path";
 
 import { resolvePathLinkTarget } from "./terminal-links";
 

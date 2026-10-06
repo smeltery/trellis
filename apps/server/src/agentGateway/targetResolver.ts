@@ -11,9 +11,12 @@ import {
   type ProviderListModelsResult,
   type ProviderModelDescriptor,
   type ServerProviderAuthStatus,
-} from "@synara/contracts";
-import { getClaudeContextWindowSuffix, stripClaudeContextWindowSuffix } from "@synara/shared/model";
-import { defaultInstanceIdForProvider } from "@synara/shared/providerInstances";
+} from "@trellis/contracts";
+import {
+  getClaudeContextWindowSuffix,
+  stripClaudeContextWindowSuffix,
+} from "@trellis/shared/model";
+import { defaultInstanceIdForProvider } from "@trellis/shared/providerInstances";
 import { Effect } from "effect";
 
 import type { ProviderDiscoveryServiceShape } from "../provider/Services/ProviderDiscoveryService.ts";
@@ -278,7 +281,7 @@ export function loadAgentGatewayProviderCatalog(input: {
   const availability = input.availability ?? { enabled: true };
   const unavailableReason =
     availability.enabled === false
-      ? `Provider "${input.provider}" is disabled in Synara settings.`
+      ? `Provider "${input.provider}" is disabled in Trellis settings.`
       : availability.available === false
         ? (availability.message ?? `Provider "${input.provider}" is not available.`)
         : availability.authStatus === "unauthenticated"
@@ -720,7 +723,7 @@ export function resolveAgentGatewayTarget(input: {
       return yield* Effect.fail(
         new AgentGatewayTargetError(
           "model_unavailable",
-          `Model "${input.target.model}" is not available for ${input.target.provider}. Use an exact slug from synara_capabilities.`,
+          `Model "${input.target.model}" is not available for ${input.target.provider}. Use an exact slug from trellis_capabilities.`,
           {
             provider: input.target.provider,
             requestedModel: input.target.model,

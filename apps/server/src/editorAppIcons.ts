@@ -12,9 +12,9 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 
-import { EDITORS, type EditorId } from "@synara/contracts";
-import { EDITOR_ICON_ROUTE_PATH } from "@synara/shared/editorIcons";
-import { execProcessFile } from "@synara/shared/processRuntime";
+import { EDITORS, type EditorId } from "@trellis/contracts";
+import { EDITOR_ICON_ROUTE_PATH } from "@trellis/shared/editorIcons";
+import { execProcessFile } from "@trellis/shared/processRuntime";
 
 import {
   getEditorMacApplications,

@@ -8,8 +8,8 @@ import {
   type HubWorkRecord,
   type OrchestrationCommand,
   type OrchestrationThreadShell,
-  type SynaraCreateThreadsInput,
-} from "@synara/contracts";
+  type TrellisCreateThreadsInput,
+} from "@trellis/contracts";
 import { Effect, Layer, Option } from "effect";
 
 import type { ServerConfigShape } from "../config.ts";
@@ -30,7 +30,7 @@ const PROJECT_ID = ProjectId.makeUnsafe("hub-saga");
 const CALLER_ID = ThreadId.makeUnsafe("hub-coordinator");
 const WORK_ID = "hub-saga-work";
 const TARGET = { provider: "codex", model: "gpt-5.5" } as const;
-const INPUT: typeof SynaraCreateThreadsInput.Type = {
+const INPUT: typeof TrellisCreateThreadsInput.Type = {
   requestId: "hub-saga-request",
   threads: [{ prompt: "Implement the original human task", target: TARGET }],
 };

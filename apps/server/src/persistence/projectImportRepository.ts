@@ -8,7 +8,7 @@ import {
   ThreadHandoffImportedMessage,
   ThreadId,
   type ProjectId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 export const ProjectImportHistoryState = Schema.Struct({
   threadId: ThreadId,

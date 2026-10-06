@@ -4,13 +4,13 @@ import {
   type ModelSelection,
   type ProviderKind,
   type ProviderStartOptions,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   mergeProviderStartOptions,
   providerStartOptionsFromInstance,
   resolveModelSelectionInstanceId,
   resolveProviderInstance,
-} from "@synara/shared/providerInstances";
+} from "@trellis/shared/providerInstances";
 import { Effect, Layer, Option } from "effect";
 
 import { parseOpenCodeModelSlug } from "../../provider/opencodeRuntime.ts";

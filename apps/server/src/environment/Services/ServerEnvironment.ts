@@ -1,4 +1,4 @@
-import type { ExecutionEnvironmentDescriptor } from "@synara/contracts";
+import type { ExecutionEnvironmentDescriptor } from "@trellis/contracts";
 import { Effect, ServiceMap } from "effect";
 
 export interface ServerEnvironmentShape {
@@ -8,4 +8,4 @@ export interface ServerEnvironmentShape {
 export class ServerEnvironment extends ServiceMap.Service<
   ServerEnvironment,
   ServerEnvironmentShape
->()("synara/environment/Services/ServerEnvironment") {}
+>()("trellis/environment/Services/ServerEnvironment") {}

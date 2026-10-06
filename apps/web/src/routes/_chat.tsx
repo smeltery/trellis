@@ -1,5 +1,5 @@
-import type { ResolvedKeybindingsConfig } from "@synara/contracts";
-import { CHAT_SURFACE_HEADER_HEIGHT_PX } from "@synara/shared/desktopChrome";
+import type { ResolvedKeybindingsConfig } from "@trellis/contracts";
+import { CHAT_SURFACE_HEADER_HEIGHT_PX } from "@trellis/shared/desktopChrome";
 import { useQuery } from "@tanstack/react-query";
 import { Outlet, createFileRoute, useLocation, useNavigate } from "@tanstack/react-router";
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";

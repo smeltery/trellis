@@ -14,7 +14,7 @@ import {
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(tmpdir(), "synara-filesystem-platform-"));
+  root = mkdtempSync(path.join(tmpdir(), "trellis-filesystem-platform-"));
 });
 
 afterEach(() => {

@@ -7,7 +7,7 @@ import {
   type ProviderKind,
   type ServerProviderStatus,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { page, userEvent } from "vitest/browser";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-react";

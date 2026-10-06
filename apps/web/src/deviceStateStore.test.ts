@@ -2,8 +2,8 @@ import type {
   DeviceOpenPaneRequestedEvent,
   DeviceUdid,
   ThreadDeviceState,
-} from "@synara/contracts";
-import { ThreadId } from "@synara/contracts";
+} from "@trellis/contracts";
+import { ThreadId } from "@trellis/contracts";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { selectThreadDeviceState, useDeviceStateStore } from "./deviceStateStore";

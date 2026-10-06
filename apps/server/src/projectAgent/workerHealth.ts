@@ -1,4 +1,4 @@
-import type { ProjectManagedWorkerSettleOutcome } from "@synara/contracts";
+import type { ProjectManagedWorkerSettleOutcome } from "@trellis/contracts";
 
 export const PROJECT_AGENT_WORKER_HEALTH_INTERVAL_MS = 60_000;
 
@@ -333,7 +333,7 @@ export function formatWorkerBatchRollup(input: {
   readonly threads: ReadonlyArray<{
     readonly title: string;
     readonly outcome: ProjectManagedWorkerSettleOutcome;
-    /** Structured `synara_project_report_result` summary — preferred over the
+    /** Structured `trellis_project_report_result` summary — preferred over the
      * generic outcome label when present. */
     readonly result?: string | null;
     /** Tracked PR URL for the worker thread, appended when known. */

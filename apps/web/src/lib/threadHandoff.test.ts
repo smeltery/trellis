@@ -6,7 +6,7 @@ import {
   type OrchestrationThreadActivity,
   type ProviderKind,
   type ServerProviderStatus,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 import { AppSettingsSchema, getProviderInstanceOptions } from "../appSettings";
 import type { Thread } from "../types";

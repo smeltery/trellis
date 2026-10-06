@@ -6,7 +6,7 @@ import type {
   ProviderInstanceId,
   ProviderKind,
   ProviderModelDescriptor,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import {
   type AppSettings,

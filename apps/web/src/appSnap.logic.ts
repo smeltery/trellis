@@ -3,7 +3,7 @@
 // Layer: Web UI logic
 // Depends on: Thread identity only; no React or desktop APIs.
 
-import type { ThreadId } from "@synara/contracts";
+import type { ThreadId } from "@trellis/contracts";
 
 import { isComposerAppSnapCaptureSource } from "./lib/composerImageSource";
 
@@ -225,7 +225,7 @@ export function resolveAppSnapTarget(input: {
   return { kind: "fresh" };
 }
 
-export const REQUEST_CURRENT_APP_SNAP_EVENT = "synara:request-current-app-snap";
+export const REQUEST_CURRENT_APP_SNAP_EVENT = "trellis:request-current-app-snap";
 
 /** Explicit UI gesture only. Capturing never sends a turn or enables Computer. */
 export function requestCurrentAppSnap(): void {

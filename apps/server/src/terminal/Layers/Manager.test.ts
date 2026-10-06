@@ -7,7 +7,7 @@ import {
   type TerminalEvent,
   type TerminalOpenInput,
   type TerminalRestartInput,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -247,7 +247,7 @@ describe("TerminalManager", () => {
       ) => Promise<import("../providerAuthentication").ProviderAuthenticationLaunch>;
     } = {},
   ) {
-    const logsDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-terminal-"));
+    const logsDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-terminal-"));
     tempDirs.push(logsDir);
     options.prepareLogs?.(logsDir);
     const ptyAdapter = options.ptyAdapter ?? new FakePtyAdapter();
@@ -371,7 +371,7 @@ describe("TerminalManager", () => {
   it.skipIf(process.platform === "win32")(
     "refreshes provider shims when Codex and Claude are both absent",
     async () => {
-      const emptyBinDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-empty-bin-"));
+      const emptyBinDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-empty-bin-"));
       tempDirs.push(emptyBinDir);
       const originalPath = process.env.PATH;
       process.env.PATH = emptyBinDir;
@@ -438,7 +438,7 @@ describe("TerminalManager", () => {
     if (!process) return;
 
     const snapshot = await manager.open(
-      openInput({ cwd: logsDir, env: { SYNARA_TERMINAL_TEST: "changed" } }),
+      openInput({ cwd: logsDir, env: { TRELLIS_TERMINAL_TEST: "changed" } }),
     );
 
     expect(snapshot.cwd).toBe(globalThis.process.cwd());
@@ -1604,7 +1604,7 @@ describe("TerminalManager", () => {
     };
 
     setEnv("PORT", "5173");
-    setEnv("SYNARA_PORT", "3773");
+    setEnv("TRELLIS_PORT", "3773");
     setEnv("VITE_DEV_SERVER_URL", "http://localhost:5173");
     setEnv("TEST_TERMINAL_KEEP", "keep-me");
 
@@ -1616,7 +1616,7 @@ describe("TerminalManager", () => {
       if (!spawnInput) return;
 
       expect(spawnInput.env.PORT).toBeUndefined();
-      expect(spawnInput.env.SYNARA_PORT).toBeUndefined();
+      expect(spawnInput.env.TRELLIS_PORT).toBeUndefined();
       expect(spawnInput.env.VITE_DEV_SERVER_URL).toBeUndefined();
       expect(spawnInput.env.TEST_TERMINAL_KEEP).toBe("keep-me");
 
@@ -1719,8 +1719,8 @@ describe("TerminalManager", () => {
     await manager.open(
       openInput({
         env: {
-          SYNARA_PROJECT_ROOT: "/repo",
-          SYNARA_WORKTREE_PATH: "/repo/worktree-a",
+          TRELLIS_PROJECT_ROOT: "/repo",
+          TRELLIS_WORKTREE_PATH: "/repo/worktree-a",
           CUSTOM_FLAG: "1",
         },
       }),
@@ -1729,8 +1729,8 @@ describe("TerminalManager", () => {
     expect(spawnInput).toBeDefined();
     if (!spawnInput) return;
 
-    expect(spawnInput.env.SYNARA_PROJECT_ROOT).toBe("/repo");
-    expect(spawnInput.env.SYNARA_WORKTREE_PATH).toBe("/repo/worktree-a");
+    expect(spawnInput.env.TRELLIS_PROJECT_ROOT).toBe("/repo");
+    expect(spawnInput.env.TRELLIS_WORKTREE_PATH).toBe("/repo/worktree-a");
     expect(spawnInput.env.CUSTOM_FLAG).toBe("1");
 
     manager.dispose();

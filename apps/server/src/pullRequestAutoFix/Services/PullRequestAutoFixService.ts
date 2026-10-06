@@ -3,7 +3,7 @@ import type {
   PullRequestAutoFixListResult,
   PullRequestAutoFixResult,
   PullRequestAutoFixSetInput,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Schema, ServiceMap } from "effect";
 import type { Effect } from "effect";
 
@@ -29,4 +29,4 @@ export interface PullRequestAutoFixServiceShape {
 export class PullRequestAutoFixService extends ServiceMap.Service<
   PullRequestAutoFixService,
   PullRequestAutoFixServiceShape
->()("synara/pullRequestAutoFix/Services/PullRequestAutoFixService/PullRequestAutoFixService") {}
+>()("trellis/pullRequestAutoFix/Services/PullRequestAutoFixService/PullRequestAutoFixService") {}

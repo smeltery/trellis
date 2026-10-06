@@ -8,14 +8,14 @@ import type {
   ModelCapabilities,
   ProviderKind,
   ProviderModelDescriptor,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   getClaudeContextWindowSuffix,
   getDefaultEffort,
   getModelCapabilities,
   normalizeModelSlug,
   trimOrNull,
-} from "@synara/shared/model";
+} from "@trellis/shared/model";
 import { normalizeCursorModelVariantBaseId } from "../../cursorModelVariants";
 import { normalizeClaudeModelOptionSlug } from "../../providerModelOptions";
 

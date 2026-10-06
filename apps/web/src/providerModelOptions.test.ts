@@ -3,7 +3,7 @@
 // Layer: Web unit tests
 // Depends on: providerModelOptions shared formatting helpers.
 
-import { MODEL_OPTIONS_BY_PROVIDER } from "@synara/contracts";
+import { MODEL_OPTIONS_BY_PROVIDER } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 import { getAppModelOptions } from "./appSettings";
 
@@ -502,7 +502,7 @@ describe("providerModelOptionProvenanceLabel", () => {
     ).toBe("OpenCode Go");
   });
 
-  it("falls back to a humanized slug provider, then the Synara provider", () => {
+  it("falls back to a humanized slug provider, then the Trellis provider", () => {
     expect(
       providerModelOptionProvenanceLabel({
         provider: "opencode",

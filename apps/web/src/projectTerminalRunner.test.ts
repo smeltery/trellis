@@ -38,8 +38,8 @@ describe("runProjectCommandInTerminal", () => {
       terminalId: "terminal-1",
       cwd: "/repo/apps/web",
       env: {
-        SYNARA_PROJECT_ROOT: "/repo",
-        SYNARA_WORKTREE_PATH: "/repo-worktree",
+        TRELLIS_PROJECT_ROOT: "/repo",
+        TRELLIS_WORKTREE_PATH: "/repo-worktree",
         EXTRA: "1",
       },
       cols: 120,

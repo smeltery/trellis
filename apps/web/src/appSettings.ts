@@ -28,20 +28,20 @@ import {
   type ProviderStartOptions,
   type ServerSettingsView,
   type ServerSettingsPatch,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   getDefaultModel,
   getModelOptions,
   normalizeModelSlug,
   resolveSelectableModel,
-} from "@synara/shared/model";
+} from "@trellis/shared/model";
 import {
   APP_SNAP_SHORTCUT_KEYS,
   APP_SNAP_SHORTCUT_MODIFIERS,
   DEFAULT_APP_SNAP_SHORTCUT,
-} from "@synara/shared/appSnapShortcut";
-import type { SynaraDesktopFlavor } from "@synara/shared/desktopIdentity";
-import { codexAccountInstanceId } from "@synara/shared/providerInstances";
+} from "@trellis/shared/appSnapShortcut";
+import type { TrellisDesktopFlavor } from "@trellis/shared/desktopIdentity";
+import { codexAccountInstanceId } from "@trellis/shared/providerInstances";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { EnvMode } from "./components/BranchToolbar.logic";
 import { normalizeCursorModelVariantBaseId } from "./cursorModelVariants";
@@ -77,8 +77,8 @@ import {
   normalizeChatWidthMode as normalizeChatWidthModeValue,
 } from "./lib/chatWidth";
 
-const APP_SETTINGS_STORAGE_KEY = "synara:app-settings:v1";
-const SERVER_SETTINGS_MIGRATION_STORAGE_KEY = "synara:server-settings-migrated:v1";
+const APP_SETTINGS_STORAGE_KEY = "trellis:app-settings:v1";
+const SERVER_SETTINGS_MIGRATION_STORAGE_KEY = "trellis:server-settings-migrated:v1";
 
 function hasCompletedServerSettingsMigration(): boolean {
   return globalThis.localStorage?.getItem(SERVER_SETTINGS_MIGRATION_STORAGE_KEY) === "1";
@@ -576,7 +576,7 @@ export type AppSettings = typeof AppSettingsSchema.Type;
  * defaulting via getAppIcon, and the Appearance reset uses this for its target.
  */
 export function defaultDesktopAppIconForFlavor(
-  flavor: SynaraDesktopFlavor | "unknown",
+  flavor: TrellisDesktopFlavor | "unknown",
 ): DesktopAppIcon {
   return flavor === "beta" ? "beta" : "default";
 }

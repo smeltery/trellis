@@ -5,8 +5,8 @@ import {
   type ServerProviderStatus,
   type TerminalEvent,
   type TerminalOpenInput,
-} from "@synara/contracts";
-import { PROVIDER_DESCRIPTORS } from "@synara/shared/providerMetadata";
+} from "@trellis/contracts";
+import { PROVIDER_DESCRIPTORS } from "@trellis/shared/providerMetadata";
 import { page, userEvent } from "vitest/browser";
 import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-react";

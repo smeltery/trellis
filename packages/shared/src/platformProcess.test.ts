@@ -9,7 +9,7 @@ import { ExecutableNotFoundError, prepareProcess } from "./platformProcess";
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(tmpdir(), "synara-platform-process-"));
+  root = mkdtempSync(path.join(tmpdir(), "trellis-platform-process-"));
 });
 
 afterEach(() => {

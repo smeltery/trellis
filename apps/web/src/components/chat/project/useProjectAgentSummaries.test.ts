@@ -6,7 +6,7 @@ import {
   ProjectTaskId,
   ThreadId,
   type ProjectAgentSummary,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 const listSummaries = vi.fn<() => Promise<{ summaries: ProjectAgentSummary[] }>>();
 

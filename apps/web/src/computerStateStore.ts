@@ -3,7 +3,7 @@ import type {
   ComputerWindow,
   ThreadComputerState,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 

@@ -4,13 +4,13 @@
  * allowing computer and future display streams to use the same backpressure
  * and keyframe rules.
  */
-import { encodeDeviceFrame } from "@synara/shared/deviceFrame";
+import { encodeDeviceFrame } from "@trellis/shared/deviceFrame";
 import {
   classifyByFrameFlags,
   FrameTransport,
   type FrameSink,
   type FrameSubscriberStats,
-} from "@synara/shared/frameTransport";
+} from "@trellis/shared/frameTransport";
 
 import type { DeviceStreamFrame } from "./DeviceBackend.ts";
 

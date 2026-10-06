@@ -1,6 +1,6 @@
-import { ProjectId } from "@synara/contracts";
+import { ProjectId } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
-import { AutomationId } from "@synara/contracts";
+import { AutomationId } from "@trellis/contracts";
 
 import {
   computeAutomationScheduleSpacingSeconds,

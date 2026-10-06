@@ -1,0 +1,54 @@
+---
+import Layout from "../layouts/Layout.astro";
+import WorkspacePreview from "../components/WorkspacePreview.astro";
+import { REPO_URL } from "../lib/releases";
+const docs = `${REPO_URL}/tree/main/docs`;
+---
+<Layout>
+  <section class="hero shell" id="top">
+    <p class="eyebrow"><span></span> Good ideas need a little room.</p>
+    <h1 class="meet">meet <img src="/icon.png" width="78" height="78" alt="" /> <em>trellis.</em></h1>
+    <p class="hero-description">Your coding agents. Your projects.<br />A calmer place to <span class="marker">bring them together.</span></p>
+    <a class="btn btn-primary" href="/download/"><span aria-hidden="true">↓</span> Get Trellis</a>
+    <p class="fine">macOS, Windows & Linux · bring your own providers</p>
+  </section>
+  <WorkspacePreview />
+  <section class="providers shell" id="providers" aria-labelledby="providers-title">
+    <p class="eyebrow">Familiar tools. A shared home.</p>
+    <h2 id="providers-title">Your favorite agents.<br /><em>One familiar workspace.</em></h2>
+    <p class="section-description">Bring the providers you already know. Keep your conversations, context, and code in one place.</p>
+    <div class="provider-logos">
+      <a href={`${docs}/user/providers.md`}><img src="/brands/openai.svg" width="32" height="32" alt="" /><span>Codex</span><small>by OpenAI</small></a>
+      <a href={`${docs}/user/providers.md`}><img src="/brands/claude.svg" width="32" height="32" alt="" /><span>Claude Code</span><small>by Anthropic</small></a>
+      <a href={`${docs}/user/providers.md`}><img src="/brands/cursor.svg" width="32" height="32" alt="" /><span>Cursor</span><small>your coding partner</small></a>
+      <a href={`${docs}/user/providers.md`}><img src="/brands/opencode.svg" width="32" height="32" alt="" /><span>OpenCode</span><small>your choice of models</small></a>
+    </div>
+    <a class="text-link" href={`${docs}/user/providers.md`}>Explore all supported providers ↗</a>
+    <p class="fine">Use your own accounts. Provider capabilities and availability vary.</p>
+  </section>
+  <section class="section shell how" id="how">
+    <div class="section-intro"><p class="eyebrow">A familiar place to start</p><h2>Less tab juggling.<br /><em>More making things.</em></h2><p>From the first “what if” to the final diff.<br />Keep the whole task in one place.</p></div>
+    <ol class="steps"><li><span>01</span><div><h3>Bring a project.</h3><p>Open a repository on your machine. Your files stay where you put them.</p></div></li><li><span>02</span><div><h3>Pick your partner.</h3><p>Connect a supported provider CLI, choose a model, and start a thread.</p></div></li><li><span>03</span><div><h3>Make it yours.</h3><p>Review changes, run a command, and decide what to commit. You’re still in the loop.</p></div></li></ol>
+  </section>
+  <section class="section shell" id="workspace"><div class="section-heading"><p class="eyebrow">A place for every part of the process</p><h2>Give your ideas <em>room to grow.</em></h2></div><div class="feature-grid">
+    <article><div class="feature-symbol" aria-hidden="true">⑂</div><h3>A branch of your own.</h3><p>Keep parallel tasks in separate worktrees, with their context close at hand.</p><span class="feature-label">Projects & worktrees</span></article>
+    <article><div class="feature-symbol" aria-hidden="true">≋</div><h3>Follow the whole thread.</h3><p>Conversations, approvals, and progress stay together as the work unfolds.</p><span class="feature-label">Persistent threads</span></article>
+    <article><div class="feature-symbol" aria-hidden="true">⌘</div><h3>See what you’re shipping.</h3><p>Read the diff and use the terminal without leaving your workspace.</p><span class="feature-label">Diffs & terminals</span></article>
+  </div></section>
+  <section class="section shell ownership" aria-labelledby="ownership-title">
+    <div class="ownership-visual" aria-label="Project and worktree illustration">
+      <div class="repo-card"><span class="repo-symbol" aria-hidden="true">⑂</span><div><strong>your-project</strong><small>Right where you left it.</small></div><span class="local-badge">local</span></div>
+      <div class="branch-line" aria-hidden="true"></div>
+      <div class="branch-cards"><div><span aria-hidden="true">⑂</span> a-new-idea <small>its own worktree</small></div><div><span aria-hidden="true">⑂</span> one-more-thing <small>its own worktree</small></div></div>
+      <p>Your files. A little space between your tasks.</p>
+    </div>
+    <div class="section-intro"><p class="eyebrow">Built around your work</p><h2>A local workspace.<br /><em>A clear sense of control.</em></h2><p>Keep your repositories on your machine. Give parallel tasks their own worktrees. Review what changed before it becomes part of your project.</p><ul class="ownership-points"><li>Separate checkouts for separate ideas</li><li>Conversation and workspace state stored locally</li><li>Your choice of provider, model, and approvals</li></ul><a class="text-link" href={`${docs}/user/configuration.md`}>Understand where your data goes ↗</a></div>
+  </section>
+  <section class="section shell faq" id="faq"><div class="section-intro"><p class="eyebrow">A few things you might wonder</p><h2>Small questions.<br /><em>Straight answers.</em></h2></div><div class="faq-list">
+    <details><summary>Does Trellis include an AI subscription?</summary><p>No. Trellis connects to your installed provider CLIs and accounts. Model access and provider costs are handled by your chosen provider.</p></details>
+    <details><summary>Does everything stay on my computer?</summary><p>Your workspace state is stored locally. Your chosen provider may send prompts, code, and tool context to its service to carry out a task. Review its policies and the approvals you grant.</p></details>
+    <details><summary>Where does my work live?</summary><p>Your repositories stay in their existing folders. Trellis stores conversation and workspace state in its own local data directory. Back up both when moving between machines.</p></details>
+    <details><summary>Where can I learn more?</summary><p>The <a href={docs}>documentation</a> covers getting started, providers, configuration, and maintaining the fork. The source and license are available on GitHub.</p></details>
+  </div></section>
+  <section class="closing shell"><img src="/icon.png" width="52" height="52" alt="" /><h2>Your next idea<br /><em>has a place here.</em></h2><a class="btn btn-primary" href="/download/">↓ Get Trellis</a><a class="text-link" href={docs}>Or start with the docs ↗</a></section>
+</Layout>

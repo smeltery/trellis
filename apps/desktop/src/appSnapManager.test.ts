@@ -6,8 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
 
-import { PROVIDER_SEND_TURN_MAX_ATTACHMENTS } from "@synara/contracts";
-import { SYNARA_DEVELOPMENT_BUNDLE_ID } from "@synara/shared/desktopIdentity";
+import { PROVIDER_SEND_TURN_MAX_ATTACHMENTS } from "@trellis/contracts";
+import { TRELLIS_DEVELOPMENT_BUNDLE_ID } from "@trellis/shared/desktopIdentity";
 import { describe, expect, it, vi, type Mock } from "vitest";
 
 import {
@@ -50,8 +50,8 @@ describe("AppSnap permission probe freshness", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn: spawn as unknown as typeof ChildProcess.spawn,
       onState,
       onCaptured: vi.fn(),
@@ -218,9 +218,9 @@ describe("desktop AppSnap platform state", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appBundlePath: "/Applications/Synara Test.app",
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -258,7 +258,7 @@ describe("desktop AppSnap platform state", () => {
     expect(spawn).toHaveBeenNthCalledWith(
       2,
       process.execPath,
-      ["--request-permissions", "--app-path", "/Applications/Synara Test.app"],
+      ["--request-permissions", "--app-path", "/Applications/Trellis Test.app"],
       expect.any(Object),
     );
     requestChild.stdout.end(
@@ -283,8 +283,8 @@ describe("desktop AppSnap platform state", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -329,9 +329,9 @@ describe("desktop AppSnap platform state", () => {
     const onState = vi.fn();
     const manager = new DesktopAppSnapManager({
       platform: "win32",
-      helperPath: "C:\\missing\\synara-appsnap-helper.exe",
+      helperPath: "C:\\missing\\trellis-appsnap-helper.exe",
       captureDirectory: "C:\\tmp\\appsnap",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       onState,
       onCaptured: vi.fn(),
       onError: vi.fn(),
@@ -352,9 +352,9 @@ describe("desktop AppSnap platform state", () => {
   it("preserves a missing-helper error instead of reporting a permission problem", async () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
-      helperPath: "/tmp/synara-appsnap-helper-that-does-not-exist",
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      helperPath: "/tmp/trellis-appsnap-helper-that-does-not-exist",
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       onState: vi.fn(),
       onCaptured: vi.fn(),
       onError: vi.fn(),
@@ -375,8 +375,8 @@ describe("AppSnap shortcut availability", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: "/tmp/missing-appsnap-helper",
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       shortcutRegistry: { register, unregister },
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -397,8 +397,8 @@ describe("AppSnap shortcut availability", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: "/tmp/missing-appsnap-helper",
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       shortcutRegistry: { register: () => false, unregister: vi.fn() },
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -431,8 +431,8 @@ describe("AppSnap shortcut availability", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       shortcutRegistry: { register, unregister },
       onState: vi.fn(),
@@ -460,9 +460,9 @@ describe("AppSnap shortcut availability", () => {
       [
         "--watch",
         "--output-dir",
-        "/tmp/synara-appsnap-test",
+        "/tmp/trellis-appsnap-test",
         "--excluded-bundle-id",
-        SYNARA_DEVELOPMENT_BUNDLE_ID,
+        TRELLIS_DEVELOPMENT_BUNDLE_ID,
         "--external-trigger",
       ],
       expect.any(Object),
@@ -538,9 +538,9 @@ describe("AppSnap helper protocol", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appBundlePath: "/Applications/Synara Test.app",
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -575,7 +575,7 @@ describe("AppSnap helper protocol", () => {
     expect(spawn).toHaveBeenNthCalledWith(
       2,
       process.execPath,
-      ["--request-permissions", "--app-path", "/Applications/Synara Test.app"],
+      ["--request-permissions", "--app-path", "/Applications/Trellis Test.app"],
       expect.any(Object),
     );
 
@@ -622,8 +622,8 @@ describe("AppSnap helper protocol", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       shortcutRegistry: { register, unregister },
       onState: vi.fn(),
@@ -693,8 +693,8 @@ describe("AppSnap helper protocol", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -737,8 +737,8 @@ describe("AppSnap helper protocol", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       shortcutRegistry: { register, unregister },
       onState: vi.fn(),
@@ -781,7 +781,7 @@ describe("AppSnap helper protocol", () => {
   });
 
   it("coalesces concurrent listener reconciliation while the capture directory is prepared", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-reconcile-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-reconcile-"));
     const firstCheckChild = createFakeChildProcess();
     const watchChild = createFakeChildProcess();
     const spawn = vi
@@ -800,7 +800,7 @@ describe("AppSnap helper protocol", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -836,7 +836,7 @@ describe("AppSnap helper protocol", () => {
           "--output-dir",
           captureDirectory,
           "--excluded-bundle-id",
-          SYNARA_DEVELOPMENT_BUNDLE_ID,
+          TRELLIS_DEVELOPMENT_BUNDLE_ID,
         ],
         expect.any(Object),
       );
@@ -849,7 +849,7 @@ describe("AppSnap helper protocol", () => {
   });
 
   it("retains a full composer batch and reports any overflow", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-test-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-test-"));
     const checkChild = createFakeChildProcess();
     const watchChild = createFakeChildProcess();
     const spawn = vi
@@ -862,7 +862,7 @@ describe("AppSnap helper protocol", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured,
@@ -927,8 +927,8 @@ describe("AppSnap helper protocol", () => {
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: process.execPath,
-      captureDirectory: "/tmp/synara-appsnap-test",
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      captureDirectory: "/tmp/trellis-appsnap-test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -981,7 +981,7 @@ describe("AppSnap helper protocol", () => {
   });
 
   it("keeps the helper capture file when persisting the pending copy fails", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-persist-fail-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-persist-fail-"));
     const checkChild = createFakeChildProcess();
     const watchChild = createFakeChildProcess();
     const spawn = vi
@@ -995,7 +995,7 @@ describe("AppSnap helper protocol", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured,
@@ -1050,7 +1050,7 @@ describe("AppSnap helper protocol", () => {
   });
 
   it("restores pending captures after a manager restart and removes them only after ack", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-pending-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-pending-"));
     const checkChild = createFakeChildProcess();
     const watchChild = createFakeChildProcess();
     const spawn = vi
@@ -1062,7 +1062,7 @@ describe("AppSnap helper protocol", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured,
@@ -1095,7 +1095,7 @@ describe("AppSnap helper protocol", () => {
           name: "restart-capture.png",
           sourceAppName: "Safari",
           sourceBundleIdentifier: "com.apple.Safari",
-          sourceWindowTitle: "Synara",
+          sourceWindowTitle: "Trellis",
         })}\n`,
       );
       await vi.waitFor(() => expect(onCaptured).toHaveBeenCalledTimes(1));
@@ -1105,7 +1105,7 @@ describe("AppSnap helper protocol", () => {
         platform: "darwin",
         helperPath: process.execPath,
         captureDirectory,
-        excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+        excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
         onState: vi.fn(),
         onCaptured: vi.fn(),
         onError: vi.fn(),
@@ -1117,7 +1117,7 @@ describe("AppSnap helper protocol", () => {
         name: "restart-capture.png",
         sourceAppName: "Safari",
         sourceBundleIdentifier: "com.apple.Safari",
-        sourceWindowTitle: "Synara",
+        sourceWindowTitle: "Trellis",
       });
       expect(Buffer.from(restored[0]!.bytes)).toEqual(captureBytes);
 
@@ -1129,7 +1129,7 @@ describe("AppSnap helper protocol", () => {
         platform: "darwin",
         helperPath: process.execPath,
         captureDirectory,
-        excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+        excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
         onState: vi.fn(),
         onCaptured: vi.fn(),
         onError: vi.fn(),
@@ -1143,7 +1143,7 @@ describe("AppSnap helper protocol", () => {
   });
 
   it("recovers a helper PNG left behind before pending metadata was persisted", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-helper-recovery-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-helper-recovery-"));
     const captureId = "6b981032-c848-4d0b-94f1-6de335391aa2";
     const helperPath = join(captureDirectory, `appsnap-${captureId}.png`);
     const captureBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x01]);
@@ -1153,7 +1153,7 @@ describe("AppSnap helper protocol", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       onState: vi.fn(),
       onCaptured: vi.fn(),
       onError: vi.fn(),
@@ -1177,7 +1177,7 @@ describe("AppSnap helper protocol", () => {
         platform: "darwin",
         helperPath: process.execPath,
         captureDirectory,
-        excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+        excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
         onState: vi.fn(),
         onCaptured: vi.fn(),
         onError: vi.fn(),
@@ -1209,7 +1209,7 @@ describe("AppSnap window picker requests", () => {
     onError: Mock;
     dispose: () => void;
   }> {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-picker-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-picker-"));
     const checkChild = createFakeChildProcess();
     const watchChild = createFakeChildProcess();
     const spawn = vi
@@ -1222,7 +1222,7 @@ describe("AppSnap window picker requests", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured,
@@ -1478,7 +1478,7 @@ describe("AppSnap window picker requests", () => {
         platform: "darwin",
         helperPath: process.execPath,
         captureDirectory,
-        excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+        excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
         onState: vi.fn(),
         onCaptured: vi.fn(),
         onError: vi.fn(),
@@ -1492,7 +1492,7 @@ describe("AppSnap window picker requests", () => {
   });
 
   it("recovers an unacknowledged request-driven capture after a manager restart", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-request-restart-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-request-restart-"));
     const firstCheckChild = createFakeChildProcess();
     const watchChild = createFakeChildProcess();
     const spawn = vi
@@ -1503,7 +1503,7 @@ describe("AppSnap window picker requests", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -1547,7 +1547,7 @@ describe("AppSnap window picker requests", () => {
         platform: "darwin",
         helperPath: process.execPath,
         captureDirectory,
-        excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+        excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
         spawn,
         onState: vi.fn(),
         onCaptured: vi.fn(),
@@ -1570,7 +1570,7 @@ describe("AppSnap window picker requests", () => {
         platform: "darwin",
         helperPath: process.execPath,
         captureDirectory,
-        excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
+        excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
         spawn,
         onState: vi.fn(),
         onCaptured: vi.fn(),
@@ -1593,7 +1593,7 @@ describe("AppSnap permission guide", () => {
     spawn: Mock;
     dispose: () => void;
   }> {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-guide-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-guide-"));
     const guideChild = createFakeChildProcess();
     const spawn = vi.fn().mockReturnValueOnce(guideChild);
     const onPermissionGuideState = vi.fn();
@@ -1601,9 +1601,9 @@ describe("AppSnap permission guide", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appDisplayName: "Synara Test",
-      appBundlePath: "/Applications/Synara Test.app",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appDisplayName: "Trellis Test",
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -1639,9 +1639,9 @@ describe("AppSnap permission guide", () => {
           "--pane",
           "input-monitoring",
           "--app-path",
-          "/Applications/Synara Test.app",
+          "/Applications/Trellis Test.app",
           "--app-name",
-          "Synara Test",
+          "Trellis Test",
         ],
         expect.any(Object),
       );
@@ -1703,7 +1703,7 @@ describe("AppSnap permission guide", () => {
     // Settings page (toggle, or drag-and-drop where the list accepts it)
     // always works.
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-guide-ax-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-guide-ax-"));
     const guideChild = createFakeChildProcess();
     const spawn = vi.fn().mockImplementation((_file: string, args: readonly string[]) => {
       if (args.includes("--permission-guide")) return guideChild;
@@ -1721,9 +1721,9 @@ describe("AppSnap permission guide", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appDisplayName: "Synara Test",
-      appBundlePath: "/Applications/Synara Test.app",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appDisplayName: "Trellis Test",
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -1769,7 +1769,7 @@ describe("AppSnap permission guide", () => {
     // 800ms tick deterministically; in-flight dedup keeps overlapping ticks
     // from queueing a second check while the first is still pending.
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-guide-watch-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-guide-watch-"));
     const guideChild = createFakeChildProcess();
     const spawn = vi.fn().mockImplementation((_file: string, args: readonly string[]) => {
       if (args.includes("--permission-guide")) return guideChild;
@@ -1788,9 +1788,9 @@ describe("AppSnap permission guide", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appDisplayName: "Synara Test",
-      appBundlePath: "/Applications/Synara Test.app",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appDisplayName: "Trellis Test",
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -1818,7 +1818,7 @@ describe("AppSnap permission guide", () => {
     // while the first check has not answered yet; once it resolves, the next
     // tick may poll again.
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-guide-dedup-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-guide-dedup-"));
     const guideChild = createFakeChildProcess();
     const checkChildren: FakeChildProcess[] = [];
     let releaseFirstCheck!: () => void;
@@ -1852,9 +1852,9 @@ describe("AppSnap permission guide", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appDisplayName: "Synara Test",
-      appBundlePath: "/Applications/Synara Test.app",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appDisplayName: "Trellis Test",
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -1893,7 +1893,7 @@ describe("AppSnap permission guide", () => {
     vi.useFakeTimers({
       toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"],
     });
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-guide-bound-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-guide-bound-"));
     const guideChild = createFakeChildProcess();
     const onState = vi.fn();
     const spawn = vi.fn().mockImplementation((_file: string, args: readonly string[]) => {
@@ -1913,9 +1913,9 @@ describe("AppSnap permission guide", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appDisplayName: "Synara Test",
-      appBundlePath: "/Applications/Synara Test.app",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appDisplayName: "Trellis Test",
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       onState,
       onCaptured: vi.fn(),
@@ -1956,7 +1956,7 @@ describe("AppSnap setup registration failures", () => {
   };
 
   it("stops before opening Settings or a coach and preserves the error through passive refresh", async () => {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-registration-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-registration-"));
     const calls: string[][] = [];
     let registrationFails = true;
     const spawn = vi.fn((_file: string, args: readonly string[]) => {
@@ -1977,9 +1977,9 @@ describe("AppSnap setup registration failures", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appBundlePath: "/Applications/Synara Test.app",
-      appDisplayName: "Synara Test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appBundlePath: "/Applications/Trellis Test.app",
+      appDisplayName: "Trellis Test",
       spawn: spawn as unknown as typeof ChildProcess.spawn,
       openSettingsPane,
       onState: vi.fn(),
@@ -2006,7 +2006,7 @@ describe("AppSnap setup registration failures", () => {
         "--permission",
         "inputMonitoring",
         "--app-path",
-        "/Applications/Synara Test.app",
+        "/Applications/Trellis Test.app",
       ]);
       expect(openSettingsPane).not.toHaveBeenCalled();
       expect(onError).toHaveBeenCalledWith(
@@ -2047,7 +2047,7 @@ describe("AppSnap setup registration failures", () => {
 
   it("drains an exiting coach registration failure and cancels its poll", async () => {
     vi.useFakeTimers();
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-coach-registration-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-coach-registration-"));
     const child = createFakeChildProcess();
     const spawn = vi.fn(() => child);
     const onPermissionGuideState = vi.fn();
@@ -2056,9 +2056,9 @@ describe("AppSnap setup registration failures", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appBundlePath: "/Applications/Synara Test.app",
-      appDisplayName: "Synara Test",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appBundlePath: "/Applications/Trellis Test.app",
+      appDisplayName: "Trellis Test",
       spawn: spawn as unknown as typeof ChildProcess.spawn,
       onState: vi.fn(),
       onCaptured: vi.fn(),
@@ -2100,7 +2100,7 @@ describe("AppSnap permission setup sessions", () => {
     onPermissionGuideState: Mock;
     dispose: () => void;
   } {
-    const captureDirectory = mkdtempSync(join(tmpdir(), "synara-appsnap-session-"));
+    const captureDirectory = mkdtempSync(join(tmpdir(), "trellis-appsnap-session-"));
     const guideChildren: FakeChildProcess[] = [];
     const requests: string[] = [];
     const openSettingsPane = vi.fn();
@@ -2125,9 +2125,9 @@ describe("AppSnap permission setup sessions", () => {
       platform: "darwin",
       helperPath: process.execPath,
       captureDirectory,
-      excludedBundleId: SYNARA_DEVELOPMENT_BUNDLE_ID,
-      appDisplayName: "Synara Test",
-      appBundlePath: "/Applications/Synara Test.app",
+      excludedBundleId: TRELLIS_DEVELOPMENT_BUNDLE_ID,
+      appDisplayName: "Trellis Test",
+      appBundlePath: "/Applications/Trellis Test.app",
       spawn,
       openSettingsPane,
       closeSettingsApp,
@@ -2279,7 +2279,7 @@ describe("AppSnap permission setup sessions", () => {
 
 describe("explicit AppSnap observation", () => {
   it("captures while disabled without permission or manual callback side effects", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "synara-appsnap-request-"));
+    const directory = mkdtempSync(join(tmpdir(), "trellis-appsnap-request-"));
     const child = createFakeChildProcess();
     let outputDirectory = "";
     const spawn = vi.fn((_file: string, args: readonly string[]) => {
@@ -2292,7 +2292,7 @@ describe("explicit AppSnap observation", () => {
       platform: "darwin",
       helperPath: "/fake/helper",
       captureDirectory: directory,
-      excludedBundleId: "synara",
+      excludedBundleId: "trellis",
       onState: vi.fn(),
       onCaptured,
       onError,
@@ -2325,14 +2325,14 @@ describe("explicit AppSnap observation", () => {
     }
   });
   it("cancels only the matching request and rejects concurrent requests", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "synara-appsnap-cancel-"));
+    const directory = mkdtempSync(join(tmpdir(), "trellis-appsnap-cancel-"));
     const child = createFakeChildProcess();
     const spawn = vi.fn(() => child);
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: "/fake/helper",
       captureDirectory: directory,
-      excludedBundleId: "synara",
+      excludedBundleId: "trellis",
       onState: vi.fn(),
       onCaptured: vi.fn(),
       onError: vi.fn(),
@@ -2360,14 +2360,14 @@ describe("explicit AppSnap observation", () => {
 
 describe("AppSnap bounded helper shutdown", () => {
   it("escalates only its owned helper and holds the request until exit", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "synara-appsnap-shutdown-"));
+    const directory = mkdtempSync(join(tmpdir(), "trellis-appsnap-shutdown-"));
     const child = createFakeChildProcess();
     const spawn = vi.fn(() => child);
     const manager = new DesktopAppSnapManager({
       platform: "darwin",
       helperPath: "/fake/helper",
       captureDirectory: directory,
-      excludedBundleId: "synara",
+      excludedBundleId: "trellis",
       onState: vi.fn(),
       onCaptured: vi.fn(),
       onError: vi.fn(),

@@ -7,7 +7,7 @@ import {
   type ProviderInstanceId,
   type ProviderRuntimeEvent,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import { stampCursorTerminalEventInstance } from "./CursorAdapter.ts";

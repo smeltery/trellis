@@ -1,4 +1,4 @@
-import type { ProjectResolveWorkspaceFileReferencesResult } from "@synara/contracts";
+import type { ProjectResolveWorkspaceFileReferencesResult } from "@trellis/contracts";
 
 import { ensureNativeApi } from "~/nativeApi";
 

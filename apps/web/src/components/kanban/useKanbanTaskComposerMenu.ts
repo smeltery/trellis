@@ -13,7 +13,7 @@ import type {
   ProviderSkillReference,
   ProviderStartOptions,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   useEffect,
   useState,

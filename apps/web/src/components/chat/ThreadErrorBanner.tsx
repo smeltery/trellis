@@ -8,7 +8,7 @@
 // is the home for the visible thread's live error; threads off screen still
 // toast via useThreadErrorToast.
 
-import { isProviderDeliveryBlockDetail } from "@synara/shared/providerDeliveryBlock";
+import { isProviderDeliveryBlockDetail } from "@trellis/shared/providerDeliveryBlock";
 
 import { Alert, AlertAction, AlertDescription } from "../ui/alert";
 import { Button } from "../ui/button";

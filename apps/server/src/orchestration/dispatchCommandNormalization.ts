@@ -2,8 +2,8 @@ import type {
   ClientOrchestrationCommand,
   OrchestrationCommand,
   ProjectId,
-} from "@synara/contracts";
-import { isWorkspaceRootWithin, workspaceRootsEqual } from "@synara/shared/threadWorkspace";
+} from "@trellis/contracts";
+import { isWorkspaceRootWithin, workspaceRootsEqual } from "@trellis/shared/threadWorkspace";
 import type { FileSystem, Path } from "effect";
 import { Effect, Schedule } from "effect";
 

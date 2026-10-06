@@ -1,0 +1,68 @@
+<section class="preview shell" aria-label="Interactive workspace preview">
+  <div class="window">
+    <div class="window-bar"><div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div><span>your next good idea</span><span class="local-dot">local workspace</span></div>
+    <div class="workspace">
+      <aside class="workspace-sidebar" aria-label="Example project">
+        <div class="workspace-brand"><img src="/icon.png" alt="" width="24" height="24" /> trellis</div>
+        <p class="sidebar-label">PROJECTS</p>
+        <div class="project-name"><span aria-hidden="true">⌘</span> little-garden</div>
+        <div class="thread selected"><span class="status-dot"></span> A better welcome</div>
+        <div class="thread">A place for notes</div><div class="thread">Tidy up the details</div>
+        <div class="sidebar-bottom"><span aria-hidden="true">⑂</span> welcome-page <span class="worktree-label">worktree</span></div>
+      </aside>
+      <div class="workspace-main">
+        <div class="workspace-top"><div><strong>A better welcome</strong><span>little-garden / welcome-page</span></div><span class="review-state">Ready to review</span></div>
+        <div class="preview-tabs" role="tablist" aria-label="Explore the workspace">
+          <button type="button" role="tab" aria-selected="true" aria-controls="preview-thread" id="tab-thread" data-panel="thread">Thread</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="preview-changes" id="tab-changes" data-panel="changes" tabindex="-1">Changes <span>2</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="preview-terminal" id="tab-terminal" data-panel="terminal" tabindex="-1">Terminal</button>
+        </div>
+        <div id="preview-thread" class="preview-panel conversation" role="tabpanel" aria-labelledby="tab-thread" tabindex="0">
+          <div class="message user-message"><span class="avatar">Y</span><div><strong>You</strong><p>Give the welcome page a little breathing room. Keep it simple.</p></div></div>
+          <div class="message"><img class="avatar" src="/icon.png" alt="" /><div><strong>Your coding agent</strong><p>I’ve simplified the layout and made the next step easier to find.</p><div class="task-done"><span aria-hidden="true">✓</span> Updated the welcome page <small>+24 −8</small></div><p class="muted">Two files changed. Take a look when you’re ready.</p></div></div>
+          <div class="mock-composer" aria-hidden="true">Where should we go next?<span>↑</span></div>
+        </div>
+        <div id="preview-changes" class="preview-panel" role="tabpanel" aria-labelledby="tab-changes" tabindex="0" hidden>
+          <div class="diff-header">src/Welcome.tsx <span>+24 −8</span></div>
+          <pre class="diff"><code><span>  &lt;main className="welcome"&gt;</span><span class="removed">−   &lt;h1&gt;Welcome to your dashboard&lt;/h1&gt;</span><span class="added">+   &lt;h1&gt;Make yourself at home.&lt;/h1&gt;</span><span class="added">+   &lt;p&gt;A little space for your ideas.&lt;/p&gt;</span><span>    &lt;ProjectList projects=&#123;projects&#125; /&gt;</span><span>  &lt;/main&gt;</span></code></pre><p class="panel-note">A clear view of what changed, before you commit.</p>
+        </div>
+        <div id="preview-terminal" class="preview-panel terminal" role="tabpanel" aria-labelledby="tab-terminal" tabindex="0" hidden><p>little-garden <span>on welcome-page</span></p><pre><code>$ bun run test
+
+<span>✓</span> welcome page renders the project list
+<span>✓</span> new project action opens the editor
+
+2 tests passed
+
+$ git status --short
+ M src/Welcome.tsx
+ M src/welcome.css
+
+$ <span class="cursor">▌</span></code></pre></div>
+      </div>
+    </div>
+  </div>
+  <p class="preview-caption">A small workspace preview. Try the tabs to look around.</p>
+</section>
+<script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-panel]")];
+  function selectTab(selected: HTMLButtonElement) {
+    for (const tab of tabs) {
+      const active = tab === selected;
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+      const panel = document.getElementById(`preview-${tab.dataset.panel}`);
+      if (panel) panel.hidden = !active;
+    }
+  }
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => selectTab(tab));
+    tab.addEventListener("keydown", (event) => {
+      const index = tabs.indexOf(tab);
+      const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index - 1 + tabs.length) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+      if (next === null) return;
+      event.preventDefault();
+      const target = tabs[next];
+      if (target) { selectTab(target); target.focus(); }
+    });
+  }
+</script>

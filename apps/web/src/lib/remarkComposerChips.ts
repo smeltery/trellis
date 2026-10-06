@@ -9,7 +9,7 @@
 //          terminal chip constants, ComposerChipSegment,
 //          createComposerChipsRemarkPlugin, parseComposerChipSegment
 
-import type { ProviderMentionReference } from "@synara/contracts";
+import type { ProviderMentionReference } from "@trellis/contracts";
 import {
   splitPromptIntoDisplaySegments,
   type ComposerPromptSegment,

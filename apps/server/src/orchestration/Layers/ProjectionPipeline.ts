@@ -2,19 +2,19 @@ import {
   makeMessageTextChunks,
   encodeMessageTextFallback,
 } from "../../persistence/messageTextChunks.ts";
-import { ApprovalRequestId, CommandId, type OrchestrationEvent } from "@synara/contracts";
-import { resolveHumanMessageAt } from "@synara/shared/threadSummary";
-import { isSidechatThread } from "@synara/shared/sidechatThread";
-import { clearRemovedAsyncUserInputResponses } from "@synara/shared/asyncUserInput";
-import { isGroupContainerKind } from "@synara/shared/projectContainers";
+import { ApprovalRequestId, CommandId, type OrchestrationEvent } from "@trellis/contracts";
+import { resolveHumanMessageAt } from "@trellis/shared/threadSummary";
+import { isSidechatThread } from "@trellis/shared/sidechatThread";
+import { clearRemovedAsyncUserInputResponses } from "@trellis/shared/asyncUserInput";
+import { isGroupContainerKind } from "@trellis/shared/projectContainers";
 import {
   addPinnedMessage,
   removePinnedMessage,
   setPinnedMessageDone,
   setPinnedMessageLabel,
-} from "@synara/shared/pinnedMessages";
-import { createStalePendingInteractionMatcher } from "@synara/shared/pendingInteractions";
-import { resolveModelSelectionInstanceId } from "@synara/shared/providerInstances";
+} from "@trellis/shared/pinnedMessages";
+import { createStalePendingInteractionMatcher } from "@trellis/shared/pendingInteractions";
+import { resolveModelSelectionInstanceId } from "@trellis/shared/providerInstances";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { Effect, FileSystem, Layer, Option, Path, Stream } from "effect";
 import * as SqlClient from "effect/unstable/sql/SqlClient";

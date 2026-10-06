@@ -8,8 +8,8 @@ import {
   DEFAULT_MODEL_BY_PROVIDER,
   DEFAULT_SERVER_SETTINGS_VIEW,
   ProviderInstanceId,
-} from "@synara/contracts";
-import { codexAccountInstanceId } from "@synara/shared/providerInstances";
+} from "@trellis/contracts";
+import { codexAccountInstanceId } from "@trellis/shared/providerInstances";
 import { describe, expect, it } from "vitest";
 
 import {

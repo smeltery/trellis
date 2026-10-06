@@ -9,8 +9,8 @@ import {
   type ProviderInstanceId,
   ProviderKind,
   type ServerProviderStatus,
-} from "@synara/contracts";
-import { resolveSelectableModel } from "@synara/shared/model";
+} from "@trellis/contracts";
+import { resolveSelectableModel } from "@trellis/shared/model";
 import * as Schema from "effect/Schema";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { type ProviderPickerKind, PROVIDER_OPTIONS } from "../../session-logic";

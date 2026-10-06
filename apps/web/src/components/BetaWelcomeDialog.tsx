@@ -1,5 +1,5 @@
 // FILE: BetaWelcomeDialog.tsx
-// Purpose: First-launch welcome on Synara Beta — what beta is, that stable stays
+// Purpose: First-launch welcome on Trellis Beta — what beta is, that stable stays
 //          untouched, the diagnostics disclosure, and the stable→beta import
 //          result. The first-run tour waits for this sheet and is skipped when
 //          data was imported.
@@ -19,7 +19,7 @@ import { CentralIcon } from "../lib/central-icons";
 import { cn } from "../lib/utils";
 import { AnnouncementSheet } from "./AnnouncementSheet";
 
-const BETA_WELCOME_STORAGE_KEY = "synara:beta-welcome:v1";
+const BETA_WELCOME_STORAGE_KEY = "trellis:beta-welcome:v1";
 
 const BetaWelcomeStorageSchema = Schema.Struct({
   acknowledged: Schema.Boolean,
@@ -29,12 +29,12 @@ type BetaWelcomeStorage = typeof BetaWelcomeStorageSchema.Type;
 const INITIAL_STORAGE: BetaWelcomeStorage = { acknowledged: false };
 
 const WELCOME_POINTS = [
-  { icon: "shield-check", text: "Synara stays separate and untouched." },
+  { icon: "shield-check", text: "Trellis stays separate and untouched." },
   {
     icon: "heart",
     text: "Beta shares crash reports, app errors, and anonymous usage counts. Crash reports may include private information.",
   },
-  { icon: "arrow-left-circle", text: "Switch back to Synara any time in Settings." },
+  { icon: "arrow-left-circle", text: "Switch back to Trellis any time in Settings." },
 ] as const;
 
 export function BetaWelcomeDialog() {
@@ -101,7 +101,7 @@ export function BetaWelcomeDialog() {
     imported === true
       ? {
           icon: "circle-check",
-          text: "Your chats and settings came over from Synara.",
+          text: "Your chats and settings came over from Trellis.",
           className: "bg-[color-mix(in_srgb,var(--beta-accent)_12%,transparent)] text-foreground",
           iconClassName: "text-[var(--beta-accent)]",
         }
@@ -109,7 +109,7 @@ export function BetaWelcomeDialog() {
         ? importFailed
           ? {
               icon: "exclamation-circle",
-              text: "Your Synara data couldn't be copied, so you're starting fresh.",
+              text: "Your Trellis data couldn't be copied, so you're starting fresh.",
               className:
                 "bg-[color-mix(in_srgb,var(--destructive)_12%,transparent)] text-foreground",
               iconClassName: "text-destructive",
@@ -127,8 +127,8 @@ export function BetaWelcomeDialog() {
     <AnnouncementSheet
       open={open && !storage.acknowledged}
       hero={<img src="/app-icons/beta.png" alt="" className="size-16 rounded-2xl" />}
-      title="Welcome to Synara Beta"
-      description="New features land here first, before they reach Synara."
+      title="Welcome to Trellis Beta"
+      description="New features land here first, before they reach Trellis."
       details={
         <div className="flex flex-col gap-4 pt-4">
           <ul className="m-0 flex list-none flex-col gap-2.5 p-0">

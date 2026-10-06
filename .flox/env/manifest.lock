@@ -1,0 +1,593 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "schema-version": "1.17.0",
+    "install": {
+      "actionlint": {
+        "pkg-path": "actionlint"
+      },
+      "bun": {
+        "pkg-path": "bun",
+        "version": "1.4.2"
+      },
+      "git": {
+        "pkg-path": "git"
+      },
+      "nodejs": {
+        "pkg-path": "nodejs_24",
+        "version": ">=24.13.1 <25"
+      },
+      "pre-commit": {
+        "pkg-path": "pre-commit"
+      },
+      "shellcheck": {
+        "pkg-path": "shellcheck"
+      }
+    },
+    "profile": {
+      "common": "export PATH=\"$FLOX_ENV_PROJECT/node_modules/.bin:$PATH\"\n"
+    },
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "aarch64-linux",
+        "x86_64-linux"
+      ]
+    },
+    "services": {
+      "marketing": {
+        "command": "bun run dev:marketing"
+      },
+      "web": {
+        "command": "bun run dev"
+      }
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "actionlint",
+      "broken": false,
+      "derivation": "/nix/store/c26wsli6mlkaa9k3gn548qn736ky80ap-actionlint-1.7.12.drv",
+      "description": "Static checker for GitHub Actions workflow files",
+      "install_id": "actionlint",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "actionlint-1.7.12",
+      "pname": "actionlint",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:00:37.158739Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/r3shp5s12nk21gslkp2k7drq4n2bs1m9-actionlint-1.7.12"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "actionlint",
+      "broken": false,
+      "derivation": "/nix/store/rnbix0f1rip6cc9h99h2p6rw436y0v0x-actionlint-1.7.12.drv",
+      "description": "Static checker for GitHub Actions workflow files",
+      "install_id": "actionlint",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "actionlint-1.7.12",
+      "pname": "actionlint",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:33:53.152543Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/zcs2y541jbqr94xslvrniz5ilnppdprd-actionlint-1.7.12"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "actionlint",
+      "broken": false,
+      "derivation": "/nix/store/vjizf0dsfsrhrlnc4z7kkbskr2vbhk2w-actionlint-1.7.12.drv",
+      "description": "Static checker for GitHub Actions workflow files",
+      "install_id": "actionlint",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "actionlint-1.7.12",
+      "pname": "actionlint",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T06:11:13.818648Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.7.12",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/bwxcfsghzk4hyynxgl3lvjgmcnkc7qhf-actionlint-1.7.12"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bun",
+      "broken": false,
+      "derivation": "/nix/store/dxpkypgcjj8jm5vpv7bvi3mdg45z32s2-bun-1.4.2.drv",
+      "description": "Incredibly fast JavaScript runtime, bundler, transpiler and package manager – all in one",
+      "install_id": "bun",
+      "license": "[ MIT, LGPL-2.1-only ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "bun-1.4.2",
+      "pname": "bun",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:00:37.418593Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.4.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/r3r97834m65jnxck0556h2s1i63fmhsx-bun-1.4.2"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bun",
+      "broken": false,
+      "derivation": "/nix/store/8km5ka96w77cvdnmkcdbsx1jm5vxsyk7-bun-1.4.2.drv",
+      "description": "Incredibly fast JavaScript runtime, bundler, transpiler and package manager – all in one",
+      "install_id": "bun",
+      "license": "[ MIT, LGPL-2.1-only ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "bun-1.4.2",
+      "pname": "bun",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:33:53.498899Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.4.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/6m8rgpk9f3jfhv2sb7nvp9rjw3s26ffv-bun-1.4.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "bun",
+      "broken": false,
+      "derivation": "/nix/store/yf4ajmhr1g3x3m30vvxrhn83lbkyj987-bun-1.4.2.drv",
+      "description": "Incredibly fast JavaScript runtime, bundler, transpiler and package manager – all in one",
+      "install_id": "bun",
+      "license": "[ MIT, LGPL-2.1-only ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "bun-1.4.2",
+      "pname": "bun",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T06:11:14.176337Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.4.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/216mr46yy8xspaydgapjhf4a21y643ji-bun-1.4.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "git",
+      "broken": false,
+      "derivation": "/nix/store/fnhfn4nj9165wsjzd0yb3m552yb2572s-git-2.55.0.drv",
+      "description": "Distributed version control system",
+      "install_id": "git",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "git-2.55.0",
+      "pname": "git",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:00:38.703480Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.55.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "doc": "/nix/store/0f4p7kbl8hsdvynpk8n951bcbdx7qn3j-git-2.55.0-doc",
+        "out": "/nix/store/gw7c7m0dwca5lg4152x9lpmxpj171bzw-git-2.55.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "git",
+      "broken": false,
+      "derivation": "/nix/store/zy88qbq9f1ccrgv7sz6493zav3d6gnxg-git-2.55.0.drv",
+      "description": "Distributed version control system",
+      "install_id": "git",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "git-2.55.0",
+      "pname": "git",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:33:55.287108Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.55.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/8l21kawpzlskyby6dhkjmdyamp34irpv-git-2.55.0-debug",
+        "doc": "/nix/store/gzjmfgd110655anwlnj6qlj5ws8vacn2-git-2.55.0-doc",
+        "out": "/nix/store/kj6aff4gmz3snpp35rl3gysbl9srd81a-git-2.55.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "git",
+      "broken": false,
+      "derivation": "/nix/store/ycy1yl001pr5nmw9qwjqinaqglhzwiv9-git-2.55.0.drv",
+      "description": "Distributed version control system",
+      "install_id": "git",
+      "license": "GPL-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "git-2.55.0",
+      "pname": "git",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T06:11:16.109090Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.55.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/jfnrrjgvhv0la9dpzb1yxg8bx2gf9aii-git-2.55.0-debug",
+        "doc": "/nix/store/5f39kd6g3irac28rgk89yqwaamaj01rx-git-2.55.0-doc",
+        "out": "/nix/store/lg46w7hrjx7kylsh6645c9l975i8h43b-git-2.55.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nodejs_24",
+      "broken": false,
+      "derivation": "/nix/store/kfalw8dhzga1b294cr5zz1diwgkigrra-nodejs-24.21.0.drv",
+      "description": "Event-driven I/O framework for the V8 JavaScript engine",
+      "install_id": "nodejs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "nodejs-24.21.0",
+      "pname": "nodejs_24",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:01:03.296935Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "24.21.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/7cr3l1m9yyng2hscs8lj4x4bj0hm7908-nodejs-24.21.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nodejs_24",
+      "broken": false,
+      "derivation": "/nix/store/ij09sr7m9ngn7iafal95327svx411rjf-nodejs-24.21.0.drv",
+      "description": "Event-driven I/O framework for the V8 JavaScript engine",
+      "install_id": "nodejs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "nodejs-24.21.0",
+      "pname": "nodejs_24",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:34:32.740545Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "24.21.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/8lgcgi9riqm71v9ibjw5qjcwwr5nfm83-nodejs-24.21.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nodejs_24",
+      "broken": false,
+      "derivation": "/nix/store/m4gixiwcnhplm2mcd5nnd6i0lxncnyji-nodejs-24.21.0.drv",
+      "description": "Event-driven I/O framework for the V8 JavaScript engine",
+      "install_id": "nodejs",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "nodejs-24.21.0",
+      "pname": "nodejs_24",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T06:11:56.230424Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "24.21.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/gxq2cd70i077rah1d4hkzc1lpq8q4pv8-nodejs-24.21.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pre-commit",
+      "broken": false,
+      "derivation": "/nix/store/lgbs4xxahnhi3fpdvvl10m1lrwnsyjj3-pre-commit-4.6.2.drv",
+      "description": "Framework for managing and maintaining multi-language pre-commit hooks",
+      "install_id": "pre-commit",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "pre-commit-4.6.2",
+      "pname": "pre-commit",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:01:19.152373Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.6.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/cy39mw5fqcg8g1af3pynr3vs74wbppp1-pre-commit-4.6.2-dist",
+        "out": "/nix/store/ivh54xypg9qvd3ha9lis0i8p4nkf8n7a-pre-commit-4.6.2"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pre-commit",
+      "broken": false,
+      "derivation": "/nix/store/q67alzi8c1dkv7x0284mdq4w0glzhckc-pre-commit-4.6.2.drv",
+      "description": "Framework for managing and maintaining multi-language pre-commit hooks",
+      "install_id": "pre-commit",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "pre-commit-4.6.2",
+      "pname": "pre-commit",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:34:53.731749Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.6.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/6n4mc4limpck2s7sc5h7q7hbjic5lbgz-pre-commit-4.6.2-dist",
+        "out": "/nix/store/5f3av75nc7n7xbf2hlvlagzpp2g8g562-pre-commit-4.6.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pre-commit",
+      "broken": false,
+      "derivation": "/nix/store/z9iggl1hwvrhv47fcv5wm8fz0679ainc-pre-commit-4.6.2.drv",
+      "description": "Framework for managing and maintaining multi-language pre-commit hooks",
+      "install_id": "pre-commit",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "pre-commit-4.6.2",
+      "pname": "pre-commit",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T06:12:18.191414Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.6.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/y1lrinavf9q04vzcqr5a7zkjs4ggqdzg-pre-commit-4.6.2-dist",
+        "out": "/nix/store/6blf72f7sdmlrqjggxvk5ij4cxb7fk4c-pre-commit-4.6.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "shellcheck",
+      "broken": false,
+      "derivation": "/nix/store/kb0isxnk42ix93nha9ryfsvlwh89d6rz-shellcheck-0.11.0.drv",
+      "description": "Shell script analysis tool",
+      "install_id": "shellcheck",
+      "license": "GPL-3.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "shellcheck-0.11.0",
+      "pname": "shellcheck",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:02:35.365727Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.11.0",
+      "outputs_to_install": [
+        "bin",
+        "doc",
+        "man"
+      ],
+      "outputs": {
+        "bin": "/nix/store/mrjhkn8a9n5zivqf205ka9v22apn273c-shellcheck-0.11.0-bin",
+        "doc": "/nix/store/nhkhkr0nym99xbwc6by9r2rarglj3q6j-shellcheck-0.11.0-doc",
+        "man": "/nix/store/64c0ikg8dv26b9cfas1i2ji6g95f1wp2-shellcheck-0.11.0-man",
+        "out": "/nix/store/xbj2cn83mirgj531v1f55fgi01x3bwjy-shellcheck-0.11.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "shellcheck",
+      "broken": false,
+      "derivation": "/nix/store/vm4wwisqz7n321j0ii7i7fjfs8i7hfkz-shellcheck-0.11.0.drv",
+      "description": "Shell script analysis tool",
+      "install_id": "shellcheck",
+      "license": "GPL-3.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "shellcheck-0.11.0",
+      "pname": "shellcheck",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T05:36:28.575759Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.11.0",
+      "outputs_to_install": [
+        "bin",
+        "doc",
+        "man"
+      ],
+      "outputs": {
+        "bin": "/nix/store/c8b3c30m6pzprmfgqjapp887fmha51gw-shellcheck-0.11.0-bin",
+        "doc": "/nix/store/qvywixmq01c7i7yvf9an4qd963l59sbm-shellcheck-0.11.0-doc",
+        "man": "/nix/store/5bc3filg3jzvq64hzsc5wjidk8rjp8kx-shellcheck-0.11.0-man",
+        "out": "/nix/store/9bi96iz2qrf2cjznm9r9d0v7rbaiyrp6-shellcheck-0.11.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "shellcheck",
+      "broken": false,
+      "derivation": "/nix/store/k0xpm4jf6kvv51dp5spfib4a10drqa20-shellcheck-0.11.0.drv",
+      "description": "Shell script analysis tool",
+      "install_id": "shellcheck",
+      "license": "GPL-3.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "name": "shellcheck-0.11.0",
+      "pname": "shellcheck",
+      "rev": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
+      "rev_count": 1085777,
+      "rev_date": "2026-10-05T05:43:54Z",
+      "scrape_date": "2026-10-06T06:13:53.581328Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.11.0",
+      "outputs_to_install": [
+        "bin",
+        "doc",
+        "man"
+      ],
+      "outputs": {
+        "bin": "/nix/store/x3ssi7xb2qz6p8h4xqjg1xy0j61l998m-shellcheck-0.11.0-bin",
+        "doc": "/nix/store/d6qq2890rl3022l9l5737750qvmplcnc-shellcheck-0.11.0-doc",
+        "man": "/nix/store/ky7sala6zn1i3gny08ngzywp6bc8db50-shellcheck-0.11.0-man",
+        "out": "/nix/store/x406182bwlbfzw4qc7j3f04gg0fkcvl2-shellcheck-0.11.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}

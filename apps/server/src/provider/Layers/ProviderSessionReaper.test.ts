@@ -6,7 +6,7 @@ import {
   ThreadId,
   TurnId,
   type OrchestrationThreadShell,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect, Exit, FileSystem, Layer, Option, Scope, Stream } from "effect";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -284,15 +284,15 @@ async function assertIdleReaperPreservesResumeCursor(
   const settingsLayer = Layer.unwrap(
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
-      const root = yield* fs.makeTempDirectoryScoped({ prefix: "synara-reaper-codex-" });
+      const root = yield* fs.makeTempDirectoryScoped({ prefix: "trellis-reaper-codex-" });
       const homePath = join(root, "codex");
-      const runtimeHome = join(root, "synara");
+      const runtimeHome = join(root, "trellis");
       yield* fs.makeDirectory(homePath);
       yield* fs.writeFileString(join(homePath, "config.toml"), "");
       // Real adapters prepare this state before returning a resumable session.
       yield* Effect.promise(() =>
         buildCodexProcessEnv({
-          env: { ...process.env, SYNARA_HOME: runtimeHome },
+          env: { ...process.env, TRELLIS_HOME: runtimeHome },
           homePath,
           accountId: "default",
         }),
@@ -301,7 +301,7 @@ async function assertIdleReaperPreservesResumeCursor(
         providerInstances: {
           codex: {
             driver: "codex",
-            environment: [{ name: "SYNARA_HOME", value: runtimeHome, sensitive: false }],
+            environment: [{ name: "TRELLIS_HOME", value: runtimeHome, sensitive: false }],
             config: { homePath, accountId: "default" },
           },
         },

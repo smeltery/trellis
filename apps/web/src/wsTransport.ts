@@ -1,5 +1,5 @@
 // FILE: wsTransport.ts
-// Purpose: Browser-side Effect RPC transport over the Synara WebSocket endpoint.
+// Purpose: Browser-side Effect RPC transport over the Trellis WebSocket endpoint.
 // Layer: Web transport
 // Exports: WsTransport plus stream-selection helpers used by tests.
 
@@ -63,7 +63,7 @@ import {
   type WsPushMessage,
   TASKS_UNAVAILABLE_ERROR_CODE,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   Cause,
   Data,

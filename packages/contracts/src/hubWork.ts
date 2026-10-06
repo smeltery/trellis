@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { SynaraCreateThreadSpec } from "./agentGateway";
+import { TrellisCreateThreadSpec } from "./agentGateway";
 import {
   IsoDateTime,
   MessageId,
@@ -76,7 +76,7 @@ export const HubWorkRecord = Schema.Struct({
   scopeKey: TrimmedNonEmptyString,
   fingerprint: TrimmedNonEmptyString,
   taskIndex: NonNegativeInt,
-  creationSpec: SynaraCreateThreadSpec,
+  creationSpec: TrellisCreateThreadSpec,
   sourceMessages: Schema.Array(HubWorkSourceMessage),
   slotHeld: Schema.Boolean,
   admittedAt: Schema.NullOr(IsoDateTime),

@@ -10,7 +10,7 @@ import {
   ProjectId,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import { Effect, FileSystem, Layer, Option, Path, Stream } from "effect";
@@ -126,7 +126,7 @@ const exists = (filePath: string) =>
     return fileInfo._tag === "Success";
   });
 
-const BaseTestLayer = makeProjectionPipelinePrefixedTestLayer("synara-projection-pipeline-test-");
+const BaseTestLayer = makeProjectionPipelinePrefixedTestLayer("trellis-projection-pipeline-test-");
 
 it.layer(BaseTestLayer)("OrchestrationProjectionPipeline", (it) => {
   it.effect("bootstraps all projection states and writes projection rows", () =>
@@ -1110,7 +1110,7 @@ it.layer(BaseTestLayer)("OrchestrationProjectionPipeline", (it) => {
   );
 });
 
-it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-message-identity-scope-")))(
+it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-message-identity-scope-")))(
   "OrchestrationProjectionPipeline",
   (it) => {
     it.effect("keeps reused provider message ids thread-scoped through replay", () =>
@@ -1259,7 +1259,7 @@ it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-message-ide
   },
 );
 
-it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-text-segment-scope-")))(
+it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-text-segment-scope-")))(
   "OrchestrationProjectionPipeline",
   (it) => {
     it.effect(
@@ -1439,7 +1439,7 @@ it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-text-segmen
   },
 );
 
-it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-approval-identity-scope-")))(
+it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-approval-identity-scope-")))(
   "OrchestrationProjectionPipeline",
   (it) => {
     it.effect("keeps reused provider request ids thread-scoped through replay", () =>
@@ -1822,7 +1822,7 @@ it.effect("restores a sessionless imported thread's routed model selection after
     Effect.provide(
       Layer.provideMerge(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-projection-sessionless-import-restart-",
+          prefix: "trellis-projection-sessionless-import-restart-",
         }),
         NodeServices.layer,
       ),
@@ -1966,7 +1966,7 @@ it.effect("fast-forwards lagging hot projector cursors before restart replay", (
     Effect.provide(
       Layer.provideMerge(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-projection-pipeline-fast-forward-",
+          prefix: "trellis-projection-pipeline-fast-forward-",
         }),
         NodeServices.layer,
       ),
@@ -2118,7 +2118,7 @@ it.effect("rebuilds a deleted hot cursor and advances a stalled projector on boo
     Effect.provide(
       Layer.provideMerge(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-projection-pipeline-hot-cursor-repair-",
+          prefix: "trellis-projection-pipeline-hot-cursor-repair-",
         }),
         NodeServices.layer,
       ),
@@ -2254,7 +2254,7 @@ it.effect("replays a backlog larger than one commit batch without losing rows or
     Effect.provide(
       Layer.provideMerge(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-projection-pipeline-batched-replay-",
+          prefix: "trellis-projection-pipeline-batched-replay-",
         }),
         NodeServices.layer,
       ),
@@ -2410,7 +2410,7 @@ it.effect("drains 2,501 file-backed events to a captured high-water fence", () =
     Effect.provide(
       Layer.provideMerge(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-projection-pipeline-paged-",
+          prefix: "trellis-projection-pipeline-paged-",
         }),
         NodeServices.layer,
       ),
@@ -2419,7 +2419,7 @@ it.effect("drains 2,501 file-backed events to a captured high-water fence", () =
 );
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-pipeline-approvals-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-pipeline-approvals-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("refreshes stored thread approval summary after approval-response-requested", () =>
     Effect.gen(function* () {
@@ -3118,7 +3118,7 @@ it.layer(
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-attachments-safe-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-attachments-safe-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("preserves mixed image attachment metadata as-is", () =>
     Effect.gen(function* () {
@@ -3325,7 +3325,7 @@ it.layer(BaseTestLayer)("OrchestrationProjectionPipeline", (it) => {
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-attachments-overwrite-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-attachments-overwrite-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("overwrites stored attachment references when a message updates attachments", () =>
     Effect.gen(function* () {
@@ -3468,7 +3468,7 @@ it.layer(
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-attachments-rollback-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-attachments-rollback-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("does not persist attachment files when projector transaction rolls back", () =>
     Effect.gen(function* () {
@@ -3895,7 +3895,7 @@ it.layer(
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-attachments-overwrite-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-attachments-overwrite-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("prunes legacy and managed attachments through their existing authorities", () =>
     Effect.gen(function* () {
@@ -4239,7 +4239,7 @@ it.layer(
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-attachments-revert-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-attachments-revert-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("removes thread attachment directory when thread is deleted", () =>
     Effect.gen(function* () {
@@ -4365,7 +4365,7 @@ it.layer(
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-attachments-delete-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-attachments-delete-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("ignores unsafe thread ids for attachment cleanup paths", () =>
     Effect.gen(function* () {
@@ -5022,7 +5022,7 @@ it.effect("restores pending turn-start metadata across projection pipeline resta
     Effect.provide(
       Layer.provideMerge(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-projection-pipeline-restart-",
+          prefix: "trellis-projection-pipeline-restart-",
         }),
         NodeServices.layer,
       ),
@@ -5039,7 +5039,7 @@ const engineLayer = it.layer(
     Layer.provideMerge(SqlitePersistenceMemory),
     Layer.provideMerge(
       ServerConfig.layerTest(process.cwd(), {
-        prefix: "synara-projection-pipeline-engine-dispatch-",
+        prefix: "trellis-projection-pipeline-engine-dispatch-",
       }),
     ),
     Layer.provideMerge(ServerSettingsService.layerTest()),
@@ -5267,7 +5267,7 @@ engineLayer("OrchestrationProjectionPipeline via engine dispatch", (it) => {
 });
 
 it.layer(
-  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-projection-pipeline-turn-finish-")),
+  Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-projection-pipeline-turn-finish-")),
 )("OrchestrationProjectionPipeline", (it) => {
   it.effect("keeps assistant message completions from settling a running turn early", () =>
     Effect.gen(function* () {
@@ -5820,7 +5820,7 @@ it.layer(
   );
 });
 
-it.layer(makeProjectionPipelinePrefixedTestLayer("synara-projection-pipeline-deferred-"))(
+it.layer(makeProjectionPipelinePrefixedTestLayer("trellis-projection-pipeline-deferred-"))(
   "OrchestrationProjectionPipeline deferred cursor",
   (it) => {
     it.effect(
@@ -5911,7 +5911,7 @@ it.layer(makeProjectionPipelinePrefixedTestLayer("synara-projection-pipeline-def
   },
 );
 
-it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("synara-human-recency-test-")))(
+it.layer(Layer.fresh(makeProjectionPipelinePrefixedTestLayer("trellis-human-recency-test-")))(
   "human message recency",
   (it) => {
     it.effect(

@@ -9,8 +9,8 @@ import type {
   ThreadId,
   ThreadSidechatContext,
   TurnId,
-} from "@synara/contracts";
-import { resolveThreadWorkspaceCwd } from "@synara/shared/threadEnvironment";
+} from "@trellis/contracts";
+import { resolveThreadWorkspaceCwd } from "@trellis/shared/threadEnvironment";
 
 import type { ChatRightPanel, DiffRouteSearch } from "../diffRouteSearch";
 

@@ -1,4 +1,4 @@
-import { ProjectId, ThreadId } from "@synara/contracts";
+import { ProjectId, ThreadId } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_INTERACTION_MODE, DEFAULT_RUNTIME_MODE, type Thread } from "./types";
@@ -86,16 +86,16 @@ describe("getOrphanedWorktreePathForThread", () => {
 describe("formatWorktreePathForDisplay", () => {
   it("shows only the last path segment for unix-like paths", () => {
     const result = formatWorktreePathForDisplay(
-      "/Users/julius/.synara/worktrees/synara-mvp/synara-4e609bb8",
+      "/Users/julius/.trellis/worktrees/trellis-mvp/trellis-4e609bb8",
     );
-    expect(result).toBe("synara-4e609bb8");
+    expect(result).toBe("trellis-4e609bb8");
   });
 
   it("normalizes windows separators before selecting the final segment", () => {
     const result = formatWorktreePathForDisplay(
-      "C:\\Users\\julius\\.synara\\worktrees\\synara-mvp\\synara-4e609bb8",
+      "C:\\Users\\julius\\.trellis\\worktrees\\trellis-mvp\\trellis-4e609bb8",
     );
-    expect(result).toBe("synara-4e609bb8");
+    expect(result).toBe("trellis-4e609bb8");
   });
 
   it("ignores trailing slashes", () => {

@@ -2,7 +2,7 @@ import { type LegendListRef } from "@legendapp/list/react";
 import {
   parseComputerInvocation,
   resolveComputerInvocationMode,
-} from "@synara/shared/computerInvocation";
+} from "@trellis/shared/computerInvocation";
 import {
   MessageId,
   OrchestrationThreadActivity,
@@ -23,17 +23,17 @@ import {
   type ServerProviderStatus,
   type ThreadGoalAchievement,
   type TurnId,
-} from "@synara/contracts";
-import { resolveLatestTailUserMessageEditTarget } from "@synara/shared/conversationEdit";
-import { getModelCapabilities } from "@synara/shared/model";
+} from "@trellis/contracts";
+import { resolveLatestTailUserMessageEditTarget } from "@trellis/shared/conversationEdit";
+import { getModelCapabilities } from "@trellis/shared/model";
 import {
   resolveThreadWorkspaceCwd as resolveSharedThreadWorkspaceCwd,
   resolveThreadBranchSourceCwd,
   resolveThreadWorkspaceState,
-} from "@synara/shared/threadEnvironment";
-import { threadExportBlockedReason } from "@synara/shared/threadExport";
-import { pendingRequestInstanceKey } from "@synara/shared/threadSummary";
-import { deriveAssociatedWorktreeMetadata } from "@synara/shared/threadWorkspace";
+} from "@trellis/shared/threadEnvironment";
+import { threadExportBlockedReason } from "@trellis/shared/threadExport";
+import { pendingRequestInstanceKey } from "@trellis/shared/threadSummary";
+import { deriveAssociatedWorktreeMetadata } from "@trellis/shared/threadWorkspace";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -275,7 +275,7 @@ import { PullRequestThreadDialog } from "./PullRequestThreadDialog";
 import { RenameThreadDialog } from "./RenameThreadDialog";
 import { hasUnseenSnoozeReturn } from "./Sidebar.logic";
 import { SidebarHeaderNavigationControls } from "./SidebarHeaderNavigationControls";
-import { SynaraLogo } from "./SynaraLogo";
+import { TrellisLogo } from "./TrellisLogo";
 import { ProjectImportLandingBanner } from "~/projectImport/ProjectImportLandingBanner";
 import TerminalWorkspaceTabs from "./TerminalWorkspaceTabs";
 import { ThreadWorktreeHandoffDialog } from "./ThreadWorktreeHandoffDialog";
@@ -447,7 +447,7 @@ import { Button } from "./ui/button";
 import { SidebarHeaderTrigger } from "./ui/sidebar";
 import { Skeleton } from "./ui/skeleton";
 import { toastManager } from "./ui/toast";
-import { isSidechatThread, isStandaloneSidechatThread } from "@synara/shared/sidechatThread";
+import { isSidechatThread, isStandaloneSidechatThread } from "@trellis/shared/sidechatThread";
 
 // The terminal panel loads xterm plus its addons (~223 KB gzip). Its mount point
 // is conditional, so loading it lazily keeps the terminal stack out of the initial
@@ -573,7 +573,7 @@ interface ChatViewProps {
 
 // Builds an ephemeral transcript bubble for the conversational automation-setup
 // exchange. These never reach a provider and are not persisted; they render the
-// back-and-forth (user request, Synara's clarifying questions) inline like Codex.
+// back-and-forth (user request, Trellis's clarifying questions) inline like Codex.
 
 export default function ChatView({
   threadId,
@@ -2716,7 +2716,7 @@ export default function ChatView({
   const focusComposer = useCallback(() => {
     // A disabled editor (dispatch connecting, pending approval) cannot
     // take focus either. Never ask the renderer to focus while another app owns
-    // the desktop; on macOS that can activate Synara and switch Spaces.
+    // the desktop; on macOS that can activate Trellis and switch Spaces.
     const editor = composerEditorRef.current;
     if (
       !editor ||
@@ -6395,7 +6395,7 @@ export default function ChatView({
                       CHAT_COLUMN_FRAME_CLASS_NAME,
                     )}
                   >
-                    <SynaraLogo aria-label="Synara logo" className="size-10" />
+                    <TrellisLogo aria-label="Trellis logo" className="size-10" />
                     <h2
                       data-testid="empty-landing-heading"
                       className="text-[26px] font-normal leading-[1.15] tracking-[-0.015em] text-foreground/95 sm:text-[30px]"

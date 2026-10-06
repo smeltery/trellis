@@ -72,20 +72,20 @@ describe("claudeProcessEnv", () => {
     assert.equal(result.ANTHROPIC_API_KEY, "api-key-auth");
   });
 
-  it("does not grant Synara control-plane authority to Claude", () => {
+  it("does not grant Trellis control-plane authority to Claude", () => {
     const result = buildClaudeProcessEnv({
       env: {
         ANTHROPIC_API_KEY: "api-key-auth",
-        SYNARA_AUTH_TOKEN: "server-secret",
-        SYNARA_BROWSER_USE_PIPE_PATH: "/tmp/browser.sock",
+        TRELLIS_AUTH_TOKEN: "server-secret",
+        TRELLIS_BROWSER_USE_PIPE_PATH: "/tmp/browser.sock",
         NODE_OPTIONS: "--require=/tmp/inject.js",
       },
       hasClaudeCliCredentials: false,
     });
 
     assert.equal(result.ANTHROPIC_API_KEY, "api-key-auth");
-    assert.equal(result.SYNARA_AUTH_TOKEN, undefined);
-    assert.equal(result.SYNARA_BROWSER_USE_PIPE_PATH, undefined);
+    assert.equal(result.TRELLIS_AUTH_TOKEN, undefined);
+    assert.equal(result.TRELLIS_BROWSER_USE_PIPE_PATH, undefined);
     assert.equal(result.NODE_OPTIONS, undefined);
   });
 
@@ -141,14 +141,14 @@ describe("claudeProcessEnv", () => {
         buildClaudeInstanceProcessEnv(
           undefined,
           { ANTHROPIC_AUTH_TOKEN: "instance-token" },
-          { isolationRootDir: "/synara/state", providerInstanceId: "claude_work" },
+          { isolationRootDir: "/trellis/state", providerInstanceId: "claude_work" },
         ),
     );
 
     assert.equal(
       result.HOME,
       claudeIsolatedHomePath({
-        isolationRootDir: "/synara/state",
+        isolationRootDir: "/trellis/state",
         providerInstanceId: "claude_work",
       }),
     );
@@ -195,7 +195,7 @@ describe("claudeProcessEnv", () => {
   });
 
   it("keeps empty and redacted custom instances on distinct isolated homes", () => {
-    const isolationRootDir = "/synara/state";
+    const isolationRootDir = "/trellis/state";
     const redactedA = buildClaudeInstanceProcessEnv(undefined, undefined, {
       homeDir: "/home/server",
       isolationRootDir,
@@ -226,8 +226,8 @@ describe("claudeProcessEnv", () => {
     }
   });
 
-  it("contains encoded provider instance ids within the Synara isolation root", () => {
-    const isolationRootDir = "/synara/state";
+  it("contains encoded provider instance ids within the Trellis isolation root", () => {
+    const isolationRootDir = "/trellis/state";
     const isolatedHome = claudeIsolatedHomePath({
       isolationRootDir,
       providerInstanceId: "../../outside/account",
@@ -240,7 +240,7 @@ describe("claudeProcessEnv", () => {
   });
 
   it("keeps mixed-case instance ids distinct on case-insensitive filesystems", () => {
-    const isolationRootDir = "/synara/state";
+    const isolationRootDir = "/trellis/state";
     const upperHome = claudeIsolatedHomePath({ isolationRootDir, providerInstanceId: "AAG" });
     const lowerHome = claudeIsolatedHomePath({ isolationRootDir, providerInstanceId: "AAa" });
 
@@ -250,7 +250,7 @@ describe("claudeProcessEnv", () => {
   it("preserves the default instance home unless it configures an environment", () => {
     const defaultResult = buildClaudeInstanceProcessEnv(undefined, undefined, {
       homeDir: "/home/server",
-      isolationRootDir: "/synara/state",
+      isolationRootDir: "/trellis/state",
       providerInstanceId: "claudeAgent",
     });
     const configuredResult = buildClaudeInstanceProcessEnv(
@@ -258,7 +258,7 @@ describe("claudeProcessEnv", () => {
       { ANTHROPIC_AUTH_TOKEN: "default-instance-token" },
       {
         homeDir: "/home/server",
-        isolationRootDir: "/synara/state",
+        isolationRootDir: "/trellis/state",
         providerInstanceId: "claudeAgent",
       },
     );
@@ -267,7 +267,7 @@ describe("claudeProcessEnv", () => {
     assert.equal(
       configuredResult.HOME,
       claudeIsolatedHomePath({
-        isolationRootDir: "/synara/state",
+        isolationRootDir: "/trellis/state",
         providerInstanceId: "claudeAgent",
       }),
     );
@@ -283,7 +283,7 @@ describe("claudeProcessEnv", () => {
       },
       {
         homeDir: "C:\\Users\\server",
-        isolationRootDir: "C:\\Synara\\userdata",
+        isolationRootDir: "C:\\Trellis\\userdata",
         providerInstanceId: "claude_work",
         platform: "win32",
       },
@@ -301,7 +301,7 @@ describe("claudeProcessEnv", () => {
       { Provider_Test_Instance: "work" },
       {
         homeDir: "C:\\Users\\server",
-        isolationRootDir: "C:\\Synara\\userdata",
+        isolationRootDir: "C:\\Trellis\\userdata",
         providerInstanceId: "claude_work",
         platform: "win32",
         baseEnvironment: {
@@ -341,7 +341,7 @@ describe("claudeProcessEnv", () => {
   });
 
   it("canonicalizes selected mixed-case Windows overrides with deterministic last wins", () => {
-    const root = mkdtempSync(path.join(tmpdir(), "synara-claude-windows-env-case-"));
+    const root = mkdtempSync(path.join(tmpdir(), "trellis-claude-windows-env-case-"));
     const selectedConfigDir = path.join(root, "selected-config");
     try {
       mkdirSync(selectedConfigDir, { recursive: true });
@@ -365,7 +365,7 @@ describe("claudeProcessEnv", () => {
           Aws_Profile: "selected-aws-profile",
         },
         {
-          isolationRootDir: "C:\\Synara\\userdata",
+          isolationRootDir: "C:\\Trellis\\userdata",
           providerInstanceId: "claude_work",
           platform: "win32",
           baseEnvironment: {
@@ -414,7 +414,7 @@ describe("claudeProcessEnv", () => {
       },
       {
         homeDir: "/home/server",
-        isolationRootDir: "/synara/state",
+        isolationRootDir: "/trellis/state",
         providerInstanceId: "claude_work",
         platform: "linux",
         baseEnvironment: {
@@ -430,7 +430,7 @@ describe("claudeProcessEnv", () => {
     assert.equal(
       result.HOME,
       claudeIsolatedHomePath({
-        isolationRootDir: "/synara/state",
+        isolationRootDir: "/trellis/state",
         providerInstanceId: "claude_work",
       }),
     );
@@ -505,7 +505,7 @@ describe("claudeProcessEnv", () => {
   });
 
   it("checks credentials under the final instance environment HOME", () => {
-    const root = mkdtempSync(path.join(tmpdir(), "synara-claude-effective-home-"));
+    const root = mkdtempSync(path.join(tmpdir(), "trellis-claude-effective-home-"));
     const instanceHome = path.join(root, "account-b");
     try {
       mkdirSync(path.join(instanceHome, ".claude"), { recursive: true });

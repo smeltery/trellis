@@ -1,6 +1,6 @@
 import { assert, describe, it } from "@effect/vitest";
 import { basename } from "node:path";
-import { SYNARA_PACKAGED_DESKTOP_FLAVORS } from "@synara/shared/desktopIdentity";
+import { TRELLIS_PACKAGED_DESKTOP_FLAVORS } from "@trellis/shared/desktopIdentity";
 import { desktopIconAssetPaths } from "./lib/brand-assets.ts";
 
 import {
@@ -24,7 +24,7 @@ import {
 
 describe("createDesktopPlatformBuildConfig", () => {
   it("names every packaged Icon Composer asset for CFBundleIconName", () => {
-    for (const flavor of SYNARA_PACKAGED_DESKTOP_FLAVORS) {
+    for (const flavor of TRELLIS_PACKAGED_DESKTOP_FLAVORS) {
       assert.equal(
         basename(desktopIconAssetPaths(flavor).macIconComposer, ".icon"),
         MAC_ICON_ASSET_NAME,
@@ -53,19 +53,19 @@ describe("createDesktopPlatformBuildConfig", () => {
     assert.equal(dmg.writeUpdateInfo, false);
     assert.equal(mac.entitlements, MAC_ENTITLEMENTS_PATH);
     assert.equal(mac.entitlementsInherit, MAC_INHERITED_ENTITLEMENTS_PATH);
-    assert.equal(MAC_APPSNAP_HELPER_BUNDLE_PATH, "Contents/Helpers/synara-appsnap-helper");
+    assert.equal(MAC_APPSNAP_HELPER_BUNDLE_PATH, "Contents/Helpers/trellis-appsnap-helper");
     assert.deepStrictEqual(mac.binaries, [
-      "Contents/Helpers/synara-appsnap-helper",
-      "Contents/Frameworks/synara-window-material.node",
+      "Contents/Helpers/trellis-appsnap-helper",
+      "Contents/Frameworks/trellis-window-material.node",
       "Contents/Resources/cua-driver/cua-driver",
     ]);
     assert.equal(
       mac.x64ArchFiles,
-      "Contents/{Helpers/synara-appsnap-helper,Frameworks/synara-window-material.node,Resources/cua-driver/cua-driver}",
+      "Contents/{Helpers/trellis-appsnap-helper,Frameworks/trellis-window-material.node,Resources/cua-driver/cua-driver}",
     );
     assert.equal(
       MAC_APPSNAP_HELPER_STAGE_PATH,
-      "apps/desktop/native/appsnap/build/synara-appsnap-helper",
+      "apps/desktop/native/appsnap/build/trellis-appsnap-helper",
     );
     assert.equal(MAC_APPSNAP_HELPER_ASAR_EXCLUSION, "!apps/desktop/native/appsnap/build/**");
     assert.equal(config.files?.[0], "**/*");
@@ -78,12 +78,12 @@ describe("createDesktopPlatformBuildConfig", () => {
         to: "Resources/cua-driver",
       },
       {
-        from: "apps/desktop/native/appsnap/build/synara-appsnap-helper",
-        to: "Helpers/synara-appsnap-helper",
+        from: "apps/desktop/native/appsnap/build/trellis-appsnap-helper",
+        to: "Helpers/trellis-appsnap-helper",
       },
       {
-        from: "apps/desktop/native/window-material/build/synara-window-material.node",
-        to: "Frameworks/synara-window-material.node",
+        from: "apps/desktop/native/window-material/build/trellis-window-material.node",
+        to: "Frameworks/trellis-window-material.node",
       },
       {
         from: MAC_DEVICE_HELPER_STAGE_PATH,
@@ -103,11 +103,11 @@ describe("createDesktopPlatformBuildConfig", () => {
     assert.equal(extendInfo.NSAudioCaptureUsageDescription, AUDIO_CAPTURE_USAGE_DESCRIPTION);
     assert.equal(
       extendInfo.NSScreenCaptureUsageDescription,
-      "Synara captures the windows you authorize for Computer use.",
+      "Trellis captures the windows you authorize for Computer use.",
     );
     assert.equal(
       extendInfo.NSAccessibilityUsageDescription,
-      "Synara controls the windows you authorize for Computer use.",
+      "Trellis controls the windows you authorize for Computer use.",
     );
   });
 
@@ -172,7 +172,7 @@ describe("createDesktopPlatformBuildConfig", () => {
     const win = createDesktopPlatformBuildConfig({
       platform: "win",
       target: "nsis",
-      windowsAzureSignOptions: { publisherName: "Synara" },
+      windowsAzureSignOptions: { publisherName: "Trellis" },
     });
 
     assert.equal(linux.mac, undefined);
@@ -185,12 +185,12 @@ describe("createDesktopPlatformBuildConfig", () => {
     assert.deepStrictEqual(linux.asarUnpack, ["node_modules/node-pty/**"]);
     assert.deepStrictEqual(linux.linux, {
       target: ["AppImage"],
-      executableName: "synara",
+      executableName: "trellis",
       icon: "icon.png",
       category: "Development",
       desktop: {
         entry: {
-          StartupWMClass: "synara",
+          StartupWMClass: "trellis",
         },
       },
     });
@@ -199,15 +199,15 @@ describe("createDesktopPlatformBuildConfig", () => {
     assert.equal(win.extraFiles, undefined);
     assert.equal(win.extraResources, undefined);
     assert.deepStrictEqual(win.asarUnpack, ["node_modules/node-pty/**"]);
-    assert.equal(WINDOWS_INSTALLER_GUID, "368107a8-afe6-5db5-ab3b-d4f331684868");
+    assert.equal(WINDOWS_INSTALLER_GUID, "39aa43dd-7bd1-4c20-8ad7-90b7203b7748");
     assert.deepStrictEqual(win.nsis, {
       guid: WINDOWS_INSTALLER_GUID,
     });
     assert.deepStrictEqual(win.win, {
       target: ["nsis"],
       icon: "icon.ico",
-      publisherName: "Synara",
-      azureSignOptions: { publisherName: "Synara" },
+      publisherName: "Trellis",
+      azureSignOptions: { publisherName: "Trellis" },
     });
   });
 

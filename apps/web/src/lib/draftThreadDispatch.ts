@@ -16,8 +16,8 @@ import type {
   ThreadEnvironmentMode,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
-import { PROVIDER_SEND_TURN_MAX_ATTACHMENTS } from "@synara/contracts";
+} from "@trellis/contracts";
+import { PROVIDER_SEND_TURN_MAX_ATTACHMENTS } from "@trellis/contracts";
 import type { ComposerFileAttachment } from "../composerDraftDomain";
 import { revokeObjectPreviewUrl } from "../composerDraftAttachments";
 import { hasActiveComposerSend } from "./composerSendOwnership";
@@ -27,8 +27,8 @@ import {
   filterPastedTextsWithText,
   pastedTextTitle,
 } from "./composerPastedText";
-import { buildPromptThreadTitleFallback } from "@synara/shared/chatThreads";
-import { isPendingThreadWorktree } from "@synara/shared/threadEnvironment";
+import { buildPromptThreadTitleFallback } from "@trellis/shared/chatThreads";
+import { isPendingThreadWorktree } from "@trellis/shared/threadEnvironment";
 import type { ProviderInstanceOption } from "../appSettings";
 import { composerDraftHasAttachments, composerDraftsMatchForCleanup } from "../composerDraftDomain";
 import {
@@ -178,7 +178,7 @@ function buildDraftPromptFileAttachment(input: {
   if (input.existingAttachmentCount >= PROVIDER_SEND_TURN_MAX_ATTACHMENTS) {
     return null;
   }
-  const name = `synara-prompt-${input.messageId}.md`;
+  const name = `trellis-prompt-${input.messageId}.md`;
   const file = new File([input.text], name, { type: "text/markdown" });
   return {
     attachment: {

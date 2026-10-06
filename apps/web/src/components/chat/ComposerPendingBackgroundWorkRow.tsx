@@ -4,7 +4,7 @@
 // Layer: Chat composer UI
 // Exports: ComposerPendingBackgroundWorkRow
 
-import { pluralize } from "@synara/shared/text";
+import { pluralize } from "@trellis/shared/text";
 
 import { BotIcon } from "~/lib/icons";
 import { ComposerStackedPanel } from "./ComposerStackedPanel";

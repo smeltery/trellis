@@ -8,7 +8,7 @@
 //          from the Environment panel preference.
 // Layer: Chat UI hook
 
-import type { ProjectId } from "@synara/contracts";
+import type { ProjectId } from "@trellis/contracts";
 import { useCallback, useState } from "react";
 
 import { useGroupPanelClosedStore } from "~/groupPanelClosedStore";

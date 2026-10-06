@@ -3,9 +3,9 @@
 // Layer: Provider/terminal runtime boundary
 
 import path from "node:path";
-import type { ServerSettings, ServerSettingsPatch } from "@synara/contracts";
-import { PROVIDER_AUTHENTICATION } from "@synara/shared/providerCliProfiles";
-import { deriveProviderInstances } from "@synara/shared/providerInstances";
+import type { ServerSettings, ServerSettingsPatch } from "@trellis/contracts";
+import { PROVIDER_AUTHENTICATION } from "@trellis/shared/providerCliProfiles";
+import { deriveProviderInstances } from "@trellis/shared/providerInstances";
 import {
   buildProviderChildEnvironment,
   providerCredentialKeysFor,

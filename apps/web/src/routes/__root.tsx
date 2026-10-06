@@ -10,10 +10,10 @@ import {
   type ServerProviderStatus,
   type ServerSettingsView,
   type WsCompatibilityError,
-} from "@synara/contracts";
-import { defaultTerminalTitleForCliKind } from "@synara/shared/terminalThreads";
+} from "@trellis/contracts";
+import { defaultTerminalTitleForCliKind } from "@trellis/shared/terminalThreads";
 import { BrowserVaultDialog } from "~/components/BrowserVault";
-import { isThreadDetailEventFor } from "@synara/shared/threadDetailEvents";
+import { isThreadDetailEventFor } from "@trellis/shared/threadDetailEvents";
 import {
   Outlet,
   createRootRouteWithContext,
@@ -189,7 +189,7 @@ import {
   shouldInvalidateProviderQueriesForEvent,
 } from "./-rootEventInvalidation";
 import { createDesktopProjectRecoveryAttemptGate } from "./-desktopProjectRecoveryAttempt";
-import { isSidechatThread } from "@synara/shared/sidechatThread";
+import { isSidechatThread } from "@trellis/shared/sidechatThread";
 
 const SHELL_SNAPSHOT_BOOTSTRAP_FALLBACK_DELAY_MS = 1_500;
 const THREAD_DETAIL_CATCHUP_INTERVAL_MS = 1_500;
@@ -375,16 +375,16 @@ function RootRouteView() {
 function TransportCompatibilityView({ issue }: { issue: WsCompatibilityError }) {
   const title =
     issue.action === "update-client"
-      ? "This Synara client needs an update."
+      ? "This Trellis client needs an update."
       : issue.action === "update-server"
-        ? "The Synara server needs an update."
-        : "Synara needs to reconnect with a matching build.";
+        ? "The Trellis server needs an update."
+        : "Trellis needs to reconnect with a matching build.";
   const guidance =
     issue.action === "update-client"
       ? "Update or reload this client, then reconnect."
       : issue.action === "update-server"
         ? "Update or restart the server, then reload this client."
-        : "Reload the app. If this repeats, restart Synara so the client and server use matching builds.";
+        : "Reload the app. If this repeats, restart Trellis so the client and server use matching builds.";
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10 text-foreground sm:px-6">
@@ -579,7 +579,7 @@ async function runProviderUpdateAll(params: {
         if (!isProviderKind(driver)) {
           failures.push({
             provider,
-            reason: "This provider driver cannot be updated by this Synara build.",
+            reason: "This provider driver cannot be updated by this Trellis build.",
           });
           continue;
         }

@@ -1,4 +1,4 @@
-import type { ProjectId } from "@synara/contracts";
+import type { ProjectId } from "@trellis/contracts";
 import type { AgentGatewayOperationRepositoryShape } from "./Services/AgentGatewayOperationRepository";
 import type { ProjectionThreadMessageRepositoryShape } from "../persistence/Services/ProjectionThreadMessages";
 import type { ProjectionTurnRepositoryShape } from "../persistence/Services/ProjectionTurns";
@@ -8,8 +8,8 @@ import {
   TurnId,
   hubWorkItem,
   type HubWorkRecord,
-  type SynaraCreateThreadsInput,
-} from "@synara/contracts";
+  type TrellisCreateThreadsInput,
+} from "@trellis/contracts";
 import { Effect, Option, Schema } from "effect";
 
 import type { OrchestrationCommandReceiptRepositoryShape } from "../persistence/Services/OrchestrationCommandReceipts";
@@ -74,7 +74,7 @@ export function makeHubWorkGateway(dependencies: {
     Effect.gen(function* () {
       if (!isServerGroupsEnabled())
         return yield* Effect.fail(
-          new GatewayToolError("capability_denied", "Hubs are available in Synara Beta."),
+          new GatewayToolError("capability_denied", "Hubs are available in Trellis Beta."),
         );
       const config = yield* projectAgentRepository.getConfig(record.projectId);
       const current = yield* repository.get(record.id);
@@ -209,7 +209,7 @@ export function makeHubWorkGateway(dependencies: {
     }
   });
 
-  const submit = (input: SynaraCreateThreadsInput, context: ToolContext) =>
+  const submit = (input: TrellisCreateThreadsInput, context: ToolContext) =>
     Effect.gen(function* () {
       if (!isServerGroupsEnabled()) return null;
       const principal = yield* principalFor(context);
@@ -280,7 +280,7 @@ export function makeHubWorkGateway(dependencies: {
     {
       requiredCapability: "thread:read",
       definition: {
-        name: "synara_hub_list_work",
+        name: "trellis_hub_list_work",
         description:
           "Read durable Hub task cards, queue state and progress revisions for your Hub.",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
@@ -300,7 +300,7 @@ export function makeHubWorkGateway(dependencies: {
       requiredCapability: "thread:write",
       requiresActiveTurn: true,
       definition: {
-        name: "synara_hub_update_progress",
+        name: "trellis_hub_update_progress",
         description:
           "Persist your own Hub task checklist. Pass the last progress revision (0 initially). Checklist completion does not finish the task or release its worker slot.",
         inputSchema: {
@@ -350,7 +350,7 @@ export function makeHubWorkGateway(dependencies: {
       requiredCapability: "thread:write",
       requiresActiveTurn: true,
       definition: {
-        name: "synara_hub_cancel_work",
+        name: "trellis_hub_cancel_work",
         description:
           "Cancel queued or idle Hub work. Stop active workers using the existing interrupt tool before cancelling.",
         inputSchema: {

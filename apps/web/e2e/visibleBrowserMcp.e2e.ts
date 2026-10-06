@@ -12,7 +12,7 @@ import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BROWSER_TOOL_NAMES, type ThreadBrowserState, type ThreadId } from "@synara/contracts";
+import { BROWSER_TOOL_NAMES, type ThreadBrowserState, type ThreadId } from "@trellis/contracts";
 import type { WebContents } from "electron";
 import { _electron as electron, expect, test, type ElectronApplication } from "playwright/test";
 import type { DesktopBrowserManager } from "../../desktop/src/browserManager";
@@ -55,10 +55,10 @@ async function closeElectronApplication(application: ElectronApplication): Promi
 }
 
 async function launchVisibleBrowserFixture() {
-  const mainPath = process.env.SYNARA_E2E_ELECTRON_MAIN;
+  const mainPath = process.env.TRELLIS_E2E_ELECTRON_MAIN;
   if (!mainPath) throw new Error("Electron E2E main bundle was not prepared.");
   const site = await startVisibleBrowserFixtureSite();
-  const home = mkdtempSync(join(process.platform === "darwin" ? "/tmp" : tmpdir(), "synara-mcp-"));
+  const home = mkdtempSync(join(process.platform === "darwin" ? "/tmp" : tmpdir(), "trellis-mcp-"));
   const workspaceRoot = join(home, "workspace");
   mkdirSync(workspaceRoot);
   const pipePath = join(home, "browser-host.sock");
@@ -74,11 +74,11 @@ async function launchVisibleBrowserFixture() {
       env: {
         ...process.env,
         HOME: home,
-        SYNARA_HOME: home,
-        SYNARA_BROWSER_HOST_PIPE_PATH: pipePath,
-        SYNARA_BROWSER_HOST_CAPABILITY: capability,
-        SYNARA_E2E_SHELL_PATH: shellPath,
-        SYNARA_E2E_THREAD_ID: threadId,
+        TRELLIS_HOME: home,
+        TRELLIS_BROWSER_HOST_PIPE_PATH: pipePath,
+        TRELLIS_BROWSER_HOST_CAPABILITY: capability,
+        TRELLIS_E2E_SHELL_PATH: shellPath,
+        TRELLIS_E2E_THREAD_ID: threadId,
       },
     })
     .catch(async (error: unknown) => {
@@ -121,13 +121,13 @@ test("production MCP controls one persistent Electron page across visibility cha
         (_electron, input) => {
           const state = (
             globalThis as typeof globalThis & {
-              __synaraVisibleBrowserE2E: {
+              __trellisVisibleBrowserE2E: {
                 browserManager: {
                   runtimes: Map<string, { webContents: { id: number; getURL(): string } }>;
                 };
               };
             }
-          ).__synaraVisibleBrowserE2E;
+          ).__trellisVisibleBrowserE2E;
           const runtime = state.browserManager.runtimes.get(`${input.threadId}:${input.tabId}`);
           if (!runtime) throw new Error("Expected the native browser runtime to be live.");
           return { id: runtime.webContents.id, url: runtime.webContents.getURL() };
@@ -139,7 +139,7 @@ test("production MCP controls one persistent Electron page across visibility cha
         (_electron, input) => {
           const state = (
             globalThis as typeof globalThis & {
-              __synaraVisibleBrowserE2E: {
+              __trellisVisibleBrowserE2E: {
                 browserManager: {
                   runtimes: Map<
                     string,
@@ -148,7 +148,7 @@ test("production MCP controls one persistent Electron page across visibility cha
                 };
               };
             }
-          ).__synaraVisibleBrowserE2E;
+          ).__trellisVisibleBrowserE2E;
           const runtime = state.browserManager.runtimes.get(`${input.threadId}:${input.tabId}`);
           if (!runtime) throw new Error("Expected the native browser runtime to be live.");
           runtime.webContents.sendInputEvent(input.event);
@@ -167,9 +167,9 @@ test("production MCP controls one persistent Electron page across visibility cha
     expect(initialized.protocolVersion).toBe("2025-06-18");
     expect((await mcp.listTools()).map((tool) => tool.name)).toEqual([
       ...BROWSER_TOOL_NAMES,
-      "synara_e2e_review",
+      "trellis_e2e_review",
     ]);
-    const guidance = await mcp.call("synara_e2e_review");
+    const guidance = await mcp.call("trellis_e2e_review");
     expect(JSON.stringify(guidance.content)).toMatch(/subagent/i);
     expect(JSON.stringify(guidance.content)).toContain("proof");
 
@@ -205,9 +205,9 @@ test("production MCP controls one persistent Electron page across visibility cha
       await electronApp.evaluate(() => {
         (
           globalThis as typeof globalThis & {
-            __synaraVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
+            __trellisVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
           }
-        ).__synaraVisibleBrowserE2E.setPanelRevealEnabled(false);
+        ).__trellisVisibleBrowserE2E.setPanelRevealEnabled(false);
       });
       await run(
         'return await page.evaluate(() => document.body.dataset.backgroundAgent = "continued");',
@@ -217,9 +217,9 @@ test("production MCP controls one persistent Electron page across visibility cha
       await electronApp.evaluate(() => {
         (
           globalThis as typeof globalThis & {
-            __synaraVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
+            __trellisVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
           }
-        ).__synaraVisibleBrowserE2E.setPanelRevealEnabled(true);
+        ).__trellisVisibleBrowserE2E.setPanelRevealEnabled(true);
       });
       const navigated = await mcp.call("browser_navigate", { url: site.appUrl });
       expect(navigated.structuredContent).toMatchObject({ tabId, finalUrl: site.appUrl });
@@ -415,9 +415,9 @@ test("production MCP controls one persistent Electron page across visibility cha
       await electronApp.evaluate(() => {
         (
           globalThis as typeof globalThis & {
-            __synaraVisibleBrowserE2E: { setPreviewEnabled(enabled: boolean): void };
+            __trellisVisibleBrowserE2E: { setPreviewEnabled(enabled: boolean): void };
           }
-        ).__synaraVisibleBrowserE2E.setPreviewEnabled(true);
+        ).__trellisVisibleBrowserE2E.setPreviewEnabled(true);
       });
       await hostComposer.fill("HOST_SENTINEL");
       await hostComposer.focus();
@@ -443,9 +443,9 @@ test("production MCP controls one persistent Electron page across visibility cha
       await electronApp.evaluate(() => {
         (
           globalThis as typeof globalThis & {
-            __synaraVisibleBrowserE2E: { setPreviewEnabled(enabled: boolean): void };
+            __trellisVisibleBrowserE2E: { setPreviewEnabled(enabled: boolean): void };
           }
-        ).__synaraVisibleBrowserE2E.setPreviewEnabled(false);
+        ).__trellisVisibleBrowserE2E.setPreviewEnabled(false);
       });
       await hostComposer.focus();
       await electronApp.evaluate(({ BrowserWindow }) =>
@@ -505,9 +505,9 @@ test("production MCP controls one persistent Electron page across visibility cha
         await electronApp.evaluate((_, value) => {
           (
             globalThis as typeof globalThis & {
-              __synaraVisibleBrowserE2E: { setPageZoomFactor(value: number): void };
+              __trellisVisibleBrowserE2E: { setPageZoomFactor(value: number): void };
             }
-          ).__synaraVisibleBrowserE2E.setPageZoomFactor(value);
+          ).__trellisVisibleBrowserE2E.setPageZoomFactor(value);
         }, factor);
         await run(
           'await human.click(page.getByRole("button",{name:"Commit point action",exact:true}));',
@@ -579,9 +579,9 @@ test("production MCP controls one persistent Electron page across visibility cha
           () =>
             (
               globalThis as typeof globalThis & {
-                __synaraVisibleBrowserE2E: { browserManager: { runtimes: Map<string, unknown> } };
+                __trellisVisibleBrowserE2E: { browserManager: { runtimes: Map<string, unknown> } };
               }
-            ).__synaraVisibleBrowserE2E.browserManager.runtimes.size,
+            ).__trellisVisibleBrowserE2E.browserManager.runtimes.size,
         ),
       ).toBe(0);
     });
@@ -589,16 +589,16 @@ test("production MCP controls one persistent Electron page across visibility cha
       await electronApp.evaluate(() => {
         (
           globalThis as typeof globalThis & {
-            __synaraVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
+            __trellisVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
           }
-        ).__synaraVisibleBrowserE2E.setPanelRevealEnabled(false);
+        ).__trellisVisibleBrowserE2E.setPanelRevealEnabled(false);
       });
       try {
         await mcp.call("browser_open", { url: site.appUrl, show: true });
         const previewPixels = await electronApp.evaluate(async ({ nativeImage }) => {
           const state = (
             globalThis as typeof globalThis & {
-              __synaraVisibleBrowserE2E: {
+              __trellisVisibleBrowserE2E: {
                 threadId: string;
                 setPreviewEnabled(enabled: boolean): void;
                 setPanelRevealEnabled(enabled: boolean): void;
@@ -611,7 +611,7 @@ test("production MCP controls one persistent Electron page across visibility cha
                 };
               };
             }
-          ).__synaraVisibleBrowserE2E;
+          ).__trellisVisibleBrowserE2E;
           state.setPreviewEnabled(true);
           try {
             const { activeTabId } = state.browserManager.getState({ threadId: state.threadId });
@@ -699,9 +699,9 @@ test("production MCP controls one persistent Electron page across visibility cha
         await electronApp.evaluate(() => {
           (
             globalThis as typeof globalThis & {
-              __synaraVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
+              __trellisVisibleBrowserE2E: { setPanelRevealEnabled(enabled: boolean): void };
             }
-          ).__synaraVisibleBrowserE2E.setPanelRevealEnabled(true);
+          ).__trellisVisibleBrowserE2E.setPanelRevealEnabled(true);
         });
       }
     });
@@ -710,7 +710,7 @@ test("production MCP controls one persistent Electron page across visibility cha
       await electronApp.evaluate((_electron, url) => {
         const fixture = (
           globalThis as typeof globalThis & {
-            __synaraVisibleBrowserE2E: {
+            __trellisVisibleBrowserE2E: {
               threadId: string;
               browserManager: {
                 open(input: { threadId: string }): unknown;
@@ -719,7 +719,7 @@ test("production MCP controls one persistent Electron page across visibility cha
               setSurface(value: "native" | "renderer"): void;
             };
           }
-        ).__synaraVisibleBrowserE2E;
+        ).__trellisVisibleBrowserE2E;
         fixture.browserManager.open({ threadId: fixture.threadId });
         fixture.browserManager.newTab({ threadId: fixture.threadId, url });
         fixture.setSurface("native");
@@ -814,7 +814,7 @@ test("production MCP controls one persistent Electron page across visibility cha
         const guest = document.createElement("webview") as HTMLElement & {
           getWebContentsId(): number;
         };
-        guest.setAttribute("partition", "persist:synara-browser");
+        guest.setAttribute("partition", "persist:trellis-browser");
         guest.setAttribute("src", url);
         const ready = new Promise<void>((resolve) =>
           guest.addEventListener("dom-ready", () => resolve(), { once: true }),
@@ -823,7 +823,7 @@ test("production MCP controls one persistent Electron page across visibility cha
         try {
           await ready;
           const tabId = document.documentElement.dataset.nativeRuntimeTabId;
-          return await ipcRenderer.invoke("synara-e2e:attach-webview", {
+          return await ipcRenderer.invoke("trellis-e2e:attach-webview", {
             tabId,
             webContentsId: guest.getWebContentsId(),
           });
@@ -842,7 +842,7 @@ test("production MCP controls one persistent Electron page across visibility cha
 });
 
 type FocusFixtureGlobals = typeof globalThis & {
-  __synaraVisibleBrowserE2E: {
+  __trellisVisibleBrowserE2E: {
     browserManager: DesktopBrowserManager;
     threadId: ThreadId;
     setPreviewEnabled(enabled: boolean): void;
@@ -862,7 +862,7 @@ test("preserves composer keyboard ownership during browser navigation", async ()
     const result = await electronApp.evaluate(
       async ({ app, BrowserWindow, webContents }, origin) => {
         const { strict: assert } = process.getBuiltinModule("node:assert");
-        const f = (globalThis as FocusFixtureGlobals).__synaraVisibleBrowserE2E;
+        const f = (globalThis as FocusFixtureGlobals).__trellisVisibleBrowserE2E;
         const manager = f.browserManager;
         const host = BrowserWindow.getAllWindows()[0]!.webContents;
         const passed: string[] = [];

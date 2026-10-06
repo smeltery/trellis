@@ -4,9 +4,9 @@
 
 import { useState } from "react";
 
-import type { DesktopAppIcon } from "@synara/contracts";
-import { desktopFlavorFromProtocol } from "@synara/shared/betaFeatures";
-import type { SynaraDesktopFlavor } from "@synara/shared/desktopIdentity";
+import type { DesktopAppIcon } from "@trellis/contracts";
+import { desktopFlavorFromProtocol } from "@trellis/shared/betaFeatures";
+import type { TrellisDesktopFlavor } from "@trellis/shared/desktopIdentity";
 import { Spinner } from "~/components/ui/spinner";
 import { cn, isMacPlatform } from "~/lib/utils";
 
@@ -29,7 +29,7 @@ const OTHER_BETA_DESKTOP_APP_ICONS = ["default", "icon", "beta"] as const;
 
 export function desktopAppIconsForPlatform(
   platform: string,
-  flavor: SynaraDesktopFlavor | "unknown" = "unknown",
+  flavor: TrellisDesktopFlavor | "unknown" = "unknown",
 ): ReadonlyArray<DesktopAppIcon> {
   if (flavor === "beta") {
     return isMacPlatform(platform) ? MAC_BETA_DESKTOP_APP_ICONS : OTHER_BETA_DESKTOP_APP_ICONS;

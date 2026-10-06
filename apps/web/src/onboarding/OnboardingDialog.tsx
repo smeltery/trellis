@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 import { useAppSettings } from "~/appSettings";
 import { APP_BASE_NAME } from "~/branding";
-import { SynaraLogo } from "~/components/SynaraLogo";
+import { TrellisLogo } from "~/components/TrellisLogo";
 import {
   Dialog,
   DialogDescription,
@@ -146,7 +146,7 @@ function OnboardingFlow(props: {
           hero && "items-center text-center",
         )}
       >
-        {step === "welcome" ? <SynaraLogo aria-hidden className="mb-3.5 size-11" /> : null}
+        {step === "welcome" ? <TrellisLogo aria-hidden className="mb-3.5 size-11" /> : null}
         {step === "done" ? (
           <span
             aria-hidden

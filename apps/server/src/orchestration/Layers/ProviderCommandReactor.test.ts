@@ -18,7 +18,7 @@ import type {
   ProviderRuntimeEvent,
   ProviderSession,
   ServerSettings,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   ApprovalRequestId,
   type ChatAttachment,
@@ -31,14 +31,14 @@ import {
   ProjectId,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   formatProviderDeliveryBlockDetail,
   isProviderDeliveryBlockDetail,
   PROVIDER_DELIVERY_BLOCK_SUMMARY,
-} from "@synara/shared/providerDeliveryBlock";
-import type { DeepPartial } from "@synara/shared/Struct";
-import { SIDECHAT_INACTIVITY_EXPIRY_MS } from "@synara/shared/sidechatExpiry";
+} from "@trellis/shared/providerDeliveryBlock";
+import type { DeepPartial } from "@trellis/shared/Struct";
+import { SIDECHAT_INACTIVITY_EXPIRY_MS } from "@trellis/shared/sidechatExpiry";
 import {
   Duration,
   Deferred,
@@ -341,7 +341,7 @@ describe("ProviderCommandReactor", () => {
     >;
   }) {
     const now = new Date().toISOString();
-    const baseDir = input?.baseDir ?? fs.mkdtempSync(path.join(os.tmpdir(), "synara-reactor-"));
+    const baseDir = input?.baseDir ?? fs.mkdtempSync(path.join(os.tmpdir(), "trellis-reactor-"));
     createdBaseDirs.add(baseDir);
     const { stateDir } = deriveServerPathsSync(baseDir, undefined);
     createdStateDirs.add(stateDir);
@@ -876,7 +876,7 @@ describe("ProviderCommandReactor", () => {
         worktreePath: null,
         ...(input?.gatewayOperationId
           ? {
-              creationSource: "synara_mcp" as const,
+              creationSource: "trellis_mcp" as const,
               gatewayOperationId: input.gatewayOperationId,
               gatewayOperationIndex: 0,
             }
@@ -1098,7 +1098,7 @@ describe("ProviderCommandReactor", () => {
         requireUnarchived: true,
         activity: {
           id: EventId.makeUnsafe("passive-result"),
-          kind: "synara.task.completed",
+          kind: "trellis.task.completed",
           tone: "info",
           summary: "Delegated task completed",
           payload: { detail: "delegated result" },
@@ -7514,7 +7514,7 @@ describe("ProviderCommandReactor", () => {
 
     await waitFor(() => harness.sendTurn.mock.calls.length === 1);
     const providerInput = harness.sendTurn.mock.calls[0]?.[0].input;
-    expect(providerInput).toContain("<synara_goal>");
+    expect(providerInput).toContain("<trellis_goal>");
     expect(providerInput).toContain("Finish the complete implementation");
     expect(providerInput).toContain("Continue working toward the active thread goal");
     expect((await readHarnessThread(harness))?.messages).toEqual([]);
@@ -7545,7 +7545,7 @@ describe("ProviderCommandReactor", () => {
         type: "thread.meta.update",
         commandId: CommandId.makeUnsafe("cmd-goal-before-reactor-restart"),
         threadId: ThreadId.makeUnsafe("thread-1"),
-        goal: "Resume after Synara restarts",
+        goal: "Resume after Trellis restarts",
         goalStartBehavior: "defer",
       }),
     );
@@ -10919,9 +10919,9 @@ describe("ProviderCommandReactor", () => {
       runtimeMode: "approval-required",
     });
     const providerInput = harness.sendTurn.mock.calls[0]?.[0].input;
-    expect(providerInput).toContain("<synara_goal>");
+    expect(providerInput).toContain("<trellis_goal>");
     expect(providerInput).toContain("Deliver &lt;all&gt; providers safely");
-    expect(providerInput).toContain("</synara_goal>\n\nhello reactor");
+    expect(providerInput).toContain("</trellis_goal>\n\nhello reactor");
 
     const thread = await readHarnessThread(harness);
     expect(thread?.session?.threadId).toBe("thread-1");
@@ -11089,9 +11089,9 @@ describe("ProviderCommandReactor", () => {
 
     await waitFor(() => harness.steerSubagent.mock.calls.length === 1);
     const steerInput = harness.steerSubagent.mock.calls[0]?.[0].input;
-    expect(steerInput).toContain("<synara_goal>");
+    expect(steerInput).toContain("<trellis_goal>");
     expect(steerInput).toContain("Finish &lt;all&gt; tests");
-    expect(steerInput).toContain("</synara_goal>\n\ncontinue");
+    expect(steerInput).toContain("</trellis_goal>\n\ncontinue");
   });
 
   it("appends a failure activity when a task stop is requested without an active session", async () => {
@@ -12217,11 +12217,11 @@ describe("ProviderCommandReactor", () => {
         commandId: CommandId.makeUnsafe("cmd-thread-worktree-bootstrap"),
         threadId: ThreadId.makeUnsafe("thread-1"),
         envMode: "worktree",
-        branch: "synara/cb661f0d",
+        branch: "trellis/cb661f0d",
         worktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
         associatedWorktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
-        associatedWorktreeBranch: "synara/cb661f0d",
-        associatedWorktreeRef: "synara/cb661f0d",
+        associatedWorktreeBranch: "trellis/cb661f0d",
+        associatedWorktreeRef: "trellis/cb661f0d",
       }),
     );
 
@@ -12256,19 +12256,19 @@ describe("ProviderCommandReactor", () => {
     await waitFor(async () => {
       const thread = await readHarnessThread(harness);
       return (
-        thread?.branch === "synara/app-startup-crash" &&
-        thread.associatedWorktreeBranch === "synara/app-startup-crash" &&
-        thread.associatedWorktreeRef === "synara/app-startup-crash"
+        thread?.branch === "trellis/app-startup-crash" &&
+        thread.associatedWorktreeBranch === "trellis/app-startup-crash" &&
+        thread.associatedWorktreeRef === "trellis/app-startup-crash"
       );
     });
 
     const thread = await readHarnessThread(harness);
     expect(thread).toMatchObject({
-      branch: "synara/app-startup-crash",
+      branch: "trellis/app-startup-crash",
       worktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
       associatedWorktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
-      associatedWorktreeBranch: "synara/app-startup-crash",
-      associatedWorktreeRef: "synara/app-startup-crash",
+      associatedWorktreeBranch: "trellis/app-startup-crash",
+      associatedWorktreeRef: "trellis/app-startup-crash",
     });
   });
 
@@ -12288,11 +12288,11 @@ describe("ProviderCommandReactor", () => {
         commandId: CommandId.makeUnsafe("cmd-gateway-worktree-bootstrap"),
         threadId: ThreadId.makeUnsafe("thread-1"),
         envMode: "worktree",
-        branch: "synara/cb661f0d",
+        branch: "trellis/cb661f0d",
         worktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
         associatedWorktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
-        associatedWorktreeBranch: "synara/cb661f0d",
-        associatedWorktreeRef: "synara/cb661f0d",
+        associatedWorktreeBranch: "trellis/cb661f0d",
+        associatedWorktreeRef: "trellis/cb661f0d",
       }),
     );
     await Effect.runPromise(
@@ -12333,11 +12333,11 @@ describe("ProviderCommandReactor", () => {
         commandId: CommandId.makeUnsafe("cmd-missing-gateway-worktree-bootstrap"),
         threadId: ThreadId.makeUnsafe("thread-1"),
         envMode: "worktree",
-        branch: "synara/cb661f0d",
+        branch: "trellis/cb661f0d",
         worktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
         associatedWorktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
-        associatedWorktreeBranch: "synara/cb661f0d",
-        associatedWorktreeRef: "synara/cb661f0d",
+        associatedWorktreeBranch: "trellis/cb661f0d",
+        associatedWorktreeRef: "trellis/cb661f0d",
       }),
     );
     await Effect.runPromise(
@@ -12391,11 +12391,11 @@ describe("ProviderCommandReactor", () => {
         commandId: CommandId.makeUnsafe("cmd-thread-worktree-keep-temporary"),
         threadId: ThreadId.makeUnsafe("thread-1"),
         envMode: "worktree",
-        branch: "synara/cb661f0d",
+        branch: "trellis/cb661f0d",
         worktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
         associatedWorktreePath: "/tmp/provider-project/.worktrees/cb661f0d",
-        associatedWorktreeBranch: "synara/cb661f0d",
-        associatedWorktreeRef: "synara/cb661f0d",
+        associatedWorktreeBranch: "trellis/cb661f0d",
+        associatedWorktreeRef: "trellis/cb661f0d",
       }),
     );
 
@@ -12427,9 +12427,9 @@ describe("ProviderCommandReactor", () => {
 
     const thread = await readHarnessThread(harness);
     expect(thread).toMatchObject({
-      branch: "synara/cb661f0d",
-      associatedWorktreeBranch: "synara/cb661f0d",
-      associatedWorktreeRef: "synara/cb661f0d",
+      branch: "trellis/cb661f0d",
+      associatedWorktreeBranch: "trellis/cb661f0d",
+      associatedWorktreeRef: "trellis/cb661f0d",
     });
   });
 
@@ -14539,7 +14539,7 @@ describe("ProviderCommandReactor", () => {
       expected: false,
     },
   ])(
-    "pre-approves Synara group tools only for an active coordinator session ($label: $expected)",
+    "pre-approves Trellis group tools only for an active coordinator session ($label: $expected)",
     async ({ coordinatorThreadIds, coordinatorConfigState, label, expected, groupsEnabled }) => {
       vi.spyOn(groupsBetaGate, "isServerGroupsEnabled").mockReturnValue(groupsEnabled ?? true);
       const harness = await createHarness({ coordinatorThreadIds, coordinatorConfigState });
@@ -14566,9 +14566,9 @@ describe("ProviderCommandReactor", () => {
       await waitFor(() => harness.sendTurn.mock.calls.length === 1);
       const startInput = harness.startSession.mock.calls[0]?.[1];
       if (expected) {
-        expect(startInput).toMatchObject({ autoApproveSynaraTools: true });
+        expect(startInput).toMatchObject({ autoApproveTrellisTools: true });
       } else {
-        expect(startInput).not.toHaveProperty("autoApproveSynaraTools");
+        expect(startInput).not.toHaveProperty("autoApproveTrellisTools");
       }
       // File edits and shell still ask: the flag must never widen into
       // blanket approval, so it travels as a dedicated start option and not
@@ -14608,12 +14608,12 @@ describe("ProviderCommandReactor", () => {
     await waitFor(() => harness.startSession.mock.calls.length === 1);
     await waitFor(() => harness.sendTurn.mock.calls.length === 1);
     expect(harness.startSession.mock.calls[0]?.[1]).toMatchObject({
-      autoApproveSynaraTools: true,
+      autoApproveTrellisTools: true,
     });
 
     // The group is paused between turns: the running session was provisioned
     // with the flag, so the next turn must restart it rather than keep a
-    // runtime that silently still pre-approves the Synara tools.
+    // runtime that silently still pre-approves the Trellis tools.
     coordinatorConfigState.pausedAt = new Date(0).toISOString();
     await Effect.runPromise(
       harness.engine.dispatch({
@@ -14634,7 +14634,7 @@ describe("ProviderCommandReactor", () => {
 
     await waitFor(() => harness.startSession.mock.calls.length === 2);
     await waitFor(() => harness.sendTurn.mock.calls.length === 2);
-    expect(harness.startSession.mock.calls[1]?.[1]).not.toHaveProperty("autoApproveSynaraTools");
+    expect(harness.startSession.mock.calls[1]?.[1]).not.toHaveProperty("autoApproveTrellisTools");
   });
 
   it("rebinds the session to a stored provider change and keeps the transcript bootstrap", async () => {
@@ -15127,7 +15127,7 @@ describe("ProviderCommandReactor", () => {
       expect((handoffActivity?.payload as { contextText: string }).contextText).toContain(
         "first turn on grok",
       );
-      // Same Synara thread: id, transcript, project, and workspace survive.
+      // Same Trellis thread: id, transcript, project, and workspace survive.
       expect(after?.id).toBe(threadId);
       expect(after?.projectId).toBe(before?.projectId);
       expect(after?.worktreePath).toBe(before?.worktreePath);

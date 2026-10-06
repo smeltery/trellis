@@ -2,9 +2,9 @@ import { Effect, Layer } from "effect";
 import { ChildProcessSpawner } from "effect/unstable/process";
 import { ServerConfig } from "../../config.ts";
 
-import type { CursorModelSelection, ProviderStartOptions } from "@synara/contracts";
-import { sanitizeGeneratedThreadTitle } from "@synara/shared/chatThreads";
-import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@synara/shared/git";
+import type { CursorModelSelection, ProviderStartOptions } from "@trellis/contracts";
+import { sanitizeGeneratedThreadTitle } from "@trellis/shared/chatThreads";
+import { sanitizeBranchFragment, sanitizeFeatureBranchName } from "@trellis/shared/git";
 
 import {
   applyCursorAcpModelSelection,
@@ -89,7 +89,7 @@ const makeCursorAcpConfig = (serverConfig: {
       cursorSettings: settings,
       childProcessSpawner,
       cwd,
-      clientInfo: { name: "synara-git-text", version: "0.0.0" },
+      clientInfo: { name: "trellis-git-text", version: "0.0.0" },
     }),
   prepareRuntime: ({
     runtime,

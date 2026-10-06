@@ -1,4 +1,4 @@
-import { CheckpointRef, MessageId, OrchestrationProposedPlanId, TurnId } from "@synara/contracts";
+import { CheckpointRef, MessageId, OrchestrationProposedPlanId, TurnId } from "@trellis/contracts";
 import { describe, expect, it } from "vitest";
 import {
   buildTurnDiffSummaryByAssistantMessageId,
@@ -357,7 +357,7 @@ describe("computeStableMessagesTimelineRows", () => {
             tone: "info",
             automation: {
               id: "automation-7",
-              name: "Watch Synara PR 231",
+              name: "Watch Trellis PR 231",
               cadenceLabel: "Every 5m",
             },
           },
@@ -1374,7 +1374,7 @@ describe("deriveMessagesTimelineRows", () => {
       createdAt,
       label,
       tone: "info",
-      synaraWorkerNotice: {
+      trellisWorkerNotice: {
         kind: "settled",
         marker: "✓",
         phrase: "finished",
@@ -1413,19 +1413,19 @@ describe("deriveMessagesTimelineRows", () => {
     const monitorRow = rows.find(
       (row): row is Extract<MessagesTimelineRow, { kind: "work" }> =>
         row.kind === "work" &&
-        row.groupedEntries.some((entry) => entry.synaraWorkerNotice !== undefined),
+        row.groupedEntries.some((entry) => entry.trellisWorkerNotice !== undefined),
     );
     expect(monitorRow?.id).toBe("entry-m1");
     const assistant = messageRow(rows, "a1")!;
     expect(
       (assistant.leadingWorkEntries ?? []).some(
-        (entry) => entry.synaraWorkerNotice !== undefined,
+        (entry) => entry.trellisWorkerNotice !== undefined,
       ) ||
         (assistant.inlineWorkEntries ?? []).some(
-          (entry) => entry.synaraWorkerNotice !== undefined,
+          (entry) => entry.trellisWorkerNotice !== undefined,
         ) ||
         (assistant.collapsedTurnItems ?? []).some(
-          (item) => item.kind === "work" && item.entry.synaraWorkerNotice !== undefined,
+          (item) => item.kind === "work" && item.entry.trellisWorkerNotice !== undefined,
         ),
     ).toBe(false);
   });
@@ -1447,12 +1447,12 @@ describe("deriveMessagesTimelineRows", () => {
     const monitorRow = rows.find(
       (row): row is Extract<MessagesTimelineRow, { kind: "work" }> =>
         row.kind === "work" &&
-        row.groupedEntries.some((entry) => entry.synaraWorkerNotice !== undefined),
+        row.groupedEntries.some((entry) => entry.trellisWorkerNotice !== undefined),
     );
     expect(monitorRow?.id).toBe("entry-m1");
     expect(
       (messageRow(rows, "a1")?.inlineWorkEntries ?? []).some(
-        (entry) => entry.synaraWorkerNotice !== undefined,
+        (entry) => entry.trellisWorkerNotice !== undefined,
       ),
     ).toBe(false);
   });

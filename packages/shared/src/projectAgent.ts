@@ -1,12 +1,12 @@
 // FILE: projectAgent.ts
 // Purpose: Path, graph, and context-budget helpers for the Project Coordinator domain.
-// Layer: Shared domain helper (schema-only contracts live in @synara/contracts)
+// Layer: Shared domain helper (schema-only contracts live in @trellis/contracts)
 
-import type { ProjectTaskId } from "@synara/contracts";
+import type { ProjectTaskId } from "@trellis/contracts";
 import {
   PROJECT_AGENT_CONTEXT_BUDGET_CHARS,
   PROJECT_AGENT_WORKER_INBOX_PREFIX,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 const WINDOWS_DRIVE = /^[a-zA-Z]:/;
 

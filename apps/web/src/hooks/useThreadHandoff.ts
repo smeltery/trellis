@@ -9,7 +9,7 @@ import {
   type ModelSelection,
   type ProviderInstanceId,
   type ProviderKind,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useComposerDraftStore } from "../composerDraftStore";
 import { useProviderStatusesForLocalConfig } from "./useProviderStatusesForLocalConfig";
 import { useRefreshProviderStatusesNow } from "./useProviderStatusRefresh";

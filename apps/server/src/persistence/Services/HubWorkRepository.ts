@@ -1,4 +1,4 @@
-import type { HubWorkRecord, ProjectId, ThreadId } from "@synara/contracts";
+import type { HubWorkRecord, ProjectId, ThreadId } from "@trellis/contracts";
 import { Effect, Schema, ServiceMap } from "effect";
 
 export class HubWorkRepositoryError extends Schema.TaggedErrorClass<HubWorkRepositoryError>()(
@@ -44,4 +44,4 @@ export interface HubWorkRepositoryShape {
 export class HubWorkRepository extends ServiceMap.Service<
   HubWorkRepository,
   HubWorkRepositoryShape
->()("synara/persistence/Services/HubWorkRepository") {}
+>()("trellis/persistence/Services/HubWorkRepository") {}

@@ -9,7 +9,7 @@ import {
   ProjectId,
   ThreadId,
   type OrchestrationEvent,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 

@@ -7,7 +7,7 @@
 import os from "node:os";
 import nodePath from "node:path";
 
-import type { ServerProviderUsageLine, ServerProviderUsageLimit } from "@synara/contracts";
+import type { ServerProviderUsageLine, ServerProviderUsageLimit } from "@trellis/contracts";
 
 import { getGrokApiKeyEnv } from "../../provider/acp/GrokAcpSupport";
 import {

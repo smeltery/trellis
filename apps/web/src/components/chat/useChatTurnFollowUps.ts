@@ -1,7 +1,7 @@
-import { MessageId, ThreadId, type ProviderKind } from "@synara/contracts";
-import { resolveTailUserMessageEditTarget } from "@synara/shared/conversationEdit";
-import { providerSupportsNativeTurnSteering } from "@synara/shared/providerMetadata";
-import { deriveAssociatedWorktreeMetadata } from "@synara/shared/threadWorkspace";
+import { MessageId, ThreadId, type ProviderKind } from "@trellis/contracts";
+import { resolveTailUserMessageEditTarget } from "@trellis/shared/conversationEdit";
+import { providerSupportsNativeTurnSteering } from "@trellis/shared/providerMetadata";
+import { deriveAssociatedWorktreeMetadata } from "@trellis/shared/threadWorkspace";
 import { useNavigate } from "@tanstack/react-router";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useCallback } from "react";

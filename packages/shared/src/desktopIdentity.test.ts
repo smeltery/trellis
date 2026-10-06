@@ -2,149 +2,151 @@ import { describe, expect, it } from "vitest";
 
 import {
   desktopUpdateChannel,
-  resolveSynaraDesktopFlavor,
-  resolveSynaraDesktopRuntimeFlavor,
+  resolveTrellisDesktopFlavor,
+  resolveTrellisDesktopRuntimeFlavor,
   canOverrideDesktopSmokeUserData,
-  SYNARA_SOURCE_DESKTOP_BUILD_MARKER,
-  SYNARA_BETA_BUNDLE_ID,
-  SYNARA_BETA_DESKTOP_ENTRY_URL,
-  SYNARA_BETA_DESKTOP_ORIGIN,
-  SYNARA_CANARY_BUNDLE_ID,
-  SYNARA_CANARY_DESKTOP_ENTRY_URL,
-  SYNARA_CANARY_DESKTOP_ORIGIN,
-  SYNARA_CUA_BUNDLE_ID,
-  SYNARA_CUA_DESKTOP_ENTRY_URL,
-  SYNARA_CUA_DESKTOP_ORIGIN,
-  SYNARA_DESKTOP_ENTRY_URL,
-  SYNARA_DESKTOP_ORIGIN,
-  SYNARA_DESKTOP_UPDATE_CHANNEL,
-  SYNARA_DEVELOPMENT_BUNDLE_ID,
-  SYNARA_PRODUCTION_BUNDLE_ID,
-  synaraDesktopIdentity,
+  TRELLIS_SOURCE_DESKTOP_BUILD_MARKER,
+  TRELLIS_BETA_BUNDLE_ID,
+  TRELLIS_BETA_DESKTOP_ENTRY_URL,
+  TRELLIS_BETA_DESKTOP_ORIGIN,
+  TRELLIS_CANARY_BUNDLE_ID,
+  TRELLIS_CANARY_DESKTOP_ENTRY_URL,
+  TRELLIS_CANARY_DESKTOP_ORIGIN,
+  TRELLIS_CUA_BUNDLE_ID,
+  TRELLIS_CUA_DESKTOP_ENTRY_URL,
+  TRELLIS_CUA_DESKTOP_ORIGIN,
+  TRELLIS_DESKTOP_ENTRY_URL,
+  TRELLIS_DESKTOP_ORIGIN,
+  TRELLIS_DESKTOP_UPDATE_CHANNEL,
+  TRELLIS_DEVELOPMENT_BUNDLE_ID,
+  TRELLIS_PRODUCTION_BUNDLE_ID,
+  trellisDesktopIdentity,
 } from "./desktopIdentity";
 
 describe("desktopIdentity", () => {
   it("uses the exact canonical production and development bundle IDs", () => {
-    expect(SYNARA_PRODUCTION_BUNDLE_ID).toBe("com.emanueledipietro.synara");
-    expect(SYNARA_DEVELOPMENT_BUNDLE_ID).toBe("com.emanueledipietro.synara.dev");
-    expect(synaraDesktopIdentity("production").bundleId).toBe(SYNARA_PRODUCTION_BUNDLE_ID);
-    expect(synaraDesktopIdentity("development").bundleId).toBe(SYNARA_DEVELOPMENT_BUNDLE_ID);
+    expect(TRELLIS_PRODUCTION_BUNDLE_ID).toBe("com.smeltery.trellis");
+    expect(TRELLIS_DEVELOPMENT_BUNDLE_ID).toBe("com.smeltery.trellis.dev");
+    expect(trellisDesktopIdentity("production").bundleId).toBe(TRELLIS_PRODUCTION_BUNDLE_ID);
+    expect(trellisDesktopIdentity("development").bundleId).toBe(TRELLIS_DEVELOPMENT_BUNDLE_ID);
   });
 
   it("uses the exact packaged renderer origin and entry URL", () => {
-    expect(SYNARA_DESKTOP_ORIGIN).toBe("synara://app");
-    expect(SYNARA_DESKTOP_ENTRY_URL).toBe("synara://app/index.html");
+    expect(TRELLIS_DESKTOP_ORIGIN).toBe("trellis://app");
+    expect(TRELLIS_DESKTOP_ENTRY_URL).toBe("trellis://app/index.html");
   });
 
-  it("uses the isolated Synara desktop update channel", () => {
-    expect(SYNARA_DESKTOP_UPDATE_CHANNEL).toBe("synara");
+  it("uses the isolated Trellis desktop update channel", () => {
+    expect(TRELLIS_DESKTOP_UPDATE_CHANNEL).toBe("trellis");
   });
 
-  it("matches the beta update channel to prerelease tags and keeps synara otherwise", () => {
+  it("matches the beta update channel to prerelease tags and keeps trellis otherwise", () => {
     expect(desktopUpdateChannel("beta")).toBe("beta");
-    expect(desktopUpdateChannel("production")).toBe(SYNARA_DESKTOP_UPDATE_CHANNEL);
-    expect(desktopUpdateChannel("canary")).toBe(SYNARA_DESKTOP_UPDATE_CHANNEL);
-    expect(desktopUpdateChannel("development")).toBe(SYNARA_DESKTOP_UPDATE_CHANNEL);
+    expect(desktopUpdateChannel("production")).toBe(TRELLIS_DESKTOP_UPDATE_CHANNEL);
+    expect(desktopUpdateChannel("canary")).toBe(TRELLIS_DESKTOP_UPDATE_CHANNEL);
+    expect(desktopUpdateChannel("development")).toBe(TRELLIS_DESKTOP_UPDATE_CHANNEL);
   });
 
   it("gives Canary a fully separate desktop identity and storage profile", () => {
-    expect(SYNARA_CANARY_BUNDLE_ID).toBe("com.emanueledipietro.synara.canary");
-    expect(SYNARA_CANARY_DESKTOP_ORIGIN).toBe("synara-canary://app");
-    expect(SYNARA_CANARY_DESKTOP_ENTRY_URL).toBe("synara-canary://app/index.html");
-    expect(synaraDesktopIdentity("canary")).toEqual({
+    expect(TRELLIS_CANARY_BUNDLE_ID).toBe("com.smeltery.trellis.canary");
+    expect(TRELLIS_CANARY_DESKTOP_ORIGIN).toBe("trellis-canary://app");
+    expect(TRELLIS_CANARY_DESKTOP_ENTRY_URL).toBe("trellis-canary://app/index.html");
+    expect(trellisDesktopIdentity("canary")).toEqual({
       flavor: "canary",
-      displayName: "Synara Canary",
-      bundleId: SYNARA_CANARY_BUNDLE_ID,
-      scheme: "synara-canary",
-      origin: SYNARA_CANARY_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_CANARY_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-canary",
-      defaultHomeDirectoryName: ".synara-canary",
+      displayName: "Trellis Canary",
+      bundleId: TRELLIS_CANARY_BUNDLE_ID,
+      scheme: "trellis-canary",
+      origin: TRELLIS_CANARY_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_CANARY_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-canary",
+      defaultHomeDirectoryName: ".trellis-canary",
       usesScriptedUpdates: true,
     });
   });
 
   it("gives Cua a fully separate desktop identity and storage profile", () => {
-    expect(SYNARA_CUA_BUNDLE_ID).toBe("com.emanueledipietro.synara.cua");
-    expect(SYNARA_CUA_DESKTOP_ORIGIN).toBe("synara-cua://app");
-    expect(SYNARA_CUA_DESKTOP_ENTRY_URL).toBe("synara-cua://app/index.html");
-    expect(synaraDesktopIdentity("cua")).toEqual({
+    expect(TRELLIS_CUA_BUNDLE_ID).toBe("com.smeltery.trellis.cua");
+    expect(TRELLIS_CUA_DESKTOP_ORIGIN).toBe("trellis-cua://app");
+    expect(TRELLIS_CUA_DESKTOP_ENTRY_URL).toBe("trellis-cua://app/index.html");
+    expect(trellisDesktopIdentity("cua")).toEqual({
       flavor: "cua",
-      displayName: "Synara Cua",
-      bundleId: SYNARA_CUA_BUNDLE_ID,
-      scheme: "synara-cua",
-      origin: SYNARA_CUA_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_CUA_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-cua",
-      defaultHomeDirectoryName: ".synara-cua",
+      displayName: "Trellis Cua",
+      bundleId: TRELLIS_CUA_BUNDLE_ID,
+      scheme: "trellis-cua",
+      origin: TRELLIS_CUA_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_CUA_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-cua",
+      defaultHomeDirectoryName: ".trellis-cua",
       usesScriptedUpdates: true,
     });
   });
 
   it("gives Beta a fully separate desktop identity and storage profile", () => {
-    expect(SYNARA_BETA_BUNDLE_ID).toBe("com.emanueledipietro.synara.beta");
-    expect(SYNARA_BETA_DESKTOP_ORIGIN).toBe("synara-beta://app");
-    expect(SYNARA_BETA_DESKTOP_ENTRY_URL).toBe("synara-beta://app/index.html");
-    expect(synaraDesktopIdentity("beta")).toEqual({
+    expect(TRELLIS_BETA_BUNDLE_ID).toBe("com.smeltery.trellis.beta");
+    expect(TRELLIS_BETA_DESKTOP_ORIGIN).toBe("trellis-beta://app");
+    expect(TRELLIS_BETA_DESKTOP_ENTRY_URL).toBe("trellis-beta://app/index.html");
+    expect(trellisDesktopIdentity("beta")).toEqual({
       flavor: "beta",
-      displayName: "Synara Beta",
-      bundleId: SYNARA_BETA_BUNDLE_ID,
-      scheme: "synara-beta",
-      origin: SYNARA_BETA_DESKTOP_ORIGIN,
-      entryUrl: SYNARA_BETA_DESKTOP_ENTRY_URL,
-      userDataDirectoryName: "synara-beta",
-      defaultHomeDirectoryName: ".synara-beta",
+      displayName: "Trellis Beta",
+      bundleId: TRELLIS_BETA_BUNDLE_ID,
+      scheme: "trellis-beta",
+      origin: TRELLIS_BETA_DESKTOP_ORIGIN,
+      entryUrl: TRELLIS_BETA_DESKTOP_ENTRY_URL,
+      userDataDirectoryName: "trellis-beta",
+      defaultHomeDirectoryName: ".trellis-beta",
       usesScriptedUpdates: false,
     });
   });
 
   it("selects explicit source flavors without changing packaged Stable", () => {
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: false })).toBe("production");
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: true })).toBe("development");
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: false })).toBe("production");
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: true })).toBe("development");
     expect(
-      resolveSynaraDesktopFlavor({ isDevelopment: false, requestedFlavor: "development" }),
+      resolveTrellisDesktopFlavor({ isDevelopment: false, requestedFlavor: "development" }),
     ).toBe("production");
     expect(
-      resolveSynaraDesktopFlavor({
+      resolveTrellisDesktopFlavor({
         isDevelopment: false,
         requestedFlavor: "development",
         allowDevelopmentOverride: true,
       }),
     ).toBe("development");
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: false, requestedFlavor: " canary " })).toBe(
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: false, requestedFlavor: " canary " })).toBe(
       "canary",
     );
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: true, requestedFlavor: "canary" })).toBe(
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: true, requestedFlavor: "canary" })).toBe(
       "canary",
     );
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: false, requestedFlavor: "cua" })).toBe(
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: false, requestedFlavor: "cua" })).toBe(
       "cua",
     );
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: true, requestedFlavor: "CUA" })).toBe("cua");
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: false, requestedFlavor: "beta" })).toBe(
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: true, requestedFlavor: "CUA" })).toBe(
+      "cua",
+    );
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: false, requestedFlavor: "beta" })).toBe(
       "beta",
     );
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: false, requestedFlavor: " beta " })).toBe(
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: false, requestedFlavor: " beta " })).toBe(
       "beta",
     );
-    expect(resolveSynaraDesktopFlavor({ isDevelopment: true, requestedFlavor: "beta" })).toBe(
+    expect(resolveTrellisDesktopFlavor({ isDevelopment: true, requestedFlavor: "beta" })).toBe(
       "beta",
     );
   });
 
   it("isolates development and Canary homes from packaged Stable", () => {
-    expect(synaraDesktopIdentity("development").defaultHomeDirectoryName).toBe(".synara-dev");
-    expect(synaraDesktopIdentity("canary").defaultHomeDirectoryName).toBe(".synara-canary");
-    expect(synaraDesktopIdentity("cua").defaultHomeDirectoryName).toBe(".synara-cua");
-    expect(synaraDesktopIdentity("beta").defaultHomeDirectoryName).toBe(".synara-beta");
-    expect(synaraDesktopIdentity("production").defaultHomeDirectoryName).toBe(".synara");
+    expect(trellisDesktopIdentity("development").defaultHomeDirectoryName).toBe(".trellis-dev");
+    expect(trellisDesktopIdentity("canary").defaultHomeDirectoryName).toBe(".trellis-canary");
+    expect(trellisDesktopIdentity("cua").defaultHomeDirectoryName).toBe(".trellis-cua");
+    expect(trellisDesktopIdentity("beta").defaultHomeDirectoryName).toBe(".trellis-beta");
+    expect(trellisDesktopIdentity("production").defaultHomeDirectoryName).toBe(".trellis");
   });
 
   it.each(["production", "canary", "cua", "beta"] as const)(
     "uses the immutable %s package flavor despite inherited source settings",
     (packagedFlavor) => {
       expect(
-        resolveSynaraDesktopRuntimeFlavor({
+        resolveTrellisDesktopRuntimeFlavor({
           isPackaged: true,
           isDevelopment: true,
           packagedFlavor,
@@ -157,7 +159,7 @@ describe("desktopIdentity", () => {
 
   it("keeps legacy packaged Stable independent from a source shell's flavor", () => {
     expect(
-      resolveSynaraDesktopRuntimeFlavor({
+      resolveTrellisDesktopRuntimeFlavor({
         isPackaged: true,
         isDevelopment: false,
         requestedFlavor: "cua",
@@ -167,7 +169,7 @@ describe("desktopIdentity", () => {
 
   it("preserves source launcher routing, including its bundled macOS bootstrap", () => {
     expect(
-      resolveSynaraDesktopRuntimeFlavor({
+      resolveTrellisDesktopRuntimeFlavor({
         isPackaged: true,
         isDevelopment: false,
         requestedFlavor: "development",
@@ -175,7 +177,7 @@ describe("desktopIdentity", () => {
       }),
     ).toBe("development");
     expect(
-      resolveSynaraDesktopRuntimeFlavor({
+      resolveTrellisDesktopRuntimeFlavor({
         isPackaged: false,
         isDevelopment: true,
         requestedFlavor: "canary",
@@ -187,12 +189,12 @@ describe("desktopIdentity", () => {
     "rejects malformed packaged identity %j before opening any profile",
     (packagedFlavor) => {
       expect(() =>
-        resolveSynaraDesktopRuntimeFlavor({
+        resolveTrellisDesktopRuntimeFlavor({
           isPackaged: true,
           isDevelopment: false,
           packagedFlavor,
         }),
-      ).toThrow("packaged Synara desktop flavor is invalid");
+      ).toThrow("packaged Trellis desktop flavor is invalid");
     },
   );
 
@@ -201,14 +203,14 @@ describe("desktopIdentity", () => {
     expect(canOverrideDesktopSmokeUserData({ packagedFlavor: "beta" })).toBe(true);
     expect(
       canOverrideDesktopSmokeUserData({
-        sourceBuildMarker: SYNARA_SOURCE_DESKTOP_BUILD_MARKER,
+        sourceBuildMarker: TRELLIS_SOURCE_DESKTOP_BUILD_MARKER,
       }),
     ).toBe(true);
     for (const packagedFlavor of ["production", "canary", "development", null]) {
       expect(
         canOverrideDesktopSmokeUserData({
           packagedFlavor,
-          sourceBuildMarker: SYNARA_SOURCE_DESKTOP_BUILD_MARKER,
+          sourceBuildMarker: TRELLIS_SOURCE_DESKTOP_BUILD_MARKER,
         }),
       ).toBe(false);
     }

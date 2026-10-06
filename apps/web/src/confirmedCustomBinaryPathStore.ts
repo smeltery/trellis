@@ -5,11 +5,11 @@
 // Layer: Web UI state utilities
 // Exports: load/save helpers for the confirmed-path record.
 
-import { ProviderInstanceId } from "@synara/contracts";
+import { ProviderInstanceId } from "@trellis/contracts";
 import { Schema } from "effect";
 import { isPlainObject } from "./persistedRecord";
 
-const STORAGE_KEY = "synara:confirmed-custom-binary-paths:v1";
+const STORAGE_KEY = "trellis:confirmed-custom-binary-paths:v1";
 
 const isProviderInstanceId = Schema.is(ProviderInstanceId);
 

@@ -9,7 +9,7 @@ import type {
   ProviderKind,
   ProviderStartOptions,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import type { ProviderInstanceOption } from "../appSettings";
 import { createDraftThread, type DraftThreadInput } from "./draftThreadCreate";

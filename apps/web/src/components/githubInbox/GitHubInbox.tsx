@@ -9,7 +9,12 @@
 // Layer: GitHub inbox presentation
 // Exports: GitHubInbox
 
-import type { GitHubInboxItem, GitHubInboxListError, ProjectId, ThreadId } from "@synara/contracts";
+import type {
+  GitHubInboxItem,
+  GitHubInboxListError,
+  ProjectId,
+  ThreadId,
+} from "@trellis/contracts";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type KeyboardEvent as ReactKeyboardEvent,

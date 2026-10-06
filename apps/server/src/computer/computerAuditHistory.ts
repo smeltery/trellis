@@ -6,7 +6,7 @@ import {
   type ComputerAuditHistoryEntry,
   type ComputerGetAuditHistoryInput,
   type ComputerGetAuditHistoryResult,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Schema } from "effect";
 import { computerAuditTailLines, readComputerAuditFileTail } from "./computerAuditFile.ts";
 

@@ -29,15 +29,32 @@ describe("windowsShellIco", () => {
     expect(ico.readUInt32LE(22)).toBe(40);
   });
 
-  it("reads PNG images from the scenic Windows ICO", () => {
+  it("accepts the supplied Trellis BMP icon without conversion", () => {
     const ico = FS.readFileSync(appIconWindowsIco);
-    const pngs = extractIcoPngImages(ico);
-    expect(inspectIcoEntries(ico).every((entry) => entry.encoding === "png")).toBe(true);
-    expect(pngs.map((image) => image.width)).toEqual([16, 24, 32, 48, 64, 128, 256]);
+    expect(inspectIcoEntries(ico).every((entry) => entry.encoding === "bmp")).toBe(true);
+    expect(inspectIcoEntries(ico).map((entry) => entry.width)).toEqual([256, 128, 64, 48, 32, 16]);
+    expect(
+      toWindowsShellIco(ico, () => {
+        throw new Error("BMP icons need no PNG decoding");
+      }),
+    ).toEqual(ico);
   });
 
   it("rebuilds a PNG ICO as BMP sizes used by the Win11 taskbar", () => {
-    const ico = FS.readFileSync(appIconWindowsIco);
+    const png = FS.readFileSync(
+      Path.join(Path.dirname(appIconWindowsIco), "../../web/public/favicon-32x32.png"),
+    );
+    const ico = Buffer.alloc(22 + png.length);
+    ico.writeUInt16LE(1, 2);
+    ico.writeUInt16LE(1, 4);
+    ico[6] = 32;
+    ico[7] = 32;
+    ico.writeUInt16LE(1, 10);
+    ico.writeUInt16LE(32, 12);
+    ico.writeUInt32LE(png.length, 14);
+    ico.writeUInt32LE(22, 18);
+    png.copy(ico, 22);
+    expect(extractIcoPngImages(ico).map((image) => image.width)).toEqual([32]);
     const shellIco = toWindowsShellIco(ico, (_png, size) => ({
       width: size,
       height: size,

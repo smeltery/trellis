@@ -5,7 +5,7 @@ import {
   MAX_KEYBINDINGS_COUNT,
   MAX_RESOLVED_KEYBINDINGS_COUNT,
   ResolvedKeybindingsConfig,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import { assertFailure } from "@effect/vitest/utils";
@@ -33,7 +33,7 @@ const makeKeybindingsLayer = () => {
     Layer.provideMerge(
       Layer.fresh(
         ServerConfig.layerTest(process.cwd(), {
-          prefix: "synara-keybindings-test-",
+          prefix: "trellis-keybindings-test-",
         }),
       ),
     ),

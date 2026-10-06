@@ -6,8 +6,8 @@
 // Layer: Pull request presentation
 // Exports: PullRequestRow, githubInboxItemLabel
 
-import type { GitHubInboxItem, GitHubInboxSort } from "@synara/contracts";
-import { pullRequestListProjectContexts } from "@synara/shared/githubRepository";
+import type { GitHubInboxItem, GitHubInboxSort } from "@trellis/contracts";
+import { pullRequestListProjectContexts } from "@trellis/shared/githubRepository";
 import type { ReactNode } from "react";
 
 import { PinStatusIcon, pinActionLabel } from "~/lib/pin";

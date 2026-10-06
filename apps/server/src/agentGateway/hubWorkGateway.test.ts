@@ -5,8 +5,8 @@ import {
   ThreadId,
   TurnId,
   type OrchestrationThread,
-  type SynaraCreateThreadsInput,
-} from "@synara/contracts";
+  type TrellisCreateThreadsInput,
+} from "@trellis/contracts";
 import { Effect, Layer, Option } from "effect";
 
 import {
@@ -87,7 +87,7 @@ function harness(name: string) {
       },
       null,
     );
-    const calls: SynaraCreateThreadsInput[] = [];
+    const calls: TrellisCreateThreadsInput[] = [];
     const messages = [source];
     let denyTarget = false;
     let failCreation = false;
@@ -150,7 +150,7 @@ function harness(name: string) {
         }).pipe(Effect.catch((error) => Effect.succeed(mcpToolResultError(error.message)))),
     } satisfies Dependencies;
     const gateway = makeHubWorkGateway(dependencies);
-    const input: SynaraCreateThreadsInput = {
+    const input: TrellisCreateThreadsInput = {
       requestId: "first-request",
       threads: [1, 2].map((index) => ({
         prompt: `Task ${index}`,

@@ -18,7 +18,7 @@ import type {
   ProviderStartReviewInput,
   ProviderSteerTurnInput,
   ProviderTurnStartResult,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   ApprovalRequestId,
   EventId,
@@ -29,7 +29,7 @@ import {
   RuntimeRequestId,
   ThreadId,
   TurnId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { it, assert, vi } from "@effect/vitest";
 import { afterAll, beforeAll } from "vitest";
 import { assertFailure } from "@effect/vitest/utils";
@@ -98,24 +98,24 @@ import { ServerSettingsService } from "../../serverSettings.ts";
 // continuation metadata without reading or writing the developer's Codex home.
 let defaultCodexFixtureRoot: string | undefined;
 const previousCodexHome = process.env.CODEX_HOME;
-const previousSynaraHome = process.env.SYNARA_HOME;
+const previousTrellisHome = process.env.TRELLIS_HOME;
 beforeAll(async () => {
-  defaultCodexFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-default-"));
+  defaultCodexFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-default-"));
   const codexHome = path.join(defaultCodexFixtureRoot, "codex");
-  const synaraHome = path.join(defaultCodexFixtureRoot, "synara");
+  const trellisHome = path.join(defaultCodexFixtureRoot, "trellis");
   fs.mkdirSync(codexHome);
   fs.writeFileSync(path.join(codexHome, "config.toml"), "", "utf8");
   await buildCodexProcessEnv({
-    env: { ...process.env, CODEX_HOME: codexHome, SYNARA_HOME: synaraHome },
+    env: { ...process.env, CODEX_HOME: codexHome, TRELLIS_HOME: trellisHome },
   });
   process.env.CODEX_HOME = codexHome;
-  process.env.SYNARA_HOME = synaraHome;
+  process.env.TRELLIS_HOME = trellisHome;
 });
 afterAll(() => {
   if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
   else process.env.CODEX_HOME = previousCodexHome;
-  if (previousSynaraHome === undefined) delete process.env.SYNARA_HOME;
-  else process.env.SYNARA_HOME = previousSynaraHome;
+  if (previousTrellisHome === undefined) delete process.env.TRELLIS_HOME;
+  else process.env.TRELLIS_HOME = previousTrellisHome;
   if (defaultCodexFixtureRoot) fs.rmSync(defaultCodexFixtureRoot, { recursive: true, force: true });
 });
 
@@ -129,11 +129,11 @@ async function makeSharedCodexContinuationFixture(
   accountIds: readonly string[],
   preparedAccountIds: readonly string[] = accountIds,
 ) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-continuation-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-continuation-"));
   const homePath = path.join(root, "codex-home");
-  const runtimeHomePath = path.join(root, "synara-runtime");
-  const environment = { SYNARA_HOME: runtimeHomePath };
-  const instanceEnvironment = [{ name: "SYNARA_HOME", value: runtimeHomePath, sensitive: false }];
+  const runtimeHomePath = path.join(root, "trellis-runtime");
+  const environment = { TRELLIS_HOME: runtimeHomePath };
+  const instanceEnvironment = [{ name: "TRELLIS_HOME", value: runtimeHomePath, sensitive: false }];
   fs.mkdirSync(homePath, { recursive: true });
   fs.writeFileSync(path.join(homePath, "config.toml"), "", "utf8");
   const shadowHomePaths = new Map<string, string>();
@@ -961,7 +961,7 @@ routing.layer("ProviderServiceLive native forks", (it) => {
 
 it.effect("ProviderServiceLive keeps persisted resumable sessions on startup", () =>
   Effect.gen(function* () {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-service-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-service-"));
     const dbPath = path.join(tempDir, "orchestration.sqlite");
 
     const codex = makeFakeCodexAdapter();
@@ -1027,7 +1027,7 @@ it.effect(
   "ProviderServiceLive persists active sessions as stopped when adapter cleanup fails",
   () =>
     Effect.gen(function* () {
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-service-stopall-"));
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-service-stopall-"));
       const dbPath = path.join(tempDir, "orchestration.sqlite");
       const persistenceLayer = makeSqlitePersistenceLive(dbPath);
       const runtimeRepositoryLayer = ProviderSessionRuntimeRepositoryLive.pipe(
@@ -1110,7 +1110,7 @@ type ShutdownCursorOrderingScenario =
 
 function verifyShutdownCursorOrdering(scenario: ShutdownCursorOrderingScenario) {
   return Effect.gen(function* () {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-stopall-race-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-stopall-race-"));
     const dbPath = path.join(tempDir, "orchestration.sqlite");
     const persistenceLayer = makeSqlitePersistenceLive(dbPath);
     const runtimeRepositoryLayer = ProviderSessionRuntimeRepositoryLive.pipe(
@@ -1373,7 +1373,7 @@ it.effect(
   "ProviderServiceLive restores rollback routing after restart using persisted thread mapping",
   () =>
     Effect.gen(function* () {
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-service-restart-"));
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-service-restart-"));
       const dbPath = path.join(tempDir, "orchestration.sqlite");
       const fixture = yield* Effect.promise(() => makeSharedCodexContinuationFixture(["default"]));
       const providerInstanceId = asProviderInstanceId("codex_restart");
@@ -1968,7 +1968,7 @@ routing.layer("ProviderServiceLive routing", (it) => {
     }),
   );
 
-  it.effect("carries autoApproveSynaraTools through session recovery", () =>
+  it.effect("carries autoApproveTrellisTools through session recovery", () =>
     Effect.gen(function* () {
       const provider = yield* ProviderService;
       const directory = yield* ProviderSessionDirectory;
@@ -1978,11 +1978,11 @@ routing.layer("ProviderServiceLive routing", (it) => {
         provider: "codex",
         threadId,
         runtimeMode: "full-access",
-        autoApproveSynaraTools: true,
+        autoApproveTrellisTools: true,
       });
       const persisted = Option.getOrUndefined(yield* directory.getBinding(threadId));
       assert.strictEqual(
-        asRuntimePayloadRecord(persisted?.runtimePayload).autoApproveSynaraTools,
+        asRuntimePayloadRecord(persisted?.runtimePayload).autoApproveTrellisTools,
         true,
       );
 
@@ -1997,10 +1997,10 @@ routing.layer("ProviderServiceLive routing", (it) => {
 
       const recoveredStart = routing.codex.startSession.mock.calls.at(-1)?.[0];
       assert.strictEqual(recoveredStart?.threadId, threadId);
-      assert.strictEqual(recoveredStart?.autoApproveSynaraTools, true);
+      assert.strictEqual(recoveredStart?.autoApproveTrellisTools, true);
       const recovered = Option.getOrUndefined(yield* directory.getBinding(threadId));
       assert.strictEqual(
-        asRuntimePayloadRecord(recovered?.runtimePayload).autoApproveSynaraTools,
+        asRuntimePayloadRecord(recovered?.runtimePayload).autoApproveTrellisTools,
         true,
       );
 
@@ -5349,7 +5349,7 @@ routing.layer("ProviderServiceLive routing", (it) => {
 
   it.effect("reuses persisted resume cursor when startSession is called after a restart", () =>
     Effect.gen(function* () {
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-service-start-"));
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-service-start-"));
       const dbPath = path.join(tempDir, "orchestration.sqlite");
       const persistenceLayer = makeSqlitePersistenceLive(dbPath);
       const runtimeRepositoryLayer = ProviderSessionRuntimeRepositoryLive.pipe(
@@ -5439,7 +5439,7 @@ routing.layer("ProviderServiceLive routing", (it) => {
 
   it.effect("clears stale resume cursor while preserving provider options for fresh restart", () =>
     Effect.gen(function* () {
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "synara-provider-service-clear-"));
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-provider-service-clear-"));
       const dbPath = path.join(tempDir, "orchestration.sqlite");
       const persistenceLayer = makeSqlitePersistenceLive(dbPath);
       const runtimeRepositoryLayer = ProviderSessionRuntimeRepositoryLive.pipe(
@@ -5665,7 +5665,7 @@ routing.layer("ProviderServiceLive routing", (it) => {
   it.effect("rejects stopped Claude continuation when launch options are removed", () =>
     Effect.gen(function* () {
       const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), "synara-provider-service-stop-runtime-"),
+        path.join(os.tmpdir(), "trellis-provider-service-stop-runtime-"),
       );
       const dbPath = path.join(tempDir, "orchestration.sqlite");
       const persistenceLayer = makeSqlitePersistenceLive(dbPath);
@@ -5772,7 +5772,7 @@ routing.layer("ProviderServiceLive routing", (it) => {
   it.effect("recovers provider-instance sessions from current settings after options clear", () =>
     Effect.gen(function* () {
       const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), "synara-provider-service-instance-clear-"),
+        path.join(os.tmpdir(), "trellis-provider-service-instance-clear-"),
       );
       const dbPath = path.join(tempDir, "orchestration.sqlite");
       const threadId = asThreadId("thread-instance-options-clear");

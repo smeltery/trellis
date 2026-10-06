@@ -27,8 +27,8 @@ const actions: SidebarSearchAction[] = [
   },
   {
     id: "feedback",
-    label: "Feedback Synara",
-    description: "Send feedback or report an issue to the Synara team.",
+    label: "Feedback Trellis",
+    description: "Send feedback or report an issue to the Trellis team.",
     keywords: ["feedback", "bug", "issue", "report", "support"],
   },
   {

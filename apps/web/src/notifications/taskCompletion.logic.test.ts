@@ -7,7 +7,7 @@ import {
   ThreadId,
   TurnId,
   type OrchestrationPendingInteraction,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import {
   buildInputNeededCopy,
   buildTaskCompletionCopy,

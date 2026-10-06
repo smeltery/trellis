@@ -3,7 +3,7 @@ import {
   type ProviderMentionReference,
   type ProviderSkillReference,
   ThreadId,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   filterPromptProviderMentionReferences,

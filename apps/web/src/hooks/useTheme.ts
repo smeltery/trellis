@@ -40,7 +40,7 @@ type ThemeSnapshot = {
   desktopBlurUnavailable: boolean;
 };
 
-const STORAGE_KEY = "synara:theme";
+const STORAGE_KEY = "trellis:theme";
 const MEDIA_QUERY = "(prefers-color-scheme: dark)";
 
 let listeners: Array<() => void> = [];

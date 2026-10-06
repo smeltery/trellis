@@ -8,7 +8,7 @@
 //          ToolCallGroupSummary, isSummarizableToolCallEntry,
 //          classifyToolCallSummaryCategory, summarizeToolCallGroup
 
-import { pluralize } from "@synara/shared/text";
+import { pluralize } from "@trellis/shared/text";
 import { isFileChangeWorkLogEntry, type WorkLogEntry } from "../../session-logic";
 import { deriveReadableCommandDisplay } from "../../lib/toolCallLabel";
 import { isReasoningUpdateWorkEntry } from "./agentActivity.logic";
@@ -62,7 +62,7 @@ export function isSummarizableToolCallEntry(entry: WorkLogEntry): boolean {
   return (
     entry.tone === "tool" &&
     !(entry.toolCallId && isReasoningUpdateWorkEntry(entry)) &&
-    !entry.synaraThreadCreation &&
+    !entry.trellisThreadCreation &&
     !entry.automation &&
     !entry.subagentAction &&
     (entry.subagents?.length ?? 0) === 0

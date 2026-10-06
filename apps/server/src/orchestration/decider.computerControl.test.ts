@@ -13,7 +13,7 @@ import {
   type OrchestrationMessage,
   type OrchestrationReadModel,
   type OrchestrationSession,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 

@@ -20,13 +20,13 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   BETA_IMPORT_REQUEST_FILE_NAME,
   BETA_IMPORT_RESULT_FILE_NAME,
-} from "@synara/shared/betaChannel";
+} from "@trellis/shared/betaChannel";
 import { copyLiveDatabase, runBetaImportIfRequested } from "./betaImport";
 
 const roots: string[] = [];
 
 function makeRoot(): string {
-  const root = mkdtempSync(join(tmpdir(), "synara-beta-import-test-"));
+  const root = mkdtempSync(join(tmpdir(), "trellis-beta-import-test-"));
   roots.push(root);
   return root;
 }
@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 async function seedStableHome(root: string): Promise<string> {
-  const stableHome = join(root, ".synara");
+  const stableHome = join(root, ".trellis");
   const stableState = join(stableHome, "userdata");
   mkdirSync(join(stableState, "secrets"), { recursive: true });
   mkdirSync(join(stableState, "logs"), { recursive: true });
@@ -88,7 +88,7 @@ function run(
 describe("runBetaImportIfRequested", () => {
   it("does nothing without a marker", async () => {
     const root = makeRoot();
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const outcome = await run({
       betaHomeDir: betaHome,
       stateDir: join(betaHome, "userdata"),
@@ -99,7 +99,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("imports the stable snapshot and reports success", async () => {
     const root = await seedStableHome(makeRoot());
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     writeMarker(betaHome, root);
 
@@ -128,7 +128,7 @@ describe("runBetaImportIfRequested", () => {
   it("keeps the existing Beta database and settings if a Stable secret is linked", async () => {
     const stableHome = await seedStableHome(makeRoot());
     const stableState = join(stableHome, "userdata");
-    const betaHome = join(stableHome, "..", ".synara-beta");
+    const betaHome = join(stableHome, "..", ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     mkdirSync(betaState, { recursive: true });
     const { DatabaseSync } = await import("node:sqlite");
@@ -157,7 +157,7 @@ describe("runBetaImportIfRequested", () => {
     async (linkedEntry) => {
       const stableHome = await seedStableHome(makeRoot());
       const stableState = join(stableHome, "userdata");
-      const betaHome = join(stableHome, "..", ".synara-beta");
+      const betaHome = join(stableHome, "..", ".trellis-beta");
       const betaState = join(betaHome, "userdata");
       mkdirSync(betaState, { recursive: true });
       writeFileSync(join(betaState, "settings.json"), "beta-only");
@@ -178,7 +178,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("preserves Beta-only entries inside a directory while re-copying Stable data", async () => {
     const stableHome = await seedStableHome(makeRoot());
-    const betaHome = join(stableHome, "..", ".synara-beta");
+    const betaHome = join(stableHome, "..", ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     mkdirSync(join(betaState, "secrets"), { recursive: true });
     writeFileSync(join(betaState, "secrets", "beta-only.json"), "beta-only");
@@ -199,7 +199,7 @@ describe("runBetaImportIfRequested", () => {
     writeFileSync(join(stableState, "state.sqlite.import-999"), "stale staging file");
     writeFileSync(join(stableState, "other.sqlite.lifecycle-lock"), "foreign lock");
 
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     writeMarker(betaHome, root);
 
@@ -216,7 +216,7 @@ describe("runBetaImportIfRequested", () => {
   it("imports while the stable database is held under an exclusive lock", async () => {
     const root = await seedStableHome(makeRoot());
     const stableState = join(root, "userdata");
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     writeMarker(betaHome, root);
 
@@ -250,7 +250,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("refuses an import that points at the beta home itself", async () => {
     const root = makeRoot();
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     writeMarker(betaHome, betaHome);
 
     const outcome = await run({
@@ -265,9 +265,9 @@ describe("runBetaImportIfRequested", () => {
 
   it("reports a missing stable database without crashing startup", async () => {
     const root = makeRoot();
-    const stableHome = join(root, ".synara");
+    const stableHome = join(root, ".trellis");
     mkdirSync(join(stableHome, "userdata"), { recursive: true });
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     writeMarker(betaHome, stableHome);
 
     const outcome = await run({
@@ -281,7 +281,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("copies no state entries when the database snapshot fails", async () => {
     const root = makeRoot();
-    const stableHome = join(root, ".synara");
+    const stableHome = join(root, ".trellis");
     const stableState = join(stableHome, "userdata");
     mkdirSync(stableState, { recursive: true });
     // A corrupt source db fails both VACUUM INTO paths, so the import must
@@ -290,7 +290,7 @@ describe("runBetaImportIfRequested", () => {
     writeFileSync(join(stableState, "settings.json"), JSON.stringify({ theme: "dark" }));
     writeFileSync(join(stableState, "secrets.json"), JSON.stringify({ token: "x" }));
 
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     writeMarker(betaHome, stableHome);
 
@@ -307,7 +307,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("removes a directory-shaped marker without failing startup", async () => {
     const root = makeRoot();
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     // A stray directory named like the marker must not throw out of finish()
     // — that throw is a StartupError on every launch.
     mkdirSync(join(betaHome, BETA_IMPORT_REQUEST_FILE_NAME), { recursive: true });
@@ -323,7 +323,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("discards a stale import request instead of importing over newer data", async () => {
     const stableHome = await seedStableHome(makeRoot());
-    const betaHome = join(stableHome, "..", ".synara-beta");
+    const betaHome = join(stableHome, "..", ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     mkdirSync(betaHome, { recursive: true });
     writeFileSync(
@@ -354,7 +354,7 @@ describe("runBetaImportIfRequested", () => {
 
   it("replaces a stale marker without retry loops", async () => {
     const root = await seedStableHome(makeRoot());
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     writeMarker(betaHome, root);
     writeFileSync(join(betaHome, BETA_IMPORT_REQUEST_FILE_NAME), "garbage");
 
@@ -368,9 +368,9 @@ describe("runBetaImportIfRequested", () => {
     expect(existsSync(join(betaHome, BETA_IMPORT_REQUEST_FILE_NAME))).toBe(false);
   });
 
-  it("refuses a source that is not the Synara data folder", async () => {
+  it("refuses a source that is not the Trellis data folder", async () => {
     const root = await seedStableHome(makeRoot());
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     writeMarker(betaHome, root);
 
@@ -379,7 +379,7 @@ describe("runBetaImportIfRequested", () => {
       { allowedSourceHomes: [join(root, "..", "somewhere-else")] },
     );
     expect(outcome.ok).toBe(false);
-    expect(outcome.error).toContain("not the Synara data folder");
+    expect(outcome.error).toContain("not the Trellis data folder");
     expect(existsSync(join(betaState, "state.sqlite"))).toBe(false);
   });
 
@@ -390,7 +390,7 @@ describe("runBetaImportIfRequested", () => {
     stableDb.exec("CREATE TABLE effect_sql_migrations (migration_id INTEGER, name TEXT)");
     stableDb.exec("INSERT INTO effect_sql_migrations VALUES (1, 'a'), (51, 'from-the-future')");
     stableDb.close();
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     writeMarker(betaHome, root);
 
@@ -399,14 +399,14 @@ describe("runBetaImportIfRequested", () => {
       { latestMigrationId: 50 },
     );
     expect(outcome.ok).toBe(false);
-    expect(outcome.error).toContain("Update Synara Beta");
+    expect(outcome.error).toContain("Update Trellis Beta");
     expect(existsSync(join(betaState, "state.sqlite"))).toBe(false);
     expect(existsSync(join(betaState, "settings.json"))).toBe(false);
   });
 
   it("drops a stale beta WAL so it cannot replay over the imported database", async () => {
     const root = await seedStableHome(makeRoot());
-    const betaHome = join(root, ".synara-beta");
+    const betaHome = join(root, ".trellis-beta");
     const betaState = join(betaHome, "userdata");
     mkdirSync(betaState, { recursive: true });
 

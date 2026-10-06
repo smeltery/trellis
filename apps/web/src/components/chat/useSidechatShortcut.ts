@@ -1,4 +1,4 @@
-import type { ResolvedKeybindingsConfig, ThreadId } from "@synara/contracts";
+import type { ResolvedKeybindingsConfig, ThreadId } from "@trellis/contracts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { requestComposerFocus } from "../../composerFocusRequestStore";

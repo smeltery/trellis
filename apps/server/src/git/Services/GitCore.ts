@@ -35,7 +35,7 @@ import type {
   GitStatusInput,
   GitStatusResult,
   GitWorkingTreeDiffStatsResult,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import type { GitCheckoutDirtyWorktreeError, GitCommandError } from "../Errors.ts";
 
@@ -502,5 +502,5 @@ export interface GitCoreShape {
  * GitCore - Service tag for low-level Git repository operations.
  */
 export class GitCore extends ServiceMap.Service<GitCore, GitCoreShape>()(
-  "synara/git/Services/GitCore",
+  "trellis/git/Services/GitCore",
 ) {}

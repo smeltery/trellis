@@ -1,5 +1,5 @@
 import { flushWorkspaceEditors } from "~/lib/workspaceEditorSession";
-import { resolveComputerInvocationMode } from "@synara/shared/computerInvocation";
+import { resolveComputerInvocationMode } from "@trellis/shared/computerInvocation";
 import {
   prepareComputerPermissionGuide,
   readLocalComputerPermissionBridge,

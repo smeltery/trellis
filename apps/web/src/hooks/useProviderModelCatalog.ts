@@ -10,7 +10,7 @@ import type {
   ProviderKind,
   ProviderListModelsResult,
   ProviderModelDescriptor,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 

@@ -23,7 +23,7 @@ import {
   WS_GIT_ACTION_RECOVERY_CAPABILITY,
   WsCompatibilityError,
   type WsBootstrapNegotiateResult,
-} from "@synara/contracts";
+} from "@trellis/contracts";
 
 import {
   shouldKeepServerLifecycleStream,
@@ -848,9 +848,9 @@ describe("WsTransport", () => {
       kind: "completed" as const,
       result: {
         worktree: {
-          path: "/repo/.codex/worktrees/generated/synara",
+          path: "/repo/.codex/worktrees/generated/trellis",
           ref: "0123456789abcdef0123456789abcdef01234567",
-          branch: "synara/abcd1234",
+          branch: "trellis/abcd1234",
         },
       },
     };
