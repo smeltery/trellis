@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="fork/branding/prod/trellis-logo.svg" alt="Trellis logo" width="96" height="96" />
+</p>
+
 # Trellis
 
 [![CI](https://github.com/smeltery/trellis/actions/workflows/ci.yml/badge.svg)](https://github.com/smeltery/trellis/actions/workflows/ci.yml)
@@ -13,6 +17,8 @@ organize work into projects and threads, review changes, and use terminals and
 Git worktrees from one web or desktop interface.
 
 [Download](https://github.com/smeltery/trellis/releases) · [Documentation](docs/README.md) · [Getting started](docs/user/getting-started.md)
+
+![Trellis — a local-first workspace for coding agents](fork/branding/og.png)
 
 ## Develop
 
