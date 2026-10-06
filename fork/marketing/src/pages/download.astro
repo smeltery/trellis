@@ -17,6 +17,7 @@ import { RELEASES_URL, REPO_URL } from "../lib/releases";
       <a class="download-card" href={RELEASES_URL} data-release-platform="windows-x64"><span>Windows</span><strong>x64 installer</strong><small>Windows 10 & 11 <span aria-hidden="true">↗</span></small></a>
       <a class="download-card" href={RELEASES_URL} data-release-platform="linux-x64"><span>Linux</span><strong>x64 AppImage</strong><small>Your Linux desktop <span aria-hidden="true">↗</span></small></a>
     </div>
+    <p class="download-note">Some releases are unsigned. macOS may block apps that are not notarized; Windows may show SmartScreen warnings. Check the release notes and artifact provenance before installing.</p>
     <p class="download-note">Install a supported provider CLI and sign in before your first thread.<br /><a href={`${REPO_URL}/blob/main/docs/user/getting-started.md`}>Read the getting started guide ↗</a></p>
     <div class="download-links"><a href={RELEASES_URL}>All releases ↗</a><a href={`${REPO_URL}/blob/main/docs/maintainers/development.md`}>Build from source ↗</a></div>
   </section>

@@ -124,3 +124,40 @@ describe("release artifact provenance", () => {
     ).rejects.toThrow("requires verified signing");
   });
 });
+
+it.each(["mac", "win"] as const)(
+  "requires an explicit policy for unsigned %s publication",
+  async (platform) => {
+    const assetsDirectory = mkdtempSync(join(tmpdir(), "trellis-unsigned-policy-"));
+    temporaryRoots.push(assetsDirectory);
+    writeFileSync(
+      join(assetsDirectory, platform === "mac" ? "Trellis.dmg" : "Trellis.exe"),
+      "unsigned fixture",
+    );
+    const input = {
+      assetsDirectory,
+      platform,
+      arch: "x64",
+      target: platform === "mac" ? "dmg" : "nsis",
+      version: "1.2.3",
+      sourceCommit: "a".repeat(40),
+      sourceTag: "v1.2.3",
+      lockfileSha256: "b".repeat(64),
+      publication: true,
+      signed: false,
+    };
+    await expect(writeReleaseArtifactProvenance(input)).rejects.toThrow(
+      "requires verified signing",
+    );
+    const result = await writeReleaseArtifactProvenance({
+      ...input,
+      allowUnsignedPublication: true,
+    });
+    expect(result.manifest.signing).toEqual({
+      status: "unsigned-explicit-release",
+      scheme: "none",
+      identity: null,
+      checks: ["explicit repository unsigned release policy"],
+    });
+  },
+);

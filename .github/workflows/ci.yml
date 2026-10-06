@@ -345,6 +345,9 @@ jobs:
       - name: Verify Windows terminal PTY native dependency under Bun
         run: bun scripts/node-pty-smoke.mjs
 
+      - name: Test portable release archive import on Windows
+        run: bun run --cwd scripts test import-portable-build.test.ts
+
       - name: Test Windows shared runtime and migration recovery
         run: >-
           bun run --cwd packages/shared test
