@@ -6,6 +6,8 @@ create the tag, and explicitly dispatch the release build. Prerelease tags are
 excluded. With no fork release tags, the initial version comes from the desktop
 package manifest, keeping it above the inherited compatibility floor. The tag points to the exact tested commit, not a newer main HEAD.
 Re-running dispatch for an existing tag supports recovery from a failed build.
+The tag supplies the artifact version explicitly to desktop and server builders;
+source package versions may lag until post-publication version synchronization.
 
 ```mermaid
 sequenceDiagram
@@ -25,12 +27,20 @@ workflow token does not trigger tag-push workflows recursively, so the explicit
 workflow dispatch is necessary. Publication uses the fork repository and Trellis
 update channels; no Synara release or feed is modified.
 
-Before the first published release, configure Apple signing/notarization and
-Windows signing credentials described in the inherited [release reference](../release.md).
-Use `TRELLIS_` in place of that reference's historical environment prefix, and
-`smeltery/trellis` as the update repository. Optional CLI publishing requires a
-separately configured npm package and trusted publisher. Missing signing
-credentials fail publication; local builds do not establish signed-release readiness.
+Signing is preferred, but the fork also supports explicitly authorized unsigned
+releases. Set the repository Actions variable `TRELLIS_ALLOW_UNSIGNED_RELEASE=1`
+to permit macOS and Windows publication without signing credentials. Unset it to
+require signing again. Complete signing credentials always take precedence.
+Unsigned artifacts record `unsigned-explicit-release` in their provenance; they
+are not represented as signed or notarized. Release notes and the download page
+explain Gatekeeper and SmartScreen warnings. Windows Defender verification,
+artifact hashes, source/lockfile verification, and all quality gates still apply.
+
+For signed releases, configure Apple signing/notarization and Windows signing
+credentials described in the inherited [release reference](../release.md). Use
+`TRELLIS_` in place of its historical environment prefix, and `smeltery/trellis`
+as the update repository. Optional CLI publishing requires a separately
+configured npm package and trusted publisher.
 
 Validate without publishing:
 

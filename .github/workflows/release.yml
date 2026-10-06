@@ -468,6 +468,7 @@ jobs:
           AZURE_TRUSTED_SIGNING_PUBLISHER_NAME: ${{ secrets.AZURE_TRUSTED_SIGNING_PUBLISHER_NAME }}
           AZURE_TRUSTED_SIGNING_SUBJECT_DN: ${{ secrets.AZURE_TRUSTED_SIGNING_SUBJECT_DN }}
           TRELLIS_PUBLISH_RELEASE: ${{ needs.preflight.outputs.publish_release }}
+          ALLOW_UNSIGNED_PUBLICATION: ${{ vars.TRELLIS_ALLOW_UNSIGNED_RELEASE == '1' }}
           ALLOW_UNSIGNED_WINDOWS_PUBLICATION: ${{ vars.TRELLIS_ALLOW_UNSIGNED_WINDOWS_RELEASE == needs.preflight.outputs.version }}
           SOURCE_COMMIT: ${{ needs.preflight.outputs.source_commit }}
           SOURCE_TAG: ${{ needs.preflight.outputs.source_tag }}
@@ -512,11 +513,11 @@ jobs:
               echo "macOS signing enabled."
               signed=true
               args+=(--signed)
-            elif [[ "$TRELLIS_PUBLISH_RELEASE" == "true" ]]; then
+            elif [[ "$TRELLIS_PUBLISH_RELEASE" == "true" && "$ALLOW_UNSIGNED_PUBLICATION" != "true" ]]; then
               echo "Publishing macOS artifacts requires every signing and notarization secret."
               exit 1
             else
-              echo "Build-only macOS artifact will be unsigned because publication is disabled."
+              echo "macOS artifact will be unsigned and not notarized (explicit release policy or build-only run)."
             fi
           elif [[ "${{ matrix.platform }}" == "win" ]]; then
             if has_all \
@@ -531,11 +532,11 @@ jobs:
               echo "Windows signing enabled (Azure Trusted Signing)."
               signed=true
               args+=(--signed)
-            elif [[ "$TRELLIS_PUBLISH_RELEASE" == "true" && "$ALLOW_UNSIGNED_WINDOWS_PUBLICATION" != "true" ]]; then
+            elif [[ "$TRELLIS_PUBLISH_RELEASE" == "true" && "$ALLOW_UNSIGNED_WINDOWS_PUBLICATION" != "true" && "$ALLOW_UNSIGNED_PUBLICATION" != "true" ]]; then
               echo "Publishing Windows artifacts requires every Azure Trusted Signing secret."
               exit 1
             else
-              echo "Windows artifact will be unsigned under the explicit version-scoped release exception."
+              echo "Windows artifact will be unsigned (explicit release policy or build-only run)."
             fi
           else
             echo "Signing disabled for ${{ matrix.platform }}."
@@ -584,6 +585,7 @@ jobs:
           LOCKFILE_SHA256: ${{ needs.preflight.outputs.lockfile_sha256 }}
           PUBLISH_RELEASE: ${{ needs.preflight.outputs.publish_release }}
           SIGNED_ARTIFACT: ${{ steps.build_artifact.outputs.signed }}
+          ALLOW_UNSIGNED_PUBLICATION: ${{ vars.TRELLIS_ALLOW_UNSIGNED_RELEASE == '1' }}
           ALLOW_UNSIGNED_WINDOWS_PUBLICATION: ${{ vars.TRELLIS_ALLOW_UNSIGNED_WINDOWS_RELEASE == needs.preflight.outputs.version }}
         run: |
           node scripts/write-release-artifact-provenance.ts \
@@ -597,6 +599,7 @@ jobs:
             --lockfile-sha256 "$LOCKFILE_SHA256" \
             --publication "$PUBLISH_RELEASE" \
             --signed "$SIGNED_ARTIFACT" \
+            --allow-unsigned-publication "$ALLOW_UNSIGNED_PUBLICATION" \
             --allow-unsigned-windows-publication "$ALLOW_UNSIGNED_WINDOWS_PUBLICATION" \
             --expected-mac-team-id "$EXPECTED_MAC_TEAM_ID" \
             --expected-windows-publisher "$EXPECTED_WINDOWS_PUBLISHER" \
@@ -847,6 +850,11 @@ jobs:
           target_commitish: ${{ needs.preflight.outputs.ref }}
           name: Trellis v${{ needs.preflight.outputs.version }}
           generate_release_notes: true
+          body: |
+            Check each artifact’s provenance JSON for its signing status and SHA-256.
+            Unsigned macOS downloads are not notarized and may be blocked by Gatekeeper.
+            Unsigned Windows downloads may show SmartScreen warnings.
+            Only install downloads you trust; see docs/user/getting-started.md in this repository.
           prerelease: ${{ needs.preflight.outputs.is_prerelease }}
           make_latest: ${{ needs.preflight.outputs.make_latest }}
           files: |

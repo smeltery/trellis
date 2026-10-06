@@ -24,3 +24,11 @@ does not include a model subscription. See [provider setup](providers.md).
 
 Trellis has its own app identity and data directory. It can coexist with Synara;
 it does not automatically import or modify Synara's state.
+
+## Unsigned downloads
+
+Some Trellis releases are unsigned. Check the release notes and the artifact's
+provenance JSON for signing status and SHA-256 before installing. macOS may block
+apps that are not notarized, and Windows may show SmartScreen warnings. Only
+install software you trust. Building from source is also supported; see the
+[development guide](../maintainers/development.md).

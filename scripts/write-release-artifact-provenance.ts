@@ -20,6 +20,7 @@ interface CliOptions {
   readonly publication: boolean;
   readonly signed: boolean;
   readonly allowUnsignedWindowsPublication: boolean;
+  readonly allowUnsignedPublication: boolean;
   readonly expectedMacTeamId?: string;
   readonly expectedWindowsPublisher?: string;
   readonly expectedWindowsSubjectDn?: string;
@@ -66,6 +67,7 @@ function parseArgs(argv: ReadonlyArray<string>): CliOptions {
     "--lockfile-sha256",
     "--publication",
     "--signed",
+    "--allow-unsigned-publication",
     "--allow-unsigned-windows-publication",
     "--expected-mac-team-id",
     "--expected-windows-publisher",
@@ -90,6 +92,10 @@ function parseArgs(argv: ReadonlyArray<string>): CliOptions {
     lockfileSha256: required("--lockfile-sha256"),
     publication: parseBoolean("--publication", values.get("--publication")),
     signed: parseBoolean("--signed", values.get("--signed")),
+    allowUnsignedPublication: parseBoolean(
+      "--allow-unsigned-publication",
+      values.get("--allow-unsigned-publication") ?? "false",
+    ),
     allowUnsignedWindowsPublication: parseBoolean(
       "--allow-unsigned-windows-publication",
       values.get("--allow-unsigned-windows-publication"),

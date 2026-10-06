@@ -1,3 +1,4 @@
+import { portableTarExecutable } from "./lib/portable-tar.ts";
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -11,7 +12,7 @@ if (!directory || !sourceCommit)
   throw new Error("Usage: import-portable-build.ts ARTIFACT_DIRECTORY SOURCE_COMMIT");
 const archive = "outputs.tar";
 const runTar = (args: string[]) => {
-  const result = spawnSync("tar", args, {
+  const result = spawnSync(portableTarExecutable(), args, {
     cwd: directory,
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,

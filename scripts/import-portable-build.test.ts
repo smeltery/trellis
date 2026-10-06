@@ -1,3 +1,4 @@
+import { portableTarExecutable } from "./lib/portable-tar.ts";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -43,10 +44,14 @@ it("imports a verified portable archive from a path containing a drive colon", (
     join(artifact, "manifest.json"),
     JSON.stringify(portableBuildManifest(source, commit)),
   );
-  const archived = spawnSync("tar", ["-cf", "outputs.tar", "-C", source, ...PORTABLE_BUILD_ROOTS], {
-    cwd: artifact,
-    encoding: "utf8",
-  });
+  const archived = spawnSync(
+    portableTarExecutable(),
+    ["-cf", "outputs.tar", "-C", source, ...PORTABLE_BUILD_ROOTS],
+    {
+      cwd: artifact,
+      encoding: "utf8",
+    },
+  );
   expect(archived.status, archived.stderr).toBe(0);
 
   const imported = spawnSync(
@@ -58,4 +63,19 @@ it("imports a verified portable archive from a path containing a drive colon", (
   expect(readFileSync(join(destination, "apps/server/dist/index.mjs"), "utf8")).toBe(
     "apps/server/dist/index.mjs",
   );
+});
+
+it("uses native Windows tar even when Git Bash tools precede it on PATH", () => {
+  expect(
+    portableTarExecutable("win32", {
+      SystemRoot: "C:\\Windows",
+      PATH: "C:\\Program Files\\Git\\usr\\bin",
+    }),
+  ).toBe("C:\\Windows\\System32\\tar.exe");
+  expect(portableTarExecutable("win32", { SYSTEMROOT: "D:\\Windows" })).toBe(
+    "D:\\Windows\\System32\\tar.exe",
+  );
+  expect(() => portableTarExecutable("win32", {})).toThrow("SystemRoot");
+  expect(portableTarExecutable("linux", {})).toBe("tar");
+  expect(portableTarExecutable("darwin", {})).toBe("tar");
 });
