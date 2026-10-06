@@ -1,8 +1,4 @@
-<p align="center">
-  <img src="fork/branding/prod/trellis-logo.svg" alt="Trellis logo" width="96" height="96" />
-</p>
-
-# Trellis
+# <img src="fork/branding/prod/trellis-logo.svg" alt="" width="36" height="36" align="absmiddle" /> Trellis
 
 [![CI](https://github.com/smeltery/trellis/actions/workflows/ci.yml/badge.svg)](https://github.com/smeltery/trellis/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/smeltery/trellis)](https://github.com/smeltery/trellis/releases)
