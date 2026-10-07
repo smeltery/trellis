@@ -1,35 +1,36 @@
-<section class="preview shell" aria-label="Interactive workspace preview">
+<section class="preview shell" aria-label="Interactive workspace illustration">
   <div class="window">
-    <div class="window-bar"><div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div><span>your next good idea</span><span class="local-dot">local workspace</span></div>
+    <div class="window-bar"><div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div><span>Trellis</span><span class="local-dot">local workspace</span></div>
     <div class="workspace">
+      <div class="workspace-rail" aria-hidden="true"><img src="/icon.png" width="24" height="24" alt="" /><span class="rail-selected">⌂</span><span>▱</span><span>▦</span><span class="rail-settings">⚙</span></div>
       <aside class="workspace-sidebar" aria-label="Example project">
-        <div class="workspace-brand"><img src="/icon.png" alt="" width="24" height="24" /> trellis</div>
-        <p class="sidebar-label">PROJECTS</p>
-        <div class="project-name"><span aria-hidden="true">⌘</span> little-garden</div>
+        <div class="workspace-brand">Chats <span aria-hidden="true">⌄ &nbsp; ⌕ &nbsp; +</span></div>
+        <div class="preview-new-chat">New chat</div>
+        <p class="sidebar-label">Projects <span aria-hidden="true">+</span></p>
+        <div class="project-name"><span aria-hidden="true">▱</span> little-garden</div>
         <div class="thread selected"><span class="status-dot"></span> A better welcome</div>
         <div class="thread">A place for notes</div><div class="thread">Tidy up the details</div>
-        <div class="sidebar-bottom"><span aria-hidden="true">⑂</span> welcome-page <span class="worktree-label">worktree</span></div>
+        <div class="sidebar-bottom">Local workspace</div>
       </aside>
       <div class="workspace-main">
-        <div class="workspace-top"><div><strong>A better welcome</strong><span>little-garden / welcome-page</span></div><span class="review-state">Ready to review</span></div>
-        <div class="preview-tabs" role="tablist" aria-label="Explore the workspace">
-          <button type="button" role="tab" aria-selected="true" aria-controls="preview-thread" id="tab-thread" data-panel="thread">Thread</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="preview-changes" id="tab-changes" data-panel="changes" tabindex="-1">Changes <span>2</span></button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="preview-terminal" id="tab-terminal" data-panel="terminal" tabindex="-1">Terminal</button>
-        </div>
-        <div id="preview-thread" class="preview-panel conversation" role="tabpanel" aria-labelledby="tab-thread" tabindex="0">
-          <div class="message user-message"><span class="avatar">Y</span><div><strong>You</strong><p>Give the welcome page a little breathing room. Keep it simple.</p></div></div>
-          <div class="message"><img class="avatar" src="/icon.png" alt="" /><div><strong>Your coding agent</strong><p>I’ve simplified the layout and made the next step easier to find.</p><div class="task-done"><span aria-hidden="true">✓</span> Updated the welcome page <small>+24 −8</small></div><p class="muted">Two files changed. Take a look when you’re ready.</p></div></div>
-          <div class="mock-composer" aria-hidden="true">Where should we go next?<span>↑</span></div>
-        </div>
-        <div id="preview-changes" class="preview-panel" role="tabpanel" aria-labelledby="tab-changes" tabindex="0" hidden>
-          <div class="diff-header">src/Welcome.tsx <span>+24 −8</span></div>
-          <pre class="diff"><code><span>  &lt;main className="welcome"&gt;</span><span class="removed">−   &lt;h1&gt;Welcome to your dashboard&lt;/h1&gt;</span><span class="added">+   &lt;h1&gt;Make yourself at home.&lt;/h1&gt;</span><span class="added">+   &lt;p&gt;A little space for your ideas.&lt;/p&gt;</span><span>    &lt;ProjectList projects=&#123;projects&#125; /&gt;</span><span>  &lt;/main&gt;</span></code></pre><p class="panel-note">A clear view of what changed, before you commit.</p>
-        </div>
-        <div id="preview-terminal" class="preview-panel terminal" role="tabpanel" aria-labelledby="tab-terminal" tabindex="0" hidden><p>little-garden <span>on welcome-page</span></p><pre><code>$ bun run test
+        <div class="workspace-top"><div><span>little-garden /</span> <strong>A better welcome</strong></div><button type="button" class="preview-dock-toggle" aria-expanded="true" aria-controls="preview-dock">Changes <span>+24 −8</span></button></div>
+        <div class="workspace-content">
+          <div class="conversation">
+            <div class="user-message"><p>Give the welcome page a little breathing room. Keep it simple.</p></div>
+            <div class="agent-message"><p>I simplified the welcome page and made the next step easier to find.</p><div class="task-done"><span aria-hidden="true">⌄</span> Edited 2 files <small>+24 −8</small></div><p>The project list stays front and center, with a clearer action to start something new.</p><p class="completed"><span aria-hidden="true">✓</span> Completed</p></div>
+            <div class="mock-composer" aria-label="Illustrative message composer"><p>Ask anything, @tag files/folders, or use /</p><div class="composer-controls"><span aria-hidden="true">+</span><span class="composer-access">Full access ⌄</span><span class="composer-model">Codex ⌄ &nbsp; GPT-5 ⌄</span><span class="composer-send" aria-hidden="true">↑</span></div></div>
+            <p class="composer-branch"><span aria-hidden="true">⑂</span> welcome-page</p>
+          </div>
+          <aside id="preview-dock" class="preview-dock" aria-label="Example right sidebar">
+            <div class="preview-tabs" role="tablist" aria-label="Explore the right sidebar">
+              <button type="button" role="tab" aria-selected="true" aria-controls="preview-changes" id="tab-changes" data-panel="changes">Changes</button>
+              <button type="button" role="tab" aria-selected="false" aria-controls="preview-terminal" id="tab-terminal" data-panel="terminal" tabindex="-1">Terminal</button>
+            </div>
+            <div id="preview-changes" class="preview-panel" role="tabpanel" aria-labelledby="tab-changes" tabindex="0"><div class="diff-header">Welcome.tsx <span>+24 −8</span></div><pre class="diff"><code><span class="removed">− Welcome back</span><span class="added">+ Make yourself</span><span class="added">  at home.</span></code></pre><div class="diff-header secondary-file">welcome.css</div><p class="panel-note">2 files changed</p></div>
+            <div id="preview-terminal" class="preview-panel terminal" role="tabpanel" aria-labelledby="tab-terminal" tabindex="0" hidden><p>little-garden</p><pre><code>$ bun run test
 
-<span>✓</span> welcome page renders the project list
-<span>✓</span> new project action opens the editor
+<span>✓</span> welcome page
+<span>✓</span> new project
 
 2 tests passed
 
@@ -38,10 +39,12 @@ $ git status --short
  M src/welcome.css
 
 $ <span class="cursor">▌</span></code></pre></div>
+          </aside>
+        </div>
       </div>
     </div>
   </div>
-  <p class="preview-caption">A small workspace preview. Try the tabs to look around.</p>
+  <p class="preview-caption">A simplified illustration of Trellis. Explore the changes and terminal in the right sidebar.</p>
 </section>
 <script>
   const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-panel]")];
@@ -65,4 +68,11 @@ $ <span class="cursor">▌</span></code></pre></div>
       if (target) { selectTab(target); target.focus(); }
     });
   }
+  const toggle = document.querySelector<HTMLButtonElement>(".preview-dock-toggle");
+  const dock = document.getElementById("preview-dock");
+  toggle?.addEventListener("click", () => {
+    if (!dock) return;
+    dock.hidden = !dock.hidden;
+    toggle.setAttribute("aria-expanded", String(!dock.hidden));
+  });
 </script>

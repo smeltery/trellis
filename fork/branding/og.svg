@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
 <title id="title">Trellis — room for your next big idea</title>
-<desc id="description">A local-first workspace for coding agents, with an illustrative preview of projects, agent threads, changes, and a terminal.</desc>
+<desc id="description">A local-first workspace for coding agents, with an illustrative preview of the navigation rail, projects, agent conversation, model and permission controls, and a changes dock.</desc>
 <defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#253d29" flood-opacity="0.10" /></filter></defs>
 <rect x="0" y="0" width="1200" height="630" rx="0" fill="#f6f6f3" />
 <circle cx="1030" cy="275" r="280" fill="#e7eee3"/>
@@ -27,14 +27,15 @@
 <text x="60" y="466" font-family="Helvetica, Arial, sans-serif" font-size="19" fill="#62665e" >Bring your providers. Keep your flow.</text>
 <rect x="60" y="505" width="166" height="36" rx="18" fill="#e5eddf" />
 <text x="143" y="523" text-anchor="middle" dominant-baseline="central" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#36543b">Web + desktop</text>
-<rect x="510" y="119" width="632" height="390" rx="14" fill="#ffffff" filter="url(#shadow)" stroke="#d7ded2"/>
-<rect x="511" y="120" width="630" height="35" rx="13" fill="#f3f5f0" />
-<circle cx="530" cy="137" r="4" fill="#d99b92"/>
-<circle cx="546" cy="137" r="4" fill="#dfc384"/>
-<circle cx="562" cy="137" r="4" fill="#a4be91"/>
-<text x="824" y="142" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#737a6d" text-anchor="middle">little-garden</text>
-<rect x="511" y="155" width="159" height="338" rx="0" fill="#f7f8f4" />
-<g transform="translate(527 175) scale(.34)">
+<!-- Simplified rail-layout illustration based on AppRail, Sidebar, ChatHeader, and ChatView. -->
+<rect x="510" y="119" width="632" height="390" rx="14" fill="#ffffff" filter="url(#shadow)" stroke="#dce0db"/>
+<rect x="511" y="120" width="630" height="29" rx="13" fill="#f8f8f8" />
+<circle cx="525" cy="134" r="3.5" fill="#ee9b93"/>
+<circle cx="538" cy="134" r="3.5" fill="#e9c47c"/>
+<circle cx="551" cy="134" r="3.5" fill="#a7c88e"/>
+<text x="826" y="138" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#777b80" text-anchor="middle">Trellis</text>
+<rect x="511" y="149" width="33" height="346" rx="0" fill="#f7f7f7" />
+<g transform="translate(519 162) scale(0.265625)">
   <rect width="64" height="64" rx="14" fill="#2F7D5B" />
   <ellipse cx="32" cy="53" rx="16" ry="3.5" fill="#25684D" />
   <path d="M18 49 L18 18" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
@@ -48,51 +49,73 @@
   <path d="M23 34 C16 31 14 25 18 21 C24 21 27 27 23 34 Z" fill="#25684D" />
   <path d="M36 28 C43 26 47 30 47 36 C40 37 35 34 36 28 Z" fill="#25684D" />
 </g>
-<text x="557" y="192" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#252822" font-weight="700">trellis</text>
-<text x="528" y="232" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#899080" letter-spacing="1.4">PROJECTS</text>
-<text x="528" y="258" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#252822" font-weight="600">little-garden</text>
-<rect x="522" y="274" width="139" height="30" rx="6" fill="#e4ecdd" />
-<text x="533" y="293" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#36543b" >A better welcome</text>
-<text x="533" y="328" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#777d71" >A place for notes</text>
-<text x="533" y="356" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#777d71" >Tidy up the details</text>
-<text x="528" y="478" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#687360" >⑂ welcome-page</text>
-<text x="691" y="187" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#252822" font-weight="600">A better welcome</text>
-<text x="691" y="208" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#858a80" >little-garden / welcome-page</text>
-<rect x="1030" y="175" width="92" height="23" rx="11" fill="#eaf2e4" />
-<text x="1076" y="190" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#496943" text-anchor="middle">Ready to review</text>
-<path d="M670 222H1141" stroke="#e1e5dc"/>
-<text x="692" y="245" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#2f7d5b" font-weight="600">Thread</text>
-<text x="758" y="245" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#767e6f" >Changes  2</text>
-<text x="853" y="245" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#767e6f" >Terminal</text>
-<rect x="691" y="254" width="39" height="2" rx="0" fill="#2f7d5b" />
-<path d="M670 259H1141" stroke="#e1e5dc"/>
-<rect x="691" y="278" width="24" height="24" rx="7" fill="#eeeee7" />
-<text x="699" y="295" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#777d70" >Y</text>
-<text x="725" y="288" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#252822" font-weight="600">You</text>
-<text x="725" y="308" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#666e5f" >Give the welcome page a little breathing room.</text>
-<g transform="translate(691 329) scale(.375)">
-  <rect width="64" height="64" rx="14" fill="#2F7D5B" />
-  <ellipse cx="32" cy="53" rx="16" ry="3.5" fill="#25684D" />
-  <path d="M18 49 L18 18" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
-  <path d="M46 49 L46 18" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
-  <path d="M14 22 L50 22" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
-  <path d="M14 34 L50 34" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
-  <path d="M14 46 L50 46" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
-  <path d="M18 46 L46 22" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
-  <path d="M18 22 L46 46" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
-  <path d="M24 48 C23 39 29 36 32 31 C36 25 33 20 29 17" stroke="#25684D" stroke-width="3" stroke-linecap="round" fill="none" />
-  <path d="M23 34 C16 31 14 25 18 21 C24 21 27 27 23 34 Z" fill="#25684D" />
-  <path d="M36 28 C43 26 47 30 47 36 C40 37 35 34 36 28 Z" fill="#25684D" />
-</g>
-<text x="725" y="340" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#252822" font-weight="600">Your coding agent</text>
-<text x="725" y="361" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#666e5f" >The layout is simpler. Your next step is clearer.</text>
-<rect x="725" y="376" width="390" height="31" rx="6" fill="#f2f6ed" />
-<text x="738" y="396" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#45613c" >✓ Updated the welcome page</text>
-<text x="1052" y="396" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#557749" >+24 −8</text>
-<rect x="690" y="432" width="429" height="49" rx="9" fill="#fafbf8" stroke="#dfe5d9"/>
-<text x="704" y="461" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#8b9184" >Where should we go next?</text>
-<rect x="1087" y="443" width="25" height="25" rx="7" fill="#2f7d5b" />
-<text x="1094" y="460" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#ffffff" >↑</text>
+<rect x="516" y="192" width="23" height="24" rx="6" fill="#e9e9e9" />
+<path d="M522 201l6-5 6 5v9h-12z" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M525 210v-6h6v6" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M521 231h5l2 3h7v9h-14z" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M522 261h12v11h-12z M525 259v4 M531 259v4" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="528" cy="477" r="5" fill="none" stroke="#85898d"/>
+<circle cx="528" cy="477" r="1.5" fill="#85898d"/>
+<rect x="544" y="149" width="129" height="346" rx="0" fill="#fafafa" />
+<path d="M543 149v346" fill="none" stroke="#e8e8e8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M673 149v346" fill="none" stroke="#e8e8e8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="556" y="174" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#303236" font-weight="600">Chats</text>
+<text x="591" y="174" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#7a7d82" >⌄</text>
+<circle cx="632" cy="170" r="3.5" fill="none" stroke="#8b8e91"/>
+<path d="M635 173l3 3" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="650" y="174" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#777b80" >+</text>
+<text x="556" y="205" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" >New chat</text>
+<text x="556" y="237" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#8b8e91" >Projects</text>
+<text x="653" y="237" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#8b8e91" >+</text>
+<path d="M555 251h4l2 2h8v8h-14z" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="574" y="260" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" font-weight="600">little-garden</text>
+<rect x="550" y="272" width="117" height="25" rx="6" fill="#ececec" />
+<circle cx="561" cy="284" r="2.5" fill="#4b9b70"/>
+<text x="569" y="287" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#303236" >A better welcome</text>
+<text x="569" y="313" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#6f7378" >A place for notes</text>
+<text x="569" y="337" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#6f7378" >Tidy up the details</text>
+<text x="557" y="478" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#979a9e" >Local workspace</text>
+<text x="688" y="170" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#6d7278" >little-garden</text>
+<text x="753" y="170" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" font-weight="600">/  A better welcome</text>
+<text x="939" y="170" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#73777c" >…</text>
+<path d="M965 159h12v12h-12z M972 159v12" fill="none" stroke="#84888c" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M673 183h468" fill="none" stroke="#ebebeb" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="721" y="202" width="238" height="42" rx="10" fill="#f5f5f5" />
+<text x="733" y="219" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#303236" >Give the welcome page a little breathing room.</text>
+<text x="733" y="233" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#303236" >Keep it simple.</text>
+<text x="691" y="268" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" >I simplified the welcome page and made</text>
+<text x="691" y="284" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" >the next step easier to find.</text>
+<text x="691" y="310" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#7c8186" >⌄</text>
+<text x="705" y="310" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#73797e" >Edited 2 files</text>
+<text x="846" y="310" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#348456" >+24</text>
+<text x="873" y="310" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#b76868" >−8</text>
+<text x="691" y="335" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" >The project list stays front and center,</text>
+<text x="691" y="351" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" >with a clearer action to start something new.</text>
+<text x="691" y="378" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#777e82" >✓</text>
+<text x="706" y="378" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#92979c" >Completed</text>
+<rect x="687" y="403" width="278" height="78" rx="12" fill="#ffffff" stroke="#e1e3e5"/>
+<text x="699" y="422" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#a1a5aa" >Ask anything, @tag files/folders, or use /</text>
+<text x="699" y="458" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#767c82" >+</text>
+<text x="717" y="458" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#bd7c40" >Full access ⌄</text>
+<text x="796" y="458" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#73787e" >Codex ⌄</text>
+<text x="843" y="458" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#73787e" >GPT-5 ⌄</text>
+<rect x="935" y="443" width="22" height="22" rx="11" fill="#282a2c" />
+<path d="M946 459v-10 M942 453l4-4 4 4" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="697" y="495" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#8a8f94" >⑂ welcome-page</text>
+<rect x="984" y="184" width="157" height="311" rx="0" fill="#fcfcfc" />
+<path d="M983 184v311" fill="none" stroke="#e8e8e8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="996" y="204" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#303236" font-weight="600">Changes</text>
+<text x="1124" y="204" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#989ca1" >×</text>
+<path d="M984 216h157" fill="none" stroke="#ededed" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="996" y="238" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#747b81" >Welcome.tsx</text>
+<text x="1096" y="238" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#548466" >+24 −8</text>
+<rect x="990" y="251" width="145" height="20" rx="0" fill="#fbeeee" />
+<rect x="990" y="271" width="145" height="35" rx="0" fill="#edf6ed" />
+<text x="996" y="265" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#a16e6e">− Welcome back</text>
+<text x="996" y="284" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#54805a" >+ Make yourself</text>
+<text x="1004" y="297" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#54805a" >at home.</text>
+<text x="996" y="327" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#747b81" >welcome.css</text>
+<text x="996" y="355" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#9b9fa4" >2 files changed</text>
 <text x="1140" y="536" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#899080" text-anchor="end" letter-spacing="1.5">WORKSPACE ILLUSTRATION</text>
 <path d="M60 567H1140" stroke="#e1e5dc"/>
 <text x="60" y="600" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#777d71" >Projects. Threads. Changes. All together.</text>
