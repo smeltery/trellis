@@ -14,7 +14,8 @@ See the [upstream guide](../docs/maintainers/upstream.md) and
 ## Marketing screenshot
 
 `branding/workspace.png` is an unretouched 1167 × 720 capture of the real
-Trellis web UI at commit `187070e12`, rendered by the full-app browser harness in
+Trellis web UI, refreshed on October 7, 2026 with the sidebar brand mark. It is
+rendered by the full-app browser harness in
 `apps/web/src/components/ChatView.browser.tsx`. Project names and conversation
 content are fictional fixture data; no provider was called. The capture uses the
 light theme and rail layout, with startup hints marked as seen.

@@ -1304,6 +1304,15 @@ export function SidebarSurfacePicker({
           />
         }
       >
+        {activeView === "threads" && (
+          <img
+            src={`${import.meta.env.BASE_URL}trellis-logo.svg`}
+            alt=""
+            width={20}
+            height={20}
+            className="size-5 shrink-0"
+          />
+        )}
         <span className={SIDEBAR_PANEL_TITLE_CLASS_NAME}>{activeCopy.title}</span>
         <DisclosureChevron open className="text-muted-foreground/70" />
       </MenuTrigger>
