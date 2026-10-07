@@ -110,6 +110,7 @@ test("Windows install uses the runner-volume cache without changing other platfo
       },
     );
     assert.equal(result.status, 0, result.stderr);
+    assert.ok(result.stdout.includes("arg=--concurrent-scripts=1\n"), platform);
     const expectedCache =
       platform === "Windows" ? "/runner temp/bun-install-cache" : "/existing-cache";
     assert.ok(result.stdout.includes(`cache=${expectedCache}\n`), platform);

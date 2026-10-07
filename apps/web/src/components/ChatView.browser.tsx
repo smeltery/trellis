@@ -70,6 +70,7 @@ import { extractTrailingBrowserAnnotations } from "../lib/browserAnnotations";
 import { isMacNavigatorPlatform } from "../lib/utils";
 import { STARRED_MODELS_STORAGE_KEY } from "../lib/starredModels";
 import { readNativeApi } from "../nativeApi";
+import { emitWsTransportState } from "../wsTransportEvents";
 import { dispatchKanbanDraftThread } from "../lib/kanbanDispatch";
 import { useKanbanUiStore } from "../kanbanUiStore";
 import { setThreadDetailResumeCursor } from "../threadDetailResumeCursors";
@@ -78,6 +79,8 @@ import { hasReconciledServerProviderStatuses } from "../lib/serverReactQuery";
 import { getRouter } from "../router";
 import { showContextMenuFallback } from "../contextMenuFallback";
 import { useRightDockStore } from "../rightDockStore";
+import { dockTerminalThreadId } from "../lib/dockTerminalScope";
+import { collectLeaves } from "../splitView.logic";
 import { GITHUB_INBOX_DOCK_HOST_ID } from "../rightDockStore.logic";
 import { useOpenThreadTabsStore } from "../openThreadTabsStore";
 import { resolveSplitViewPaneIdForThread, useSplitViewStore } from "../splitViewStore";
@@ -1522,6 +1525,7 @@ const worker = setupWorker(
       }
       if (
         method === WS_METHODS.subscribeServerSettings ||
+        method === WS_METHODS.subscribeServerKeepAwake ||
         method === WS_METHODS.subscribeTerminalEvents ||
         method === WS_METHODS.subscribeOrchestrationDomainEvents ||
         method === WS_METHODS.subscribeProjectDevServerEvents ||
@@ -2227,6 +2231,41 @@ async function mountChatView(options: {
 }
 
 describe("ChatView transcript geometry (full app)", () => {
+  it("keeps the active chat explicitly unread until the next visit", async () => {
+    const snapshot = createSnapshotWithInlineToolOverflow({ active: false });
+    const mounted = await mountChatView({ viewport: DEFAULT_VIEWPORT, snapshot });
+    try {
+      const shell = () => useStore.getState().threadShellById?.[THREAD_ID];
+      const completedAt = snapshot.threads.find((thread) => thread.id === THREAD_ID)!.latestTurn!
+        .completedAt!;
+      await expect
+        .poll(() => Date.parse(shell()?.lastVisitedAt ?? ""))
+        .toBeGreaterThanOrEqual(Date.parse(completedAt));
+      const input = document.querySelector('[data-chat-composer-form="true"]')!;
+      input.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "u",
+          code: "KeyU",
+          metaKey: isMacNavigatorPlatform(),
+          ctrlKey: !isMacNavigatorPlatform(),
+          altKey: true,
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      await waitForLayout();
+      expect(Date.parse(shell()?.lastVisitedAt ?? "")).toBe(Date.parse(completedAt) - 1);
+      await mounted.router.navigate({ to: "/" });
+      await mounted.router.navigate({ to: "/$threadId", params: { threadId: THREAD_ID } });
+      await expect
+        .poll(() => Date.parse(shell()?.lastVisitedAt ?? ""))
+        .toBeGreaterThanOrEqual(Date.parse(completedAt));
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
   beforeAll(async () => {
     fixture = buildFixture(
       createSnapshotForTargetUser({
@@ -2326,6 +2365,112 @@ describe("ChatView transcript geometry (full app)", () => {
     await resetHomeChatProjectPrewarmStateForTests();
     resetRetainedThreadDetailSubscriptionsForTests();
     document.body.innerHTML = "";
+  });
+
+  it("keeps persistent turn failure visible after reopening and admits one manual continuation", async () => {
+    const base = createSnapshotForTargetUser({
+      targetMessageId: MessageId.makeUnsafe("failure-user"),
+      targetText: "Review the requested pull requests",
+    });
+    const turnId = TurnId.makeUnsafe("failed-turn");
+    const cause = "Selected model is at capacity. Please try a different model.";
+    const snapshot: OrchestrationReadModel = {
+      ...base,
+      threads: [
+        {
+          ...base.threads[0]!,
+          messages: [
+            createUserMessage({
+              id: MessageId.makeUnsafe("failure-user"),
+              text: "Review the requested pull requests",
+              offsetSeconds: 0,
+            }),
+            {
+              ...createAssistantMessage({
+                id: MessageId.makeUnsafe("progress"),
+                text: "I am checking the pull requests and their conflicts.",
+                offsetSeconds: 3,
+              }),
+              turnId,
+            },
+          ],
+          latestTurn: {
+            turnId,
+            state: "error",
+            requestedAt: NOW_ISO,
+            startedAt: NOW_ISO,
+            completedAt: isoAt(10),
+            assistantMessageId: null,
+          },
+          activities: [
+            {
+              id: EventId.makeUnsafe("fatal-error"),
+              turnId,
+              createdAt: isoAt(10),
+              sequence: 1,
+              kind: "runtime.error",
+              tone: "error",
+              summary: "Provider runtime error",
+              payload: { message: cause, class: "provider_error" },
+            },
+            {
+              id: EventId.makeUnsafe("failed-completed"),
+              turnId,
+              createdAt: isoAt(10),
+              sequence: 2,
+              kind: "turn.completed",
+              tone: "error",
+              summary: "Turn failed",
+              payload: { state: "failed", errorMessage: cause },
+            },
+          ],
+        },
+      ],
+    };
+    const first = await mountChatView({ viewport: DEFAULT_VIEWPORT, snapshot });
+    await expect.element(page.getByText("Task interrupted", { exact: true })).toBeVisible();
+    await first.cleanup();
+    const reopened = await mountChatView({ viewport: DEFAULT_VIEWPORT, snapshot });
+    let releaseSend!: () => void;
+    const barrier = new Promise<void>((resolve) => {
+      releaseSend = resolve;
+    });
+    const restoreApi = installDeterministicSendNativeApi({ beforeTurnStart: () => barrier });
+    try {
+      await expect.element(page.getByText("Task interrupted", { exact: true })).toBeVisible();
+      expect(document.querySelectorAll("[data-turn-failure]")).toHaveLength(1);
+      await page.getByRole("button", { name: "Change model", exact: true }).click();
+      await expect.element(page.getByLabelText("Search models", { exact: true })).toBeVisible();
+      page
+        .getByLabelText("Search models", { exact: true })
+        .element()
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await page.getByRole("button", { name: "Continue task", exact: true }).click();
+      // Exercise a second click before the first dispatch settles.
+      (
+        page
+          .getByRole("button", { name: "Continue task", exact: true })
+          .element() as HTMLButtonElement
+      ).click();
+      await vi.waitFor(() => {
+        const starts = wsRequests.filter(
+          (request) =>
+            request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+            "command" in request &&
+            (request.command as { type?: string }).type === "thread.turn.start",
+        );
+        expect(starts).toHaveLength(1);
+        expect(starts[0]?.command).toMatchObject({
+          threadId: THREAD_ID,
+          message: { text: expect.stringContaining("avoid repeating") },
+        });
+      });
+      expect(document.querySelectorAll("[data-turn-failure]")).toHaveLength(1);
+    } finally {
+      releaseSend();
+      restoreApi();
+      await reopened.cleanup();
+    }
   });
 
   it.each([
@@ -4135,6 +4280,7 @@ describe("ChatView transcript geometry (full app)", () => {
       await waitForServerConfigToApply();
       return {
         commands,
+        setViewport: mounted.setViewport,
         cleanup: async () => {
           if (previousNativeApi)
             Object.defineProperty(window, "nativeApi", {
@@ -4164,6 +4310,142 @@ describe("ChatView transcript geometry (full app)", () => {
       await expect.element(page.getByText("Continue in this thread")).toBeVisible();
       await expect.element(page.getByText("Continue in a new thread")).toBeVisible();
     }
+
+    it.each([
+      {
+        provider: "claudeAgent" as const,
+        model: "claude-opus-4-6",
+        sessionStatus: "ready" as const,
+      },
+      {
+        provider: "codex" as const,
+        model: "gpt-5.3-codex",
+        sessionStatus: "ready" as const,
+      },
+      {
+        provider: "claudeAgent" as const,
+        model: "claude-opus-4-6",
+        sessionStatus: "running" as const,
+      },
+      {
+        provider: "codex" as const,
+        model: "gpt-5.3-codex",
+        sessionStatus: "running" as const,
+      },
+    ])(
+      "shows a dismissible pre-send tip above the composer when leaving Claude for $provider ($sessionStatus)",
+      async ({ provider, model, sessionStatus }) => {
+        const snapshot = createSnapshotForTargetUser({
+          targetMessageId: MessageId.makeUnsafe("msg-claude-model-switch"),
+          targetText: "Continue the task",
+          sessionStatus,
+        });
+        const thread = snapshot.threads[0]!;
+        const claudeSnapshot: OrchestrationReadModel = {
+          ...snapshot,
+          threads: [
+            {
+              ...thread,
+              modelSelection: { provider: "claudeAgent", model: "claude-sonnet-4-6" },
+              session: { ...thread.session!, providerName: "claudeAgent" },
+            },
+          ],
+        };
+        const mounted = await mountWithCapturedCommands(
+          claudeSnapshot,
+          respondToHandoff("completed"),
+        );
+        try {
+          await waitForServerConfigToApply();
+          const note = page.getByTestId("composer-claude-model-switch-note");
+          await expect.element(note).not.toBeInTheDocument();
+          const surface = document.querySelector<HTMLElement>(".chat-composer-surface")!;
+          const originalHeight = surface.getBoundingClientRect().height;
+          useComposerDraftStore.getState().setModelSelection(THREAD_ID, { provider, model });
+          await vi.waitFor(() => expect(note.query()).not.toBeNull(), { timeout: 3_000 });
+          await expect.element(note).toBeVisible();
+          expect(surface.contains(note.element())).toBe(false);
+          // Stacked panels share the composer's top border by one pixel.
+          expect(note.element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+            surface.getBoundingClientRect().top + 1,
+          );
+          expect(surface.getBoundingClientRect().height).toBeCloseTo(originalHeight, 0);
+          await expect
+            .element(note)
+            .toHaveTextContent(provider === "claudeAgent" ? "Next reply" : "new provider");
+          expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+          expect(document.querySelector('[data-slot="menu-popup"]')).toBeNull();
+          useComposerDraftStore.getState().setPrompt(THREAD_ID, "Continue the task");
+          if (sessionStatus === "ready") {
+            await expect
+              .element(page.getByRole("button", { name: "Send message", exact: true }))
+              .toBeEnabled();
+          } else {
+            await expect
+              .element(page.getByRole("button", { name: "Stop generation", exact: true }))
+              .toBeVisible();
+          }
+          const screenshotName =
+            provider === "claudeAgent"
+              ? "claude-model-switch-note"
+              : "claude-provider-handoff-note";
+          await page.screenshot({
+            path: `../../../../output/playwright/${screenshotName}.png`,
+          });
+          await mounted.setViewport({ name: "narrow", width: 480, height: 640 });
+          await expect.element(note).toBeVisible();
+          expect(surface.contains(note.element())).toBe(false);
+          await page.screenshot({
+            path: `../../../../output/playwright/${screenshotName}-narrow.png`,
+          });
+          await note.getByRole("button", { name: "Dismiss tip" }).click();
+          await expect.element(note).not.toBeInTheDocument();
+
+          useComposerDraftStore.getState().setModelSelection(THREAD_ID, {
+            provider: "claudeAgent",
+            model: "claude-sonnet-4-6",
+            options: { effort: "high" },
+          });
+          await expect.element(note).not.toBeInTheDocument();
+          useComposerDraftStore.getState().setModelSelection(THREAD_ID, { provider, model });
+          await expect.element(note).toBeVisible();
+          document
+            .querySelector<HTMLFormElement>('form[data-chat-composer-form="true"]')!
+            .requestSubmit();
+          const handoffBlocked = sessionStatus === "running" && provider !== "claudeAgent";
+          if (handoffBlocked) {
+            await vi.waitFor(() =>
+              expect(document.body.textContent).toContain("Cannot switch to Codex yet"),
+            );
+            expect(mounted.commands).toHaveLength(0);
+            expect(
+              useComposerDraftStore.getState().draftsByThreadId[THREAD_ID]?.queuedTurns,
+            ).toHaveLength(0);
+            await expect.element(note).toBeVisible();
+          } else if (sessionStatus === "running") {
+            await vi.waitFor(() => {
+              expect(
+                useComposerDraftStore.getState().draftsByThreadId[THREAD_ID]?.queuedTurns[0],
+              ).toMatchObject({ kind: "chat", modelSelection: { provider, model } });
+              expect(document.querySelector('[data-testid="queued-follow-up-row"]')).not.toBeNull();
+            });
+            expect(fixture.snapshot.threads[0]?.modelSelection.provider).toBe("claudeAgent");
+            expect(fixture.snapshot.threads[0]?.session?.status).toBe("running");
+          } else {
+            await vi.waitFor(() =>
+              expect(mounted.commands.some((command) => command.type === "thread.turn.start")).toBe(
+                true,
+              ),
+            );
+          }
+          if (!handoffBlocked) {
+            await expect.element(note).not.toBeInTheDocument();
+          }
+        } finally {
+          await mounted.cleanup();
+        }
+      },
+    );
 
     it("continues in the same thread by rebinding its provider", async () => {
       const mounted = await mountWithCapturedCommands();
@@ -4232,7 +4514,9 @@ describe("ChatView transcript geometry (full app)", () => {
         >[0],
       ) => {
         if (command.type !== "thread.meta.update" || command.providerHandoff !== true) return;
-        const { commandId } = command;
+        const { commandId, modelSelection } = command;
+        const targetProvider = modelSelection?.provider ?? "claudeAgent";
+        const targetModel = modelSelection?.model ?? "claude-sonnet-4-6";
         fixture.snapshot = {
           ...fixture.snapshot,
           snapshotSequence: fixture.snapshot.snapshotSequence + 1,
@@ -4244,14 +4528,14 @@ describe("ChatView transcript geometry (full app)", () => {
                   ...(outcome === "completed"
                     ? {
                         modelSelection: {
-                          provider: "claudeAgent" as const,
-                          model: "claude-sonnet-4-6",
+                          provider: targetProvider,
+                          model: targetModel,
                         },
                         session: {
                           threadId: THREAD_ID,
                           status: "ready" as const,
-                          providerName: "claudeAgent",
-                          providerInstanceId: "claudeAgent",
+                          providerName: targetProvider,
+                          providerInstanceId: targetProvider,
                           runtimeMode: "full-access" as const,
                           activeTurnId: null,
                           lastError: null,
@@ -4267,15 +4551,20 @@ describe("ChatView transcript geometry (full app)", () => {
                           ? `provider-handoff:${commandId}`
                           : `provider-handoff-failed:${commandId}`,
                       ),
-                      createdAt: NOW_ISO,
+                      createdAt: new Date().toISOString(),
                       kind:
                         outcome === "completed" ? "provider.handoff" : "provider.handoff.failed",
                       summary: outcome === "completed" ? "Handed off" : "Handoff failed",
                       tone: outcome === "completed" ? ("info" as const) : ("error" as const),
                       turnId: null,
                       sequence: 950,
-                      payload:
-                        outcome === "completed" ? {} : { detail: "Claude CLI is not signed in." },
+                      payload: {
+                        sourceProvider: thread.modelSelection.provider,
+                        sourceModel: thread.modelSelection.model,
+                        targetProvider,
+                        targetModel,
+                        ...(outcome === "failed" ? { detail: "Claude CLI is not signed in." } : {}),
+                      },
                     },
                   ],
                 },
@@ -4342,6 +4631,24 @@ describe("ChatView transcript geometry (full app)", () => {
           threadId: THREAD_ID,
           providerHandoff: true,
           modelSelection: { provider: "claudeAgent", model: "claude-sonnet-4-6" },
+        });
+        const handoffActivity = fixture.snapshot.threads
+          .find((thread) => thread.id === THREAD_ID)!
+          .activities.find((activity) => activity.kind === "provider.handoff")!;
+        const sentTurn = mounted.commands[turnStartIndex]!;
+        expect(sentTurn.type).toBe("thread.turn.start");
+        if (sentTurn.type !== "thread.turn.start") throw new Error("Expected turn start");
+        expect(Date.parse(sentTurn.createdAt)).toBeGreaterThan(
+          Date.parse(handoffActivity.createdAt),
+        );
+        await vi.waitFor(() => {
+          const divider = document.querySelector('[data-provider-handoff-divider="true"]')!;
+          const userMessage = [...document.querySelectorAll('[data-message-role="user"]')].find(
+            (row) => (row.textContent ?? "").includes("Review the reconnect fix"),
+          )!;
+          expect(
+            divider.compareDocumentPosition(userMessage) & Node.DOCUMENT_POSITION_FOLLOWING,
+          ).toBeTruthy();
         });
         // The message only goes out once the target is up, and to the target.
         expect(turnStartIndex).toBeGreaterThan(handoffIndex);
@@ -4736,6 +5043,41 @@ describe("ChatView transcript geometry (full app)", () => {
         { timeout: 8_000, interval: 16 },
       );
     } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("shows transport recovery without auto-following a detached transcript", async () => {
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: createSnapshotWithLongAssistantResponse(),
+    });
+    try {
+      const scrollContainer = await waitForElement(
+        () => document.querySelector<HTMLElement>("[data-chat-scroll-container='true']"),
+        "Unable to find message scroll container.",
+      );
+      await waitForLayout();
+      scrollContainer.scrollTop = 100;
+      scrollContainer.dispatchEvent(new Event("scroll"));
+      await waitForLayout();
+      const previousTop = scrollContainer.scrollTop;
+      emitWsTransportState("connecting");
+      await expect
+        .element(page.getByRole("status").filter({ hasText: "Reconnecting to Trellis…" }), {
+          timeout: 4000,
+        })
+        .toBeVisible();
+      await waitForLayout();
+      expect(Math.abs(scrollContainer.scrollTop - previousTop)).toBeLessThanOrEqual(1);
+      emitWsTransportState("open");
+      await expect
+        .element(page.getByRole("status").filter({ hasText: "Reconnecting to Trellis…" }))
+        .not.toBeInTheDocument();
+      await waitForLayout();
+      expect(Math.abs(scrollContainer.scrollTop - previousTop)).toBeLessThanOrEqual(1);
+    } finally {
+      emitWsTransportState("open");
       await mounted.cleanup();
     }
   });
@@ -7157,104 +7499,192 @@ describe("ChatView transcript geometry (full app)", () => {
     }
   });
 
-  it("runs project scripts from worktree draft threads at the worktree cwd", async () => {
-    useComposerDraftStore.setState({
-      draftThreadsByThreadId: {
-        [THREAD_ID]: {
-          projectId: PROJECT_ID,
-          createdAt: NOW_ISO,
-          runtimeMode: "full-access",
-          interactionMode: "default",
-          entryPoint: "chat",
-          branch: "feature/draft",
-          worktreePath: "/repo/worktrees/feature-draft",
-          envMode: "worktree",
+  it.each(["button", "draft shortcut", "split button"] as const)(
+    "runs project scripts in the right dock at the worktree cwd via %s",
+    async (entryPoint) => {
+      useComposerDraftStore.setState({
+        draftThreadsByThreadId: {
+          [THREAD_ID]: {
+            projectId: PROJECT_ID,
+            createdAt: NOW_ISO,
+            runtimeMode: "full-access",
+            interactionMode: "default",
+            entryPoint: "chat",
+            branch: "feature/draft",
+            worktreePath: "/repo/worktrees/feature-draft",
+            envMode: "worktree",
+          },
         },
-      },
-      projectDraftThreadIdByProjectId: {
-        [PROJECT_ID]: THREAD_ID,
-      },
-    });
-
-    const mounted = await mountChatView({
-      viewport: { ...DEFAULT_VIEWPORT, width: 1_400 },
-      snapshot: withProjectScripts(createDraftOnlySnapshot(), [
-        {
-          id: "test",
-          name: "Test",
-          command: "bun run test",
-          icon: "test",
-          runOnWorktreeCreate: false,
+        projectDraftThreadIdByProjectId: {
+          [PROJECT_ID]: THREAD_ID,
         },
-      ]),
-      // The empty landing runs minimal chrome with no scripts control, so drafts
-      // reach scripts through their keybindings; drive the same runProjectScript
-      // path the way a user would.
-      configureFixture: (nextFixture) => {
-        nextFixture.serverConfig = {
-          ...nextFixture.serverConfig,
-          keybindings: [
-            {
-              command: "script.test.run",
-              shortcut: {
-                key: "t",
-                metaKey: false,
-                ctrlKey: false,
-                shiftKey: true,
-                altKey: true,
-                modKey: true,
-              },
-            },
-          ],
-        };
-      },
-    });
-
-    try {
-      await waitForServerConfigToApply();
-      await dispatchConfiguredShortcutWhenReady(window, {
-        key: "t",
-        shiftKey: true,
-        altKey: true,
       });
 
-      await vi.waitFor(
-        () => {
-          const openRequest = wsRequests.find(
-            (request) =>
-              request._tag === WS_METHODS.terminalOpen &&
-              request.cwd === "/repo/worktrees/feature-draft",
-          );
-          expect(openRequest).toMatchObject({
-            _tag: WS_METHODS.terminalOpen,
-            threadId: THREAD_ID,
-            cwd: "/repo/worktrees/feature-draft",
-            env: {
-              TRELLIS_PROJECT_ROOT: "/repo/project",
-              TRELLIS_WORKTREE_PATH: "/repo/worktrees/feature-draft",
-            },
-          });
-        },
-        { timeout: 8_000, interval: 16 },
-      );
+      const baseSnapshot =
+        entryPoint === "draft shortcut"
+          ? createDraftOnlySnapshot()
+          : createSnapshotForTargetUser({
+              targetMessageId: MessageId.makeUnsafe("action-button-worktree"),
+              targetText: "Keep this chat visible",
+            });
+      const snapshot: OrchestrationReadModel = {
+        ...baseSnapshot,
+        threads: baseSnapshot.threads.map((thread) => ({
+          ...thread,
+          envMode: "worktree",
+          worktreePath: "/repo/worktrees/feature-draft",
+        })),
+      };
+      useRightDockStore.setState({ dockStateByThreadId: {} });
 
-      await vi.waitFor(
-        () => {
-          const writeRequest = wsRequests.find(
-            (request) => request._tag === WS_METHODS.terminalWrite,
-          );
-          expect(writeRequest).toMatchObject({
-            _tag: WS_METHODS.terminalWrite,
-            threadId: THREAD_ID,
-            data: "bun run test\r",
-          });
+      const mounted = await mountChatView({
+        viewport: { ...DEFAULT_VIEWPORT, width: 1_800 },
+        snapshot: withProjectScripts(
+          entryPoint === "split button" ? addThreadToSnapshot(snapshot, OTHER_THREAD_ID) : snapshot,
+          [
+            {
+              id: "test",
+              name: "Test",
+              command: "bun run test",
+              icon: "test",
+              runOnWorktreeCreate: false,
+            },
+          ],
+        ),
+        // The empty landing runs minimal chrome with no scripts control, so drafts
+        // reach scripts through their keybindings; drive the same runProjectScript
+        // path the way a user would.
+        configureFixture: (nextFixture) => {
+          nextFixture.serverConfig = {
+            ...nextFixture.serverConfig,
+            keybindings: [
+              {
+                command: "script.test.run",
+                shortcut: {
+                  key: "t",
+                  metaKey: false,
+                  ctrlKey: false,
+                  shiftKey: true,
+                  altKey: true,
+                  modKey: true,
+                },
+              },
+            ],
+          };
         },
-        { timeout: 8_000, interval: 16 },
-      );
-    } finally {
-      await mounted.cleanup();
-    }
-  });
+      });
+
+      try {
+        await waitForServerConfigToApply();
+        if (entryPoint === "split button") {
+          const splitViewId = useSplitViewStore.getState().createFromDrop({
+            sourceThreadId: THREAD_ID,
+            ownerProjectId: PROJECT_ID,
+            droppedThreadId: OTHER_THREAD_ID,
+            direction: "horizontal",
+            side: "second",
+          });
+          const splitView = useSplitViewStore.getState().splitViewsById[splitViewId]!;
+          const actionPaneId = resolveSplitViewPaneIdForThread(splitView, THREAD_ID)!;
+          useSplitViewStore
+            .getState()
+            .setPanePanelState(splitViewId, actionPaneId, { panel: "diff" });
+          await mounted.router.navigate({
+            to: "/$threadId",
+            params: { threadId: THREAD_ID },
+            search: () => ({ splitViewId }),
+          });
+          await vi.waitFor(() =>
+            expect(document.querySelectorAll('[contenteditable="true"]')).toHaveLength(2),
+          );
+        }
+        if (entryPoint !== "draft shortcut") {
+          await page.getByRole("button", { name: "Run Test", exact: true }).first().click();
+        } else {
+          await dispatchConfiguredShortcutWhenReady(window, {
+            key: "t",
+            shiftKey: true,
+            altKey: true,
+          });
+        }
+
+        await vi.waitFor(
+          () => {
+            const openRequest = wsRequests.find(
+              (request) =>
+                request._tag === WS_METHODS.terminalOpen &&
+                request.cwd === "/repo/worktrees/feature-draft",
+            );
+            expect(openRequest).toMatchObject({
+              _tag: WS_METHODS.terminalOpen,
+              threadId: dockTerminalThreadId(THREAD_ID),
+              cwd: "/repo/worktrees/feature-draft",
+              env: {
+                TRELLIS_PROJECT_ROOT: "/repo/project",
+                TRELLIS_WORKTREE_PATH: "/repo/worktrees/feature-draft",
+              },
+            });
+          },
+          { timeout: 8_000, interval: 16 },
+        );
+
+        await vi.waitFor(
+          () => {
+            const writeRequest = wsRequests.find(
+              (request) => request._tag === WS_METHODS.terminalWrite,
+            );
+            expect(writeRequest).toMatchObject({
+              _tag: WS_METHODS.terminalWrite,
+              threadId: dockTerminalThreadId(THREAD_ID),
+              data: "bun run test\r",
+            });
+          },
+          { timeout: 8_000, interval: 16 },
+        );
+        await expect.element(page.getByRole("complementary", { name: "Terminal" })).toBeVisible();
+        const terminalSelector =
+          entryPoint === "split button"
+            ? '[data-split-pane-focused] aside[aria-label="Terminal"]'
+            : '[data-right-dock-content] aside[aria-label="Terminal"]';
+        expect(document.querySelector(terminalSelector)).not.toBeNull();
+        if (entryPoint === "split button") {
+          expect(mounted.router.state.location.search.splitViewId).toBeDefined();
+          expect(document.querySelectorAll('[contenteditable="true"]')).toHaveLength(2);
+        }
+        expect((await waitForComposerEditor()).getBoundingClientRect().width).toBeGreaterThan(0);
+        if (entryPoint === "split button") {
+          const openedSessionIds = new Set(
+            wsRequests
+              .filter((request) => request._tag === WS_METHODS.terminalOpen)
+              .map((request) => request.terminalId),
+          );
+          await page.getByRole("button", { name: "Hide terminal", exact: true }).click();
+          await expect
+            .element(page.getByRole("complementary", { name: "Terminal" }))
+            .not.toBeInTheDocument();
+          await page
+            .getByRole("button", { name: "Toggle right sidebar", exact: true })
+            .first()
+            .click();
+          await expect.element(page.getByRole("complementary", { name: "Terminal" })).toBeVisible();
+          expect(
+            new Set(
+              wsRequests
+                .filter((request) => request._tag === WS_METHODS.terminalOpen)
+                .map((request) => request.terminalId),
+            ),
+          ).toEqual(openedSessionIds);
+          const splitViewId = mounted.router.state.location.search.splitViewId!;
+          const splitView = useSplitViewStore.getState().splitViewsById[splitViewId]!;
+          expect(
+            collectLeaves(splitView.root).find((leaf) => leaf.threadId === THREAD_ID)?.panel.panel,
+          ).toBe("diff");
+        }
+      } finally {
+        await mounted.cleanup();
+      }
+    },
+  );
 
   it("cycles model effort with Shift+Tab in the existing model picker", async () => {
     localStorage.setItem("trellis:app-settings:v1", JSON.stringify({ composerEffortSlider: true }));
@@ -8270,15 +8700,25 @@ describe("ChatView transcript geometry (full app)", () => {
       const actionButtons = document.querySelectorAll<HTMLButtonElement>(
         'button[aria-label="Queued follow-up actions"]',
       );
+      await page.getByRole("button", { name: "Steer", exact: true }).first().hover();
+      await expect
+        .element(page.getByText("Send this follow-up now to redirect the current work."))
+        .toHaveTextContent(
+          "Send this follow-up now to redirect the current work. If native steering is unavailable, stop the current turn and start a new one.",
+        );
+      expect(
+        document.querySelectorAll('button[aria-label="Delete queued follow-up"]'),
+      ).toHaveLength(2);
       actionButtons[0]?.click();
 
       const editMenuItem = await waitForElement(
         () =>
           Array.from(document.querySelectorAll<HTMLElement>('[data-slot="menu-item"]')).find(
-            (item) => item.textContent?.trim() === "Edit queued prompt",
+            (item) => item.textContent?.trim() === "Edit queued follow-up",
           ) ?? null,
-        "Unable to find edit queued prompt menu item.",
+        "Unable to find edit queued follow-up menu item.",
       );
+      expect(document.querySelectorAll('[data-slot="menu-item"]')).toHaveLength(1);
       editMenuItem.click();
 
       await vi.waitFor(
@@ -11230,7 +11670,7 @@ describe("ChatView transcript geometry (full app)", () => {
           const request = wsRequests.find(
             (candidate) =>
               candidate._tag === WS_METHODS.terminalOpen &&
-              candidate.threadId === newThreadId &&
+              candidate.threadId === dockTerminalThreadId(newThreadId) &&
               candidate.cwd === worktreePath,
           );
           expect(
@@ -11262,7 +11702,7 @@ describe("ChatView transcript geometry (full app)", () => {
           const request = wsRequests.find(
             (candidate) =>
               candidate._tag === WS_METHODS.terminalWrite &&
-              candidate.threadId === newThreadId &&
+              candidate.threadId === dockTerminalThreadId(newThreadId) &&
               candidate.data === "printf setup\r",
           );
           expect(request).toBeTruthy();

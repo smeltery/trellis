@@ -1,9 +1,13 @@
+import { ServerRuntimeStatus } from "@trellis/contracts";
+import { Schema } from "effect";
+
 export const DEFAULT_SERVER_STATUS_URL = "http://127.0.0.1:3773";
 const DEFAULT_SERVER_STATUS_TIMEOUT_MS = 3_000;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
 export interface TrellisServerHealthSnapshot {
+  readonly eventLoop?: ServerRuntimeStatus;
   readonly status: string;
   readonly startupReady: boolean;
   readonly pushBusReady?: boolean;
@@ -76,7 +80,11 @@ function decodeHealthSnapshot(value: unknown): TrellisServerHealthSnapshot | nul
   if (typeof snapshot.status !== "string" || typeof snapshot.startupReady !== "boolean") {
     return null;
   }
-  return snapshot as unknown as TrellisServerHealthSnapshot;
+  const { eventLoop, ...rest } = snapshot;
+  return {
+    ...rest,
+    ...(Schema.is(ServerRuntimeStatus)(eventLoop) ? { eventLoop } : {}),
+  } as unknown as TrellisServerHealthSnapshot;
 }
 
 export async function fetchTrellisServerStatus(
@@ -145,9 +153,27 @@ export function formatTrellisServerStatus(result: TrellisServerStatusResult): st
 
   const projectionState = result.health.projection?.state;
   const status = result.ready ? "ready" : result.health.startupReady ? "not ready" : "starting";
+  const loop = result.health.eventLoop;
   return [
     `Trellis server: ${status}`,
     `URL: ${result.url}`,
     ...(projectionState ? [`Projection: ${projectionState}`] : []),
+    ...(loop
+      ? loop.available
+        ? [
+            `Event loop: p50 ${Math.round(loop.delayP50Ms)}ms / p99 ${Math.round(loop.delayP99Ms)}ms / max ${Math.round(loop.delayMaxMs)}ms; ELU ${(loop.utilization * 100).toFixed(1)}%; stall windows ${loop.stallWindowCount}`,
+            ...(loop.discardedIdleGapCount
+              ? [
+                  `Ambiguous idle gaps: ${loop.discardedIdleGapCount} (${Math.round(loop.discardedIdleGapMs ?? 0)}ms total; suspend or scheduling pressure)`,
+                ]
+              : []),
+            ...(loop.lastStall
+              ? [
+                  `Last stall: ${Math.round(loop.lastStall.durationMs)}ms (${Math.round(loop.lastStall.ageMs)}ms ago)`,
+                ]
+              : []),
+          ]
+        : ["Event loop: monitoring unavailable"]
+      : []),
   ].join("\n");
 }

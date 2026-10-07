@@ -25,7 +25,7 @@ import {
   TurnId,
 } from "@trellis/contracts";
 import { Effect, Exit, Layer, ManagedRuntime, Option, PubSub, Scope, Stream } from "effect";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { OrchestrationEventStoreLive } from "../../persistence/Layers/OrchestrationEventStore.ts";
 import { OrchestrationCommandReceiptRepositoryLive } from "../../persistence/Layers/OrchestrationCommandReceipts.ts";
@@ -664,6 +664,39 @@ describe("ProviderRuntimeIngestion", () => {
       } finally {
         await manager.dispose();
       }
+    },
+  );
+
+  it.each(["failed", "completed"] as const)(
+    "does not assign an ambiguous turnless %s completion to the active turn",
+    async (state) => {
+      const harness = await createHarness();
+      for (const turnId of ["overlapping-one", "overlapping-two"]) {
+        harness.emit({
+          type: "turn.started",
+          eventId: asEventId(`${turnId}-started`),
+          provider: "codex",
+          threadId: asThreadId("thread-1"),
+          turnId: asTurnId(turnId),
+          createdAt: new Date().toISOString(),
+        });
+        await harness.drain();
+      }
+      const eventId = asEventId("ambiguous-completion");
+      harness.emit({
+        type: "turn.completed",
+        eventId,
+        provider: "codex",
+        threadId: asThreadId("thread-1"),
+        createdAt: new Date().toISOString(),
+        payload: { state },
+      });
+      await harness.drain();
+      const readModel = await Effect.runPromise(harness.engine.getReadModel());
+      const thread = readModel.threads.find((entry) => entry.id === asThreadId("thread-1"));
+      expect(thread?.activities.find((activity) => activity.id === eventId)?.turnId).toBeNull();
+      expect(thread?.latestTurn?.state).not.toBe("error");
+      expect(thread?.session?.status).toBe("running");
     },
   );
 
@@ -4163,6 +4196,142 @@ describe("ProviderRuntimeIngestion", () => {
     expect(message?.streaming).toBe(false);
   });
 
+  it.each([
+    { initialSilenceMs: 0, deltaGapMs: 40 * 60_000, completionGapMs: 0 },
+    { initialSilenceMs: 80 * 60_000, deltaGapMs: 40 * 60_000, completionGapMs: 0 },
+    { initialSilenceMs: 0, deltaGapMs: 80 * 60_000, completionGapMs: 0 },
+    { initialSilenceMs: 0, deltaGapMs: 40 * 60_000, completionGapMs: 80 * 60_000 },
+  ])(
+    "keeps full buffered text across silent gaps: %j",
+    async ({ initialSilenceMs, deltaGapMs, completionGapMs }) => {
+      const harness = await createHarness();
+      const now = new Date().toISOString();
+      const turnId = asTurnId("turn-buffered-long");
+      const itemId = asItemId("item-buffered-long");
+
+      await Effect.runPromise(
+        harness.engine.dispatch({
+          type: "thread.turn.start",
+          commandId: CommandId.makeUnsafe("cmd-turn-start-buffered-long"),
+          threadId: asThreadId("thread-1"),
+          message: {
+            messageId: asMessageId("message-buffered-long"),
+            role: "user",
+            text: "long buffered turn",
+            attachments: [],
+          },
+          assistantDeliveryMode: "buffered",
+          interactionMode: DEFAULT_PROVIDER_INTERACTION_MODE,
+          runtimeMode: "approval-required",
+          createdAt: now,
+        }),
+      );
+      await harness.drain();
+      harness.emit({
+        type: "turn.started",
+        eventId: asEventId("evt-turn-started-buffered-long"),
+        provider: "codex",
+        createdAt: now,
+        threadId: asThreadId("thread-1"),
+        turnId,
+      });
+      await harness.drain();
+
+      // Silence must not expire an active turn's policy, buffered text, or
+      // the message association needed to finalize without item.completed.
+      vi.useFakeTimers({ toFake: ["Date"], now: Date.now() });
+      try {
+        vi.setSystemTime(Date.now() + initialSilenceMs);
+        const deltas = ["head ", "middle ", "tail"];
+        for (const [index, delta] of deltas.entries()) {
+          if (index > 0) vi.setSystemTime(Date.now() + deltaGapMs);
+          harness.emit({
+            type: "content.delta",
+            eventId: asEventId(`evt-delta-buffered-long-${index}`),
+            provider: "codex",
+            createdAt: now,
+            threadId: asThreadId("thread-1"),
+            turnId,
+            itemId,
+            payload: { streamKind: "assistant_text", delta },
+          });
+          await harness.drain();
+        }
+
+        const midThread = await waitForThread(harness.engine, () => true);
+        expect(
+          midThread.messages.some(
+            (message: ProviderRuntimeTestMessage) => message.id === "assistant:item-buffered-long",
+          ),
+        ).toBe(false);
+
+        vi.setSystemTime(Date.now() + completionGapMs);
+        harness.emit(
+          completionGapMs > 0
+            ? {
+                type: "turn.completed",
+                eventId: asEventId("evt-turn-completed-buffered-long"),
+                provider: "codex",
+                createdAt: now,
+                threadId: asThreadId("thread-1"),
+                turnId,
+                payload: { state: "completed" },
+              }
+            : {
+                type: "item.completed",
+                eventId: asEventId("evt-message-completed-buffered-long"),
+                provider: "codex",
+                createdAt: now,
+                threadId: asThreadId("thread-1"),
+                turnId,
+                itemId,
+                payload: { itemType: "assistant_message", status: "completed" },
+              },
+        );
+        // The message commit precedes terminal policy settlement. Drain the
+        // owner before advancing Date again so its grace starts at completion.
+        await harness.drain();
+        const thread = await waitForThread(harness.engine, (entry) =>
+          entry.messages.some(
+            (message: ProviderRuntimeTestMessage) =>
+              message.id === "assistant:item-buffered-long" && !message.streaming,
+          ),
+        );
+        const message = thread.messages.find(
+          (entry: ProviderRuntimeTestMessage) => entry.id === "assistant:item-buffered-long",
+        );
+        expect(message?.text).toBe("head middle tail");
+        if (completionGapMs > 0) {
+          vi.setSystemTime(Date.now() + 80 * 60_000);
+          harness.emit({
+            type: "content.delta",
+            eventId: asEventId("evt-late-after-buffered-grace"),
+            provider: "codex",
+            createdAt: now,
+            threadId: asThreadId("thread-1"),
+            turnId,
+            itemId: asItemId("item-after-buffered-grace"),
+            payload: { streamKind: "assistant_text", delta: "after settled grace" },
+          });
+          const afterGrace = await waitForThread(harness.engine, (entry) =>
+            entry.messages.some(
+              (message: ProviderRuntimeTestMessage) =>
+                message.id === "assistant:item-after-buffered-grace" && message.streaming,
+            ),
+          );
+          expect(
+            afterGrace.messages.find(
+              (message: ProviderRuntimeTestMessage) =>
+                message.id === "assistant:item-after-buffered-grace",
+            )?.text,
+          ).toBe("after settled grace");
+        }
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
   it("binds overlapping same-thread delivery modes in provider turn order", async () => {
     const harness = await createHarness();
     const now = new Date().toISOString();
@@ -5945,6 +6114,69 @@ describe("ProviderRuntimeIngestion", () => {
     });
   });
 
+  it("persists a turn-scoped failure through ready recovery and projected detail reopening", async () => {
+    const harness = await createHarness();
+    const threadId = asThreadId("thread-1");
+    const turnId = asTurnId("failed-turn");
+    const now = new Date().toISOString();
+    harness.emit({
+      type: "turn.started",
+      eventId: asEventId("failure-start"),
+      provider: "codex",
+      threadId,
+      turnId,
+      createdAt: now,
+      payload: {},
+    });
+    await waitForThread(harness.engine, (thread) => thread.session?.activeTurnId === turnId);
+    harness.emit({
+      type: "runtime.error",
+      eventId: asEventId("failure-runtime"),
+      provider: "codex",
+      threadId,
+      createdAt: now,
+      payload: { message: "Selected model is at capacity.", class: "provider_error" },
+    });
+    harness.emit({
+      type: "turn.completed",
+      eventId: asEventId("failure-completed"),
+      provider: "codex",
+      threadId,
+      turnId,
+      createdAt: now,
+      payload: { state: "failed", errorMessage: "Selected model is at capacity." },
+    });
+    await waitForThread(harness.engine, (thread) =>
+      thread.activities.some((activity) => activity.id === "failure-completed"),
+    );
+    harness.emit({
+      type: "session.state.changed",
+      eventId: asEventId("failure-ready"),
+      provider: "codex",
+      threadId,
+      createdAt: now,
+      payload: { state: "ready" },
+    });
+    await waitForThread(harness.engine, (thread) => thread.session?.status === "ready");
+    await vi.waitFor(async () => {
+      const reopened = await harness.readProjectedThread(threadId);
+      expect(reopened?.session).toMatchObject({ status: "ready", lastError: null });
+      expect(reopened?.latestTurn?.state).toBe("error");
+      expect(
+        reopened?.activities.find((activity) => activity.id === "failure-runtime"),
+      ).toMatchObject({
+        turnId,
+        payload: { message: "Selected model is at capacity." },
+      });
+      expect(
+        reopened?.activities.find((activity) => activity.id === "failure-completed"),
+      ).toMatchObject({
+        turnId,
+        payload: { state: "failed", errorMessage: "Selected model is at capacity." },
+      });
+    });
+  });
+
   it("keeps the session running when a runtime.warning arrives during an active turn", async () => {
     const harness = await createHarness();
     const now = new Date().toISOString();
@@ -5987,6 +6219,27 @@ describe("ProviderRuntimeIngestion", () => {
     expect(thread.session?.status).toBe("running");
     expect(thread.session?.activeTurnId).toBe("turn-warning");
     expect(thread.session?.lastError).toBeNull();
+    expect(
+      thread.activities.find((activity) => activity.id === "evt-warning-runtime")?.payload,
+    ).toMatchObject({ willRetry: true });
+    harness.emit({
+      type: "turn.completed",
+      eventId: asEventId("evt-warning-success"),
+      provider: "codex",
+      createdAt: now,
+      threadId: asThreadId("thread-1"),
+      turnId: asTurnId("turn-warning"),
+      payload: { state: "completed" },
+    });
+    const recovered = await waitForThread(
+      harness.engine,
+      (entry) => entry.latestTurn?.state === "completed",
+    );
+    expect(recovered.session).toMatchObject({
+      status: "ready",
+      activeTurnId: null,
+      lastError: null,
+    });
   });
 
   it("maps session/thread lifecycle and item.started into session/activity projections", async () => {

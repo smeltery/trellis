@@ -25,7 +25,7 @@ import {
   type TurnId,
 } from "@trellis/contracts";
 import { resolveLatestTailUserMessageEditTarget } from "@trellis/shared/conversationEdit";
-import { getModelCapabilities } from "@trellis/shared/model";
+import { getModelCapabilities, resolveApiModelId } from "@trellis/shared/model";
 import {
   resolveThreadWorkspaceCwd as resolveSharedThreadWorkspaceCwd,
   resolveThreadBranchSourceCwd,
@@ -224,7 +224,7 @@ import {
 import { useTemporaryThreadStore } from "../temporaryThreadStore";
 import { useTerminalStateStore } from "../terminalStateStore";
 import { getThreadFromState } from "../threadDerivation";
-import { buildThreadSubscribeInput } from "../threadDetailResumeCursors";
+import { retryThreadDetailSync } from "../threadDetailSyncRetry";
 import { SETTINGS_TARGETS } from "../settingsNavigation";
 import {
   DEFAULT_INTERACTION_MODE,
@@ -295,6 +295,7 @@ import { ComposerExtrasPanel } from "./chat/ComposerExtrasPanel";
 import { ComposerExtrasTrigger } from "./chat/ComposerExtrasTrigger";
 import { ComposerGoalHeader } from "./chat/ComposerGoalHeader";
 import { ComposerInputBanners } from "./chat/ComposerInputBanners";
+import { ComposerTransportNotice } from "./chat/ComposerTransportNotice";
 import { ComposerLiveChangesHeader } from "./chat/ComposerLiveChangesHeader";
 import {
   ComposerLocalDirectoryMenu,
@@ -319,6 +320,8 @@ import {
   shouldShowComputerControlEffortHint,
 } from "./chat/composerComputerControlHint";
 import { ComposerComputerControlEffortHint } from "./chat/ComposerComputerControlEffortHint";
+import { ComposerTipRow } from "./chat/ComposerTipRow";
+import { COMPOSER_STACKED_PANEL_ICON_CLASS_NAME } from "./chat/composerStackedPanelStyles";
 import { ComposerPullRequestAutoFixHint } from "./chat/ComposerPullRequestAutoFixHint";
 import { ComposerReferenceAttachments } from "./chat/ComposerReferenceAttachments";
 import { ComposerSlashStatusDialog } from "./chat/ComposerSlashStatusDialog";
@@ -834,6 +837,8 @@ export default function ChatView({
   const [dismissedRateLimitBannerKey, setDismissedRateLimitBannerKey] = useState<string | null>(
     null,
   );
+  const [dismissedClaudeSwitchKey, setDismissedClaudeSwitchKey] = useState<string | null>(null);
+  const [submittedClaudeSwitchKey, setSubmittedClaudeSwitchKey] = useState<string | null>(null);
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
   const [isTraitsPickerOpen, setIsTraitsPickerOpen] = useState(false);
   const legendListRef = useRef<LegendListRef | null>(null);
@@ -1319,20 +1324,24 @@ export default function ChatView({
     [openOrReuseProjectDraftThread],
   );
 
+  // Read on a visit or new completion, not when the user explicitly marks this chat unread.
+  const autoReadThreadId = activeThread?.id;
+  const activeTurnCompletedAt = activeLatestTurn?.completedAt;
   useEffect(() => {
-    if (!activeThread?.id) return;
+    if (!autoReadThreadId || isInactiveSplitPane) return;
     if (!latestTurnSettled) return;
-    if (!activeLatestTurn?.completedAt) return;
-    const turnCompletedAt = Date.parse(activeLatestTurn.completedAt);
+    if (!activeTurnCompletedAt) return;
+    const turnCompletedAt = Date.parse(activeTurnCompletedAt);
     if (Number.isNaN(turnCompletedAt)) return;
-    const lastVisitedAt = activeThread.lastVisitedAt ? Date.parse(activeThread.lastVisitedAt) : NaN;
+    const visitedAt = getThreadFromState(useStore.getState(), autoReadThreadId)?.lastVisitedAt;
+    const lastVisitedAt = visitedAt ? Date.parse(visitedAt) : NaN;
     if (!Number.isNaN(lastVisitedAt) && lastVisitedAt >= turnCompletedAt) return;
 
-    markThreadVisited(activeThread.id);
+    markThreadVisited(autoReadThreadId);
   }, [
-    activeThread?.id,
-    activeThread?.lastVisitedAt,
-    activeLatestTurn?.completedAt,
+    autoReadThreadId,
+    activeTurnCompletedAt,
+    isInactiveSplitPane,
     latestTurnSettled,
     markThreadVisited,
   ]);
@@ -1341,20 +1350,20 @@ export default function ChatView({
   // rather than now: a client clock behind the server would leave the stamp before it.
   const activeSnoozedUntil = activeThread?.snoozedUntil;
   const activeSnoozeReminderAt = activeThread?.snoozeReminderAt;
-  const activeLastVisitedAt = activeThread?.lastVisitedAt;
   useEffect(() => {
-    if (!activeThread?.id || !activeSnoozeReminderAt) return;
+    if (!autoReadThreadId || isInactiveSplitPane || !activeSnoozeReminderAt) return;
     const returned = {
       snoozedUntil: activeSnoozedUntil,
       snoozeReminderAt: activeSnoozeReminderAt,
-      lastVisitedAt: activeLastVisitedAt,
+      lastVisitedAt: getThreadFromState(useStore.getState(), autoReadThreadId)?.lastVisitedAt,
     };
-    if (hasUnseenSnoozeReturn(returned)) markThreadVisited(activeThread.id, activeSnoozeReminderAt);
+    if (hasUnseenSnoozeReturn(returned))
+      markThreadVisited(autoReadThreadId, activeSnoozeReminderAt);
   }, [
-    activeThread?.id,
+    autoReadThreadId,
+    isInactiveSplitPane,
     activeSnoozedUntil,
     activeSnoozeReminderAt,
-    activeLastVisitedAt,
     markThreadVisited,
   ]);
 
@@ -1974,11 +1983,7 @@ export default function ChatView({
   const hasPendingThreadWork =
     isWorking || (activeLatestTurnState === "running" && !latestTurnSettled);
   const handleRetryThreadDetailSync = useCallback(() => {
-    useStore.getState().clearThreadDetailSyncFailure(threadId);
-    const api = readNativeApi();
-    void api?.orchestration
-      .subscribeThread(buildThreadSubscribeInput(threadId))
-      .catch(() => undefined);
+    void retryThreadDetailSync(threadId).catch(() => undefined);
   }, [threadId]);
   const activeThreadIsSidechat = Boolean(activeThread && isSidechatThread(activeThread));
   // Stable identity: this element is forwarded to the memoized MessagesTimeline, so
@@ -3111,8 +3116,6 @@ export default function ChatView({
     activeProject,
     gitCwd,
     isGroupContainer,
-    requestTerminalFocus,
-    setTerminalOpen,
     setThreadError,
   });
   const stopActiveThreadSession = useCallback(async () => {
@@ -4281,7 +4284,7 @@ export default function ChatView({
     },
   );
 
-  const { onSend } = useChatTurnSubmission({
+  const { onSend: submitComposerTurn } = useChatTurnSubmission({
     threadId,
     hasLiveTurn,
     canSendWithProviderHandoff,
@@ -4417,6 +4420,7 @@ export default function ChatView({
 
   const {
     onSubmitPlanFollowUp,
+    onContinueFailedTurn,
     onEditUserMessage,
     onResumeWorkflowRun,
     onImplementPlanInNewThread,
@@ -4487,6 +4491,52 @@ export default function ChatView({
     selectedRuntimeModel,
   );
   const runtimeUsageContextWindow = activeContextWindow;
+  const claudeSwitchKey =
+    (activeThread?.messages.length ?? 0) > 0 &&
+    boundProvider === "claudeAgent" &&
+    activeThread?.modelSelection.provider === "claudeAgent" &&
+    (selectedProvider !== "claudeAgent" ||
+      resolveApiModelId(selectedModelSelection) !== resolveApiModelId(activeThread.modelSelection))
+      ? JSON.stringify([
+          threadId,
+          resolveApiModelId(activeThread.modelSelection),
+          selectedProvider,
+          selectedModelSelection.instanceId,
+          resolveApiModelId(selectedModelSelection),
+        ])
+      : null;
+  // Dismiss only this pending choice. Returning to the current selection or completing
+  // the switch ends the tip's lifetime; a later selection can show it again.
+  useEffect(() => {
+    if (claudeSwitchKey === null) {
+      setDismissedClaudeSwitchKey(null);
+      setSubmittedClaudeSwitchKey(null);
+    }
+  }, [claudeSwitchKey]);
+  const onSend = useCallback(
+    async (...args: Parameters<typeof submitComposerTurn>) => {
+      // Keep the choice captured for this send: later picker changes belong to the
+      // next message. Automatic queue drains must not acknowledge a new draft choice.
+      const switchKeyForSend = claudeSwitchKey;
+      const accepted = await submitComposerTurn(...args);
+      if (accepted && switchKeyForSend !== null && args[2] === undefined) {
+        setSubmittedClaudeSwitchKey(switchKeyForSend);
+      }
+      return accepted;
+    },
+    [claudeSwitchKey, submitComposerTurn],
+  );
+  const showClaudeModelSwitchNote =
+    claudeSwitchKey !== null &&
+    claudeSwitchKey !== dismissedClaudeSwitchKey &&
+    claudeSwitchKey !== submittedClaudeSwitchKey &&
+    !isSendBusy &&
+    !isConnecting &&
+    !isRevertingCheckpoint &&
+    !isAwaitingTurnStart &&
+    !activePendingApproval &&
+    pendingUserInputs.length === 0 &&
+    activeThread?.claudeCacheReview == null;
   const appliedContextWindowSelection = useMemo(
     () => deriveAppliedContextWindowSelection(threadActivities),
     [threadActivities],
@@ -5701,6 +5751,7 @@ export default function ChatView({
           {/* A bare wrapper keeps the normal-flow panels' -mb-px seam onto the input shell
                 via margin collapse. */}
           <div>
+            <ComposerTransportNotice />
             {isSidechatExpired ? (
               <ExpiredSidechatNotice onStartNew={startReplacementSidechat} />
             ) : null}
@@ -5789,6 +5840,32 @@ export default function ChatView({
                 }
               />
             ) : null}
+            {showClaudeModelSwitchNote ? (
+              <ComposerTipRow
+                icon={
+                  <RefreshCwIcon
+                    aria-hidden="true"
+                    className={COMPOSER_STACKED_PANEL_ICON_CLASS_NAME}
+                  />
+                }
+                message={
+                  selectedProvider === "claudeAgent"
+                    ? "Next reply may use more Claude allowance."
+                    : "Chat context uses the new provider’s allowance."
+                }
+                onDismiss={() => setDismissedClaudeSwitchKey(claudeSwitchKey)}
+                attachedToPrevious={
+                  showComposerLiveChangesHeader ||
+                  showComposerActiveTaskListCard ||
+                  showComposerWorkflowRunCard ||
+                  showComposerSubagentStrip ||
+                  queuedComposerTurns.length > 0 ||
+                  showComposerGoalHeader ||
+                  showComposerComputerControlEffortHint
+                }
+                testId="composer-claude-model-switch-note"
+              />
+            ) : null}
             {pendingBackgroundWorkCount > 0 ? (
               <ComposerPendingBackgroundWorkRow
                 count={pendingBackgroundWorkCount}
@@ -5799,7 +5876,8 @@ export default function ChatView({
                   showComposerSubagentStrip ||
                   queuedComposerTurns.length > 0 ||
                   showComposerGoalHeader ||
-                  showComposerComputerControlEffortHint
+                  showComposerComputerControlEffortHint ||
+                  showClaudeModelSwitchNote
                 }
               />
             ) : null}
@@ -5816,6 +5894,7 @@ export default function ChatView({
                 queuedComposerTurns.length > 0 ||
                 showComposerGoalHeader ||
                 showComposerComputerControlEffortHint ||
+                showClaudeModelSwitchNote ||
                 pendingBackgroundWorkCount > 0
               }
             />
@@ -6070,9 +6149,7 @@ export default function ChatView({
                               ? "Ask for follow-up changes"
                               : standaloneSidechatContext
                                 ? `Ask about this ${standaloneSidechatItemNoun}`
-                                : phase === "disconnected"
-                                  ? "Ask for follow-up changes or attach images"
-                                  : "Ask anything, @tag files/folders, or use / to show available commands"
+                                : "Ask anything, @tag files/folders, or use / to show available commands"
                   }
                   disabled={isComposerEditorDisabled}
                 />
@@ -6503,6 +6580,18 @@ export default function ChatView({
                     conversationOnly={isCoordinatorConversation}
                     hubWorkItemsByMessageId={hubWorkItemsByMessageId}
                     threadError={activeThread?.error ?? null}
+                    recoverableTurnId={
+                      activeLatestTurnState === "error" ? activeLatestTurnId : null
+                    }
+                    turnRecoveryDisabled={
+                      isSendBusy ||
+                      isConnecting ||
+                      isWorking ||
+                      pendingApprovals.length > 0 ||
+                      pendingUserInputs.length > 0
+                    }
+                    onContinueFailedTurn={onContinueFailedTurn}
+                    onChangeRecoveryModel={() => handleModelPickerOpenChange(true)}
                     unblockingThread={unblockingActiveThread}
                     onDismissThreadError={dismissActiveThreadError}
                     onUnblockThread={unblockThread}

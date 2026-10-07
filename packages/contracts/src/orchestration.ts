@@ -47,6 +47,7 @@ export const ORCHESTRATION_WS_METHODS = {
   getSnapshot: "orchestration.getSnapshot",
   getShellSnapshot: "orchestration.getShellSnapshot",
   getThreadDetailSnapshot: "orchestration.getThreadDetailSnapshot",
+  searchThreads: "orchestration.searchThreads",
   dispatchCommand: "orchestration.dispatchCommand",
   settleTurnDispatch: "orchestration.settleTurnDispatch",
   importThread: "orchestration.importThread",
@@ -721,6 +722,22 @@ export const OrchestrationSpaceShell = Schema.Struct({
 });
 export type OrchestrationSpaceShell = typeof OrchestrationSpaceShell.Type;
 
+/** Upper bound on extra source folders a project may list next to its primary `workspaceRoot`. */
+export const PROJECT_ADDITIONAL_FOLDERS_MAX_COUNT = 16;
+
+/**
+ * Extra source folders a project spans besides its primary `workspaceRoot`, in display
+ * order. Absolute, canonical paths. Empty for an ordinary single-folder project.
+ */
+export const ProjectAdditionalFolders = Schema.Array(TrimmedNonEmptyString).check(
+  Schema.isMaxLength(PROJECT_ADDITIONAL_FOLDERS_MAX_COUNT),
+);
+export type ProjectAdditionalFolders = typeof ProjectAdditionalFolders.Type;
+
+const ProjectAdditionalFoldersField = Schema.optional(ProjectAdditionalFolders).pipe(
+  Schema.withDecodingDefault(() => []),
+);
+
 export const OrchestrationProject = Schema.Struct({
   id: ProjectId,
   kind: Schema.optional(ProjectKind).pipe(Schema.withDecodingDefault(() => "project")),
@@ -730,6 +747,7 @@ export const OrchestrationProject = Schema.Struct({
   scripts: Schema.Array(ProjectScript),
   isPinned: Schema.optional(Schema.Boolean).pipe(Schema.withDecodingDefault(() => false)),
   spaceId: Schema.optional(Schema.NullOr(SpaceId)).pipe(Schema.withDecodingDefault(() => null)),
+  additionalFolders: ProjectAdditionalFoldersField,
   createdAt: IsoDateTime,
   updatedAt: IsoDateTime,
   deletedAt: Schema.NullOr(IsoDateTime),
@@ -745,6 +763,7 @@ export const OrchestrationProjectShell = Schema.Struct({
   scripts: Schema.Array(ProjectScript),
   isPinned: Schema.optional(Schema.Boolean).pipe(Schema.withDecodingDefault(() => false)),
   spaceId: Schema.optional(Schema.NullOr(SpaceId)).pipe(Schema.withDecodingDefault(() => null)),
+  additionalFolders: ProjectAdditionalFoldersField,
   createdAt: IsoDateTime,
   updatedAt: IsoDateTime,
 });
@@ -1362,6 +1381,11 @@ export const ProjectCreateCommand = Schema.Struct({
    * than failing creation.
    */
   spaceId: Schema.optional(Schema.NullOr(SpaceId)),
+  /**
+   * Extra source folders for a multi-folder project; `workspaceRoot` stays the primary
+   * folder. Only ordinary projects accept them, and each one must already exist.
+   */
+  additionalFolders: Schema.optional(ProjectAdditionalFolders),
   createdAt: IsoDateTime,
 });
 
@@ -2147,6 +2171,7 @@ export const ProjectCreatedPayload = Schema.Struct({
   scripts: Schema.Array(ProjectScript),
   isPinned: Schema.optional(Schema.Boolean).pipe(Schema.withDecodingDefault(() => false)),
   spaceId: Schema.optional(Schema.NullOr(SpaceId)).pipe(Schema.withDecodingDefault(() => null)),
+  additionalFolders: ProjectAdditionalFoldersField,
   createdAt: IsoDateTime,
   updatedAt: IsoDateTime,
 });
@@ -2523,6 +2548,7 @@ export const ThreadActivityAppendedPayload = Schema.Struct({
 });
 
 export const OrchestrationEventMetadata = Schema.Struct({
+  checkpointRuntimeSequence: Schema.optional(NonNegativeInt),
   providerTurnId: Schema.optional(TrimmedNonEmptyString),
   providerItemId: Schema.optional(ProviderItemId),
   adapterKey: Schema.optional(TrimmedNonEmptyString),
@@ -3003,6 +3029,35 @@ export const OrchestrationGetThreadDetailSnapshotResult = Schema.NullOr(
 export type OrchestrationGetThreadDetailSnapshotResult =
   typeof OrchestrationGetThreadDetailSnapshotResult.Type;
 
+// Exported so server and web enforce the same bounds the schema validates.
+export const ORCHESTRATION_SEARCH_THREADS_MIN_QUERY_LENGTH = 2;
+export const ORCHESTRATION_SEARCH_THREADS_MAX_LIMIT = 50;
+export const ORCHESTRATION_SEARCH_THREADS_MAX_EXCERPT_LENGTH = 320;
+
+/** Message-content search over persisted history, independent of what a client has hydrated. */
+export const OrchestrationSearchThreadsInput = Schema.Struct({
+  query: TrimmedNonEmptyString.check(Schema.isMaxLength(200)).check(
+    Schema.isMinLength(ORCHESTRATION_SEARCH_THREADS_MIN_QUERY_LENGTH),
+  ),
+  limit: Schema.optional(
+    PositiveInt.check(Schema.isLessThanOrEqualTo(ORCHESTRATION_SEARCH_THREADS_MAX_LIMIT)),
+  ),
+});
+export type OrchestrationSearchThreadsInput = typeof OrchestrationSearchThreadsInput.Type;
+
+export const OrchestrationThreadSearchMatch = Schema.Struct({
+  threadId: ThreadId,
+  /** Text around the first hit of the thread's best matching message. */
+  excerpt: Schema.String.check(Schema.isMaxLength(ORCHESTRATION_SEARCH_THREADS_MAX_EXCERPT_LENGTH)),
+  matchCount: PositiveInt,
+});
+export type OrchestrationThreadSearchMatch = typeof OrchestrationThreadSearchMatch.Type;
+
+export const OrchestrationSearchThreadsResult = Schema.Struct({
+  matches: Schema.Array(OrchestrationThreadSearchMatch),
+});
+export type OrchestrationSearchThreadsResult = typeof OrchestrationSearchThreadsResult.Type;
+
 export const OrchestrationImportThreadInput = Schema.Struct({
   threadId: ThreadId,
   externalId: TrimmedNonEmptyString,
@@ -3047,6 +3102,10 @@ export const OrchestrationRpcSchemas = {
   getThreadDetailSnapshot: {
     input: OrchestrationGetThreadDetailSnapshotInput,
     output: OrchestrationGetThreadDetailSnapshotResult,
+  },
+  searchThreads: {
+    input: OrchestrationSearchThreadsInput,
+    output: OrchestrationSearchThreadsResult,
   },
   repairState: {
     input: OrchestrationRepairStateInput,
