@@ -49,7 +49,20 @@ import {
   resolveFollowUpDispatchMode,
   resolveSelectableProviderInstanceId,
   resolveTerminalFontFamilyStack,
+  serverSettingsToAppSettings,
 } from "./appSettings";
+
+describe("provider process priority settings", () => {
+  it("defaults on and forwards explicit opt-out and reset to the server", () => {
+    expect(Schema.decodeSync(AppSettingsSchema)({}).lowerProviderProcessPriority).toBe(true);
+    expect(appSettingsPatchToServerSettingsPatch({ lowerProviderProcessPriority: false })).toEqual({
+      lowerProviderProcessPriority: false,
+    });
+    expect(appSettingsPatchToServerSettingsPatch({ lowerProviderProcessPriority: true })).toEqual({
+      lowerProviderProcessPriority: true,
+    });
+  });
+});
 
 describe("source control writing settings", () => {
   it("defaults old settings to repository conventions and saves both preferences to the server", () => {
@@ -1098,6 +1111,26 @@ describe("mergeProviderStartOptions", () => {
 });
 
 describe("getProviderInstanceOptions", () => {
+  it("disables every account of a globally disabled provider and preserves account switches", () => {
+    const settings = {
+      ...AppSettingsSchema.makeUnsafe({}),
+      disabledProviders: ["codex" as const],
+      codexAccounts: [{ id: "work", label: "Work", homePath: "", shadowHomePath: "" }],
+      providerInstances: {
+        codex_personal: { driver: "codex", enabled: true },
+        codex_off: { driver: "codex", enabled: false },
+      },
+    };
+    const options = getProviderInstanceOptions(settings);
+    expect(
+      options.filter((option) => option.provider === "codex").map((option) => option.enabled),
+    ).toEqual([false, false, false, false]);
+    expect(options.find((option) => option.provider === "claudeAgent")?.enabled).toBe(true);
+    const restored = getProviderInstanceOptions({ ...settings, disabledProviders: [] });
+    expect(restored.find((option) => option.instanceId === "codex_personal")?.enabled).toBe(true);
+    expect(restored.find((option) => option.instanceId === "codex_off")?.enabled).toBe(false);
+  });
+
   it("keeps derived Codex account instance ids schema-valid for long account ids", () => {
     const accountId = `a${"b".repeat(63)}`;
     const options = getProviderInstanceOptions({
@@ -1990,5 +2023,29 @@ describe("AppSettingsSchema", () => {
     expect(
       normalizeStoredAppSettings(decode(JSON.stringify({ enableAppshots: true }))),
     ).not.toHaveProperty("enableAppshots");
+  });
+});
+
+describe("keepAwakeMode mapping", () => {
+  it("defaults to off when absent from stored settings", () => {
+    const decode = Schema.decodeSync(Schema.fromJsonString(AppSettingsSchema));
+    expect(decode("{}").keepAwakeMode).toBe("off");
+  });
+
+  it("maps the server setting into app settings", () => {
+    const mapped = serverSettingsToAppSettings({
+      ...DEFAULT_SERVER_SETTINGS_VIEW,
+      keepAwakeMode: "always",
+    });
+    expect(mapped.keepAwakeMode).toBe("always");
+  });
+
+  it("maps the app setting into a server patch", () => {
+    expect(appSettingsPatchToServerSettingsPatch({ keepAwakeMode: "agent" })).toEqual({
+      keepAwakeMode: "agent",
+    });
+    expect(
+      appSettingsPatchToServerSettingsPatch({ enableAssistantStreaming: true }),
+    ).not.toHaveProperty("keepAwakeMode");
   });
 });

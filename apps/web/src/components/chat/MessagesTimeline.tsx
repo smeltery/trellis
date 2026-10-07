@@ -69,8 +69,6 @@ import {
   SteerIcon,
   ThinkingIcon,
   Undo2Icon,
-  WorkDetailsIcon,
-  WorkingIcon,
   WorktreeIcon,
 } from "~/lib/icons";
 import { pinActionLabel } from "~/lib/pin";
@@ -80,6 +78,7 @@ import { composerOverlayScrollFadeVars } from "./composerOverlay";
 import { CrossTaskOriginLabel, type CrossTaskOrigin } from "./CrossTaskOriginLabel";
 import { ForkSourceDivider, type ForkSourceReference } from "./ForkSourceDivider";
 import { ProviderHandoffDivider } from "./ProviderHandoffDivider";
+import { ThreadErrorBanner } from "./ThreadErrorBanner";
 import { TrellisThreadCreationCard } from "./TrellisThreadCreationCard";
 import { WorkerMonitorNoticePill } from "./WorkerMonitorNoticePill";
 import { buildExpandedImagePreview, ExpandedImagePreview } from "./ExpandedImagePreview";
@@ -468,6 +467,10 @@ interface MessagesTimelineProps {
   turnDiffSummaryByAssistantMessageId: Map<MessageId, TurnDiffSummary>;
   /** Coordinator/bot chats hide tool rows and keep a text conversation. */
   conversationOnly?: boolean;
+  recoverableTurnId?: TurnId | null;
+  turnRecoveryDisabled?: boolean;
+  onContinueFailedTurn?: (turnId: TurnId) => Promise<boolean>;
+  onChangeRecoveryModel?: () => void;
   nowIso?: string;
   expandedWorkGroups?: Record<string, boolean>;
   onToggleWorkGroup?: (groupId: string) => void;
@@ -567,6 +570,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
   hubWorkItemsByMessageId,
   turnDiffSummaryByAssistantMessageId,
   conversationOnly: conversationOnlyProp,
+  recoverableTurnId,
+  turnRecoveryDisabled,
+  onContinueFailedTurn,
+  onChangeRecoveryModel,
   nowIso,
   expandedWorkGroups,
   onToggleWorkGroup,
@@ -1408,6 +1415,26 @@ export const MessagesTimeline = memo(function MessagesTimeline({
     >
       {forkDividerBeforeRowId === row.id ? forkSourceDivider : null}
       {row.kind === "work" &&
+        row.groupedEntries.map((entry) =>
+          entry.turnFailure ? (
+            <div key={entry.id} data-turn-failure={entry.turnId ?? entry.id}>
+              <ThreadErrorBanner
+                title="Task interrupted"
+                error={entry.turnFailure.message}
+                {...(entry.turnId && entry.turnId === recoverableTurnId && onContinueFailedTurn
+                  ? {
+                      onContinue: () => {
+                        void onContinueFailedTurn(entry.turnId!);
+                      },
+                      ...(onChangeRecoveryModel ? { onChangeModel: onChangeRecoveryModel } : {}),
+                    }
+                  : {})}
+                recoveryDisabled={turnRecoveryDisabled ?? false}
+              />
+            </div>
+          ) : null,
+        )}
+      {row.kind === "work" &&
         row.groupedEntries.map((workEntry) =>
           workEntry.providerHandoff ? (
             <ProviderHandoffDivider
@@ -1424,7 +1451,10 @@ export const MessagesTimeline = memo(function MessagesTimeline({
           // The provider's actual Trellis MCP tool rows remain visible here.
           // Handoff boundaries render as the divider above, not as work rows.
           const groupedEntries = row.groupedEntries.filter(
-            (workEntry) => !workEntry.trellisThreadCreation && !workEntry.providerHandoff,
+            (workEntry) =>
+              !workEntry.trellisThreadCreation &&
+              !workEntry.providerHandoff &&
+              !workEntry.turnFailure,
           );
           if (groupedEntries.length === 0) {
             return null;
@@ -2269,17 +2299,11 @@ export const MessagesTimeline = memo(function MessagesTimeline({
                       // ChatView's click anchor preserves this trigger's screen position
                       // while the disclosure height animates, so opening it should not tail-scroll.
                       className={cn(
-                        "inline-flex items-center gap-1.5 pb-2 text-left transition-colors duration-200 hover:text-foreground",
+                        "-ml-0.5 inline-flex items-center gap-1 pb-2 text-left transition-colors duration-200 hover:text-foreground",
                         MUTED_LABEL_TEXT_CLASS_NAME,
                       )}
                       style={{ fontSize: chatTypographyStyle.fontSize }}
                     >
-                      <span aria-hidden="true" className="flex shrink-0">
-                        {renderWorkEntryIcon(
-                          row.collapsedWorkElapsed ? ClockIcon : WorkDetailsIcon,
-                          MESSAGE_ACTION_ICON_CLASS_NAME,
-                        )}
-                      </span>
                       <span>
                         {row.collapsedWorkElapsed
                           ? `Worked for ${row.collapsedWorkElapsed}`
@@ -2668,18 +2692,15 @@ export const MessagesTimeline = memo(function MessagesTimeline({
           {/* Non-collapsible twin of the settled "Worked for" header: same label
               tone, size, and full-width divider, but counting up live. */}
           <div
-            className={cn("flex items-center gap-1.5 pb-2", MUTED_LABEL_TEXT_CLASS_NAME)}
+            className={cn("-ml-0.5 pb-2", MUTED_LABEL_TEXT_CLASS_NAME)}
             style={{ fontSize: chatTypographyStyle.fontSize }}
           >
-            <WorkingIcon className={cn("shrink-0", MESSAGE_ACTION_ICON_CLASS_NAME)} />
-            <span>
-              Working for{" "}
-              {nowIso ? (
-                (formatClockElapsed(row.createdAt, nowIso) ?? "0s")
-              ) : (
-                <WorkingTimer createdAt={row.createdAt} />
-              )}
-            </span>
+            Working for{" "}
+            {nowIso ? (
+              (formatClockElapsed(row.createdAt, nowIso) ?? "0s")
+            ) : (
+              <WorkingTimer createdAt={row.createdAt} />
+            )}
           </div>
           <div className="h-px w-full bg-border" />
         </div>
@@ -2687,8 +2708,9 @@ export const MessagesTimeline = memo(function MessagesTimeline({
 
       {row.kind === "working" && (
         <div
+          ref={syncAnimationsToTimelineOrigin}
           className={cn(
-            "flex items-center gap-1.5 pt-0.5 font-system-ui",
+            "shimmer-group flex w-fit items-center gap-1.5 pt-0.5 font-system-ui",
             MUTED_LABEL_TEXT_CLASS_NAME,
           )}
           style={{ fontSize: `${appTypographyScale.chatPx}px` }}
@@ -2696,9 +2718,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
           <span aria-hidden="true" className="flex shrink-0">
             {renderWorkEntryIcon(workingIcon, MESSAGE_ACTION_ICON_CLASS_NAME)}
           </span>
-          <span ref={syncAnimationsToTimelineOrigin} className="shimmer">
-            {workingLabel}
-          </span>
+          <span>{workingLabel}</span>
         </div>
       )}
 
