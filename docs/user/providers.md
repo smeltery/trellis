@@ -10,6 +10,11 @@ CLI, its version, account access, and platform. Trellis shows the capabilities
 reported by each adapter; models, effort settings, approvals, and session recovery
 are not interchangeable across providers.
 
+OpenCode supports both V1 and V2 runtimes. Trellis discovers the `opencode`
+executable and reads its configured models and provider options. After changing
+versions, check `opencode --version`, authenticate in OpenCode, and refresh the
+model catalog in Trellis's provider settings.
+
 ```mermaid
 sequenceDiagram
   participant You
