@@ -6,6 +6,13 @@ changes run typechecking, five unit partitions, six stable browser partitions,
 desktop build, native Windows regression and migration lineage. Docs-only
 detection and nightly geometry ownership are unchanged.
 
+The fork keeps static checks sequential in `static-fast`, including workflow
+validation in the locked Flox environment, fork CI contracts, Markdown/Mermaid
+validation, branding, Windows boundaries, formatting, lint, and release smoke.
+Independent typecheck, test, and build jobs still run in parallel. The CI workflow
+also supports manual dispatch on a selected branch when a PR event needs retrying. This preserves
+compatibility with the pinned workflow validator and the fork's extra checks.
+
 The Linux PTY dependency smoke runs once, on the first server shard; the Windows
 PTY smoke remains a separate native check. The desktop lifecycle smoke exercises
 the real Electron browser integration. The synthetic Energy Cloud A/B benchmark

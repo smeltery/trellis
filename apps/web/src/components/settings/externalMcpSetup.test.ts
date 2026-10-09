@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  EXTERNAL_MCP_SERVER_NAME,
   buildExternalMcpClientConfiguration,
   buildExternalMcpExamplePrompt,
   buildExternalMcpSetupPrompt,
@@ -28,28 +29,31 @@ describe("external MCP guided setup", () => {
     const claude = buildExternalMcpClientConfiguration("claudeCode", stdio);
 
     expect(codex.value).toBe(
-      "codex mcp add trellis --env ELECTRON_RUN_AS_NODE=1 -- /Applications/Trellis.app/Contents/MacOS/Trellis server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Trellis home'",
+      `codex mcp add ${EXTERNAL_MCP_SERVER_NAME} --env ELECTRON_RUN_AS_NODE=1 -- /Applications/Trellis.app/Contents/MacOS/Trellis server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Trellis home'`,
     );
     expect(claude.value).toBe(
-      "claude mcp add --scope user trellis -e ELECTRON_RUN_AS_NODE=1 -- /Applications/Trellis.app/Contents/MacOS/Trellis server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Trellis home'",
+      `claude mcp add --scope user ${EXTERNAL_MCP_SERVER_NAME} -e ELECTRON_RUN_AS_NODE=1 -- /Applications/Trellis.app/Contents/MacOS/Trellis server.js mcp serve --integration mcp_int_example --home-dir '/tmp/Trellis home'`,
     );
+    expect(codex.value).not.toContain("mcp add trellis ");
+    expect(claude.value).not.toContain(" user trellis ");
     expect(`${codex.value}${claude.value}`).not.toContain("syn_mcp_v1_");
   });
 
   it("builds standard JSON configuration for desktop and other clients", () => {
     const desktop = buildExternalMcpClientConfiguration("claudeDesktop", stdio);
     const parsed = JSON.parse(desktop.value) as {
-      mcpServers: { trellis: { command: string; args: ReadonlyArray<string> } };
+      mcpServers: Record<string, { command: string; args: ReadonlyArray<string> }>;
     };
 
     expect(desktop.format).toBe("json");
-    expect(parsed.mcpServers.trellis).toEqual(stdio);
+    expect(parsed.mcpServers[EXTERNAL_MCP_SERVER_NAME]).toEqual(stdio);
+    expect(parsed.mcpServers.trellis).toBeUndefined();
   });
 
   it("builds terminal commands for PowerShell on Windows", () => {
     const codex = buildExternalMcpClientConfiguration("codex", stdio, "Win32");
     expect(codex.value).toBe(
-      "& 'codex' 'mcp' 'add' 'trellis' '--env' 'ELECTRON_RUN_AS_NODE=1' '--' '/Applications/Trellis.app/Contents/MacOS/Trellis' 'server.js' 'mcp' 'serve' '--integration' 'mcp_int_example' '--home-dir' '/tmp/Trellis home'",
+      `& 'codex' 'mcp' 'add' '${EXTERNAL_MCP_SERVER_NAME}' '--env' 'ELECTRON_RUN_AS_NODE=1' '--' '/Applications/Trellis.app/Contents/MacOS/Trellis' 'server.js' 'mcp' 'serve' '--integration' 'mcp_int_example' '--home-dir' '/tmp/Trellis home'`,
     );
     expect(codex.instruction).toContain("PowerShell");
   });
@@ -72,8 +76,8 @@ describe("external MCP guided setup", () => {
     });
 
     expect(prompt).toContain("syn_pair_v1_example");
-    expect(prompt).toContain("codex mcp add trellis");
-    expect(prompt).toContain("claude mcp add --scope user trellis");
+    expect(prompt).toContain(`codex mcp add ${EXTERNAL_MCP_SERVER_NAME}`);
+    expect(prompt).toContain(`claude mcp add --scope user ${EXTERNAL_MCP_SERVER_NAME}`);
     expect(prompt).toContain('"mcpServers"');
     expect(prompt).toContain("trellis_overview");
     expect(prompt).not.toContain("syn_mcp_v1_");

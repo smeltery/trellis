@@ -1,6 +1,6 @@
 {
   "name": "@trellis/cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "@effect/platform-node": "catalog:",
     "@effect/sql-sqlite-bun": "catalog:",
     "@opencode-ai/sdk": "1.18.31",
+    "@opencode/client": "2.0.25",
     "@pierre/diffs": "^1.2.12",
     "@xterm/headless": "^6.0.0",
     "effect": "catalog:",

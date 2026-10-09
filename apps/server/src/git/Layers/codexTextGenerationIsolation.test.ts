@@ -195,6 +195,7 @@ it.layer(NodeServices.layer)("Codex text-generation isolation", (it) => {
       ).toThrowError(/could not be checked safely/);
       for (const missingPreferenceMessage of [
         "The domain/default pair does not exist",
+        "Error: Domain 'com.openai.codex' not found.",
         "Error: Could not find key 'config_toml_base64' in domain 'com.openai.codex'.",
       ]) {
         expect(() =>
