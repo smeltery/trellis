@@ -62,6 +62,7 @@ function readMacManagedPreference(
         : "";
     if (
       /does not exist/i.test(stderr) ||
+      stderr.trim() === "Error: Domain 'com.openai.codex' not found." ||
       stderr.trim() === `Error: Could not find key '${key}' in domain 'com.openai.codex'.`
     ) {
       return undefined;

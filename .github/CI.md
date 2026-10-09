@@ -9,7 +9,8 @@ detection and nightly geometry ownership are unchanged.
 The fork keeps static checks sequential in `static-fast`, including workflow
 validation in the locked Flox environment, fork CI contracts, Markdown/Mermaid
 validation, branding, Windows boundaries, formatting, lint, and release smoke.
-Independent typecheck, test, and build jobs still run in parallel. This preserves
+Independent typecheck, test, and build jobs still run in parallel. The CI workflow
+also supports manual dispatch on a selected branch when a PR event needs retrying. This preserves
 compatibility with the pinned workflow validator and the fork's extra checks.
 
 The Linux PTY dependency smoke runs once, on the first server shard; the Windows

@@ -194,6 +194,7 @@ describe("TerminalManager", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
     for (const dir of tempDirs.splice(0, tempDirs.length)) {
       fs.rmSync(dir, { recursive: true, force: true });
     }
@@ -1531,6 +1532,7 @@ describe("TerminalManager", () => {
   });
 
   it("retries with fallback shells when preferred shell spawn fails", async () => {
+    vi.stubEnv("SHELL", "/bin/sh");
     const { manager, ptyAdapter } = makeManager(5, {
       shellResolver: () => "/definitely/missing-shell -l",
     });
