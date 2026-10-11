@@ -19,6 +19,14 @@ Open a project from the sidebar, then create a thread. Choose the main checkout
 for small sequential changes or a worktree for isolated work. Keep terminals in
 the intended checkout and inspect the Git diff before committing.
 
+The **Tasks** view is available in Stable and Beta. Ask an agent to add a to-do,
+read the list, or mark an item done. Adding a to-do does not start agent work;
+delegate it to a chat from Tasks when you are ready.
+
+File Undo and thread revert are blocked while another thread has an active or
+pending turn in the same Git checkout. Stop that turn before retrying. Separate
+Git worktrees remain independent.
+
 Provider capabilities differ. An approval request pauses the affected operation;
 read the proposed command and scope before approving. Stop a running turn from
 the conversation controls when you need to change direction.
