@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 import { Effect, ServiceMap } from "effect";
 import { ServerSettingsService } from "./serverSettings";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
@@ -72,6 +72,19 @@ import {
   MINIMUM_CODEX_EXCLUDE_TURNS_CLI_VERSION,
   CODEX_CLI_UNPARSEABLE_VERSION_MESSAGE,
 } from "./provider/codexCliVersion.ts";
+
+// Keep default Codex discovery away from the developer's configuration and credentials.
+vi.mock("node:os", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:os")>();
+  const { mkdtempSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const testHome = mkdtempSync(join(actual.tmpdir(), "trellis-codex-test-home-"));
+  const homedir = () => testHome;
+  return { ...actual, homedir, default: { ...actual, homedir } };
+});
+
+const testHomeDirectory = os.homedir();
+afterAll(() => rmSync(testHomeDirectory, { recursive: true, force: true }));
 
 const asThreadId = (value: string): ThreadId => ThreadId.makeUnsafe(value);
 

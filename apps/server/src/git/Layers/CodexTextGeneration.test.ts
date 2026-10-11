@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { it } from "@effect/vitest";
 import { Clock, Duration, Effect, FileSystem, Layer, Path } from "effect";
-import { expect, vi } from "vitest";
+import { afterAll, expect, vi } from "vitest";
 
 import {
   resolveCodexHomeOverlayAccountSegment,
@@ -18,6 +18,19 @@ import {
 } from "./CodexTextGeneration.ts";
 import { TextGenerationError } from "../Errors.ts";
 import { TextGeneration } from "../Services/TextGeneration.ts";
+
+// Keep default Codex discovery away from the developer's configuration and credentials.
+vi.mock("node:os", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:os")>();
+  const { mkdtempSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const testHome = mkdtempSync(join(actual.tmpdir(), "trellis-codex-test-home-"));
+  const homedir = () => testHome;
+  return { ...actual, homedir, default: { ...actual, homedir } };
+});
+
+const testHomeDirectory = homedir();
+afterAll(() => rmSync(testHomeDirectory, { recursive: true, force: true }));
 
 const CodexTextGenerationTestLayer = CodexTextGenerationLive.pipe(
   Layer.provideMerge(
