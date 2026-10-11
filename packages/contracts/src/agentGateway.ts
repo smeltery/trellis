@@ -8,8 +8,9 @@
 import { Schema } from "effect";
 
 import { ProjectId, ThreadId, TurnId } from "./baseSchemas";
-import { ModelSelection, ProviderKind } from "./orchestration";
+import { ModelSelection, ProviderKind, RuntimeMode } from "./orchestration";
 import { ProviderModelDescriptor } from "./providerDiscovery";
+import { ProviderInstanceId } from "./providerInstance";
 import { ServerProviderAuthStatus } from "./server";
 
 export const TRELLIS_GATEWAY_MAX_THREADS_PER_OPERATION = 20;
@@ -98,10 +99,22 @@ export const TrellisCreateThreadsInput = Schema.Struct({
 }).annotate({ parseOptions: { onExcessProperty: "error" } });
 export type TrellisCreateThreadsInput = typeof TrellisCreateThreadsInput.Type;
 
+export const TrellisProviderInstanceCatalog = Schema.Struct({
+  instanceId: ProviderInstanceId,
+  displayName: Schema.String.check(Schema.isNonEmpty()),
+  isDefault: Schema.Boolean,
+  enabled: Schema.Boolean,
+});
+export type TrellisProviderInstanceCatalog = typeof TrellisProviderInstanceCatalog.Type;
+
 export const TrellisProviderCatalog = Schema.Struct({
   provider: ProviderKind,
   defaultModel: Schema.NullOr(Schema.String),
   models: Schema.Array(ProviderModelDescriptor),
+  // Optional for older MCP clients that decode a capability response from a
+  // server predating provider-instance discovery. Current servers always emit
+  // the field, including an empty array when no extra instances are configured.
+  instances: Schema.optional(Schema.Array(TrellisProviderInstanceCatalog)),
   enabled: Schema.Boolean,
   available: Schema.Boolean,
   authStatus: Schema.optional(ServerProviderAuthStatus),
@@ -155,7 +168,7 @@ export const TrellisCreatedThreadResult = Schema.Struct({
   target: ModelSelection,
   provider: ProviderKind,
   model: Schema.String,
-  runtimeMode: Schema.Literals(["approval-required", "full-access"]),
+  runtimeMode: RuntimeMode,
   environment: Schema.Literals(["local", "worktree"]),
   branch: Schema.NullOr(Schema.String),
   worktreePath: Schema.NullOr(Schema.String),

@@ -190,6 +190,10 @@ const TRELLIS_GATEWAY_OWNED_TOOL_NAMES = [
   "trellis_update_kanban_card",
   "trellis_set_kanban_goal",
   "trellis_delete_kanban_card",
+  // To-do tools (todoTools.ts)
+  "trellis_create_todo",
+  "trellis_list_todos",
+  "trellis_update_todo",
   // Thread write tools (Layers/AgentGateway.ts)
   "trellis_create_threads",
   "trellis_create_thread",

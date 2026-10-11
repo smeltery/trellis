@@ -11,6 +11,7 @@ import {
   type ProviderListModelsResult,
   type ProviderModelDescriptor,
   type ServerProviderAuthStatus,
+  type TrellisProviderInstanceCatalog,
 } from "@trellis/contracts";
 import {
   getClaudeContextWindowSuffix,
@@ -42,6 +43,7 @@ export interface AgentGatewayProviderCatalog {
   readonly provider: ProviderKind;
   readonly defaultModel: string | null;
   readonly models: ReadonlyArray<ProviderModelDescriptor>;
+  readonly instances?: ReadonlyArray<TrellisProviderInstanceCatalog>;
   readonly enabled: boolean;
   readonly available: boolean;
   readonly authStatus?: ServerProviderAuthStatus;
@@ -55,6 +57,13 @@ export interface AgentGatewayProviderAvailability {
   readonly available?: boolean;
   readonly authStatus?: ServerProviderAuthStatus;
   readonly message?: string;
+  readonly instances?: ReadonlyArray<AgentGatewayProviderInstanceAvailability>;
+}
+
+export interface AgentGatewayProviderInstanceAvailability extends TrellisProviderInstanceCatalog {
+  /** Undefined means health has not produced a trustworthy snapshot yet. */
+  readonly available?: boolean;
+  readonly authStatus?: ServerProviderAuthStatus;
 }
 
 export const AGENT_GATEWAY_TARGET_OPTIONS_DESCRIPTION =
@@ -275,10 +284,19 @@ export function loadAgentGatewayProviderCatalog(input: {
   readonly provider: ProviderKind;
   readonly discovery: ProviderDiscoveryServiceShape;
   readonly availability?: AgentGatewayProviderAvailability;
+  readonly instanceId?: string;
   readonly cwd?: string;
 }): Effect.Effect<AgentGatewayProviderCatalog> {
   const defaultModel = providerDefaultModel(input.provider);
   const availability = input.availability ?? { enabled: true };
+  const catalogInstances = availability.instances?.map(
+    ({ instanceId, displayName, isDefault, enabled }) => ({
+      instanceId,
+      displayName,
+      isDefault,
+      enabled,
+    }),
+  );
   const unavailableReason =
     availability.enabled === false
       ? `Provider "${input.provider}" is disabled in Trellis settings.`
@@ -292,6 +310,7 @@ export function loadAgentGatewayProviderCatalog(input: {
       provider: input.provider,
       defaultModel,
       models: [],
+      ...(catalogInstances !== undefined ? { instances: catalogInstances } : {}),
       enabled: availability.enabled,
       available: false,
       ...(availability.authStatus ? { authStatus: availability.authStatus } : {}),
@@ -299,12 +318,17 @@ export function loadAgentGatewayProviderCatalog(input: {
     });
   }
   return input.discovery
-    .listModels({ provider: input.provider, ...(input.cwd ? { cwd: input.cwd } : {}) })
+    .listModels({
+      provider: input.provider,
+      ...(input.instanceId ? { instanceId: input.instanceId } : {}),
+      ...(input.cwd ? { cwd: input.cwd } : {}),
+    })
     .pipe(
       Effect.map((result: ProviderListModelsResult) => ({
         provider: input.provider,
         defaultModel,
         models: result.models,
+        ...(catalogInstances !== undefined ? { instances: catalogInstances } : {}),
         enabled: true,
         available: result.models.length > 0 || defaultModel !== null,
         ...(availability.authStatus ? { authStatus: availability.authStatus } : {}),
@@ -315,6 +339,7 @@ export function loadAgentGatewayProviderCatalog(input: {
           provider: input.provider,
           defaultModel,
           models: [],
+          ...(catalogInstances !== undefined ? { instances: catalogInstances } : {}),
           enabled: true,
           available: defaultModel !== null,
           ...(availability.authStatus ? { authStatus: availability.authStatus } : {}),
@@ -660,10 +685,45 @@ export function resolveAgentGatewayTarget(input: {
   readonly cwd?: string;
 }): Effect.Effect<ModelSelection, AgentGatewayTargetError> {
   return Effect.gen(function* () {
+    let targetAvailability = input.availability;
+    const requestedInstanceId = input.target.instanceId;
+    const instances = input.availability?.instances;
+    if (requestedInstanceId !== undefined && instances !== undefined) {
+      const selected = instances.find((instance) => instance.instanceId === requestedInstanceId);
+      if (selected === undefined) {
+        return yield* Effect.fail(
+          new AgentGatewayTargetError(
+            "provider_unavailable",
+            `Provider instance "${requestedInstanceId}" is not configured for provider "${input.target.provider}". Choose an instance from trellis_capabilities providers[].instances[].`,
+            {
+              provider: input.target.provider,
+              instanceId: requestedInstanceId,
+              availableInstanceIds: instances.map((instance) => instance.instanceId),
+            },
+          ),
+        );
+      }
+      if (!selected.enabled) {
+        return yield* Effect.fail(
+          new AgentGatewayTargetError(
+            "provider_unavailable",
+            `Provider instance "${requestedInstanceId}" is disabled in Trellis settings.`,
+            { provider: input.target.provider, instanceId: requestedInstanceId },
+          ),
+        );
+      }
+      targetAvailability = {
+        enabled: selected.enabled,
+        ...(selected.available !== undefined ? { available: selected.available } : {}),
+        ...(selected.authStatus !== undefined ? { authStatus: selected.authStatus } : {}),
+        instances,
+      } satisfies AgentGatewayProviderAvailability;
+    }
     const catalog = yield* loadAgentGatewayProviderCatalog({
       provider: input.target.provider,
       discovery: input.discovery,
-      ...(input.availability ? { availability: input.availability } : {}),
+      ...(targetAvailability ? { availability: targetAvailability } : {}),
+      ...(input.target.instanceId !== undefined ? { instanceId: input.target.instanceId } : {}),
       ...(input.cwd ? { cwd: input.cwd } : {}),
     });
     if (!catalog.available) {
