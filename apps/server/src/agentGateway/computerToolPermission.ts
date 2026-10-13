@@ -194,6 +194,8 @@ const TRELLIS_GATEWAY_OWNED_TOOL_NAMES = [
   "trellis_create_todo",
   "trellis_list_todos",
   "trellis_update_todo",
+  // Inline visuals (inlineVisualTools.ts; Beta-only, absent from a Stable catalog)
+  "trellis_show_visual",
   // Thread write tools (Layers/AgentGateway.ts)
   "trellis_create_threads",
   "trellis_create_thread",

@@ -1,18 +1,26 @@
 import type { ProviderKind } from "@trellis/contracts";
+import { INLINE_VISUALS_BETA_FEATURE } from "@trellis/shared/betaFeatures";
+
+import { isServerBetaFeatureEnabled } from "../betaFeatureGate.ts";
 
 import { computerToolInstructions } from "./computerGuidance.ts";
 
 import { AUTOMATION_AUTHORING_GUIDANCE } from "./automationAuthoringGuidance.ts";
 
 /** Canonical, versioned host policy delivered to every supported provider. */
-export const TRELLIS_HARNESS_POLICY_VERSION = "2026-10-02.1";
+export const TRELLIS_HARNESS_POLICY_VERSION = "2026-10-12.1";
 export const TRELLIS_HARNESS_POLICY_MARKER = `[Trellis harness policy ${TRELLIS_HARNESS_POLICY_VERSION}]`;
 
 export interface TrellisHarnessCapabilities {
   readonly gatewayControlAvailable: boolean;
   readonly automationAuthoring?: "tool-descriptions";
   readonly enableComputerControl?: boolean | undefined;
+  /** The `trellis_show_visual` tool is offered (Beta-only feature). */
+  readonly inlineVisuals?: boolean | undefined;
 }
+
+/** Whether this server offers inline visuals; the gateway catalog uses the same gate. */
+const INLINE_VISUALS_ENABLED = isServerBetaFeatureEnabled(INLINE_VISUALS_BETA_FEATURE);
 
 /**
  * Render one truthful policy. Providers without a safely thread-scoped MCP
@@ -34,7 +42,7 @@ export function renderTrellisHarnessPolicy(capabilities: TrellisHarnessCapabilit
         "If trellis_create_threads fails before returning an operationId, correct the rejected plan and reuse its requestId; no durable task was created.",
         "Use trellis_capabilities to select canonical provider, model, and option values. Never guess a model slug or silently substitute a provider or model.",
         "Use trellis_capabilities.targetConstruction: Codex options.reasoningEffort and Claude Agent options.effort are not interchangeable.",
-        "For requested results, use trellis_wait_for_threads and wait for all, then synthesize. Hub coordinator packets allow async reports unless results are requested now.",
+        "For results, repeat trellis_wait_for_threads with runIds until allTerminal, then synthesize. Await native subagents. Hub packets may allow async reports.",
         "After operationId, retry the same requestId and exact plan. Report failures; no replacement threads without a new user request. Hub retries are server-owned.",
         "Trellis automations support heartbeat, standalone, and dedicated modes plus interval, once, daily, weekdays, weekly, and cron schedules. Existing everyMinutes heartbeat calls remain supported. Use fastInterval: true only when the user explicitly accepts a sub-minute bounded loop.",
         "Mode controls execution: heartbeat appends to an idle target thread; standalone opens a fresh thread per independent run; dedicated reuses one automation-owned thread so runs build on each other without writing into another thread.",
@@ -44,6 +52,11 @@ export function renderTrellisHarnessPolicy(capabilities: TrellisHarnessCapabilit
         ...(capabilities.automationAuthoring === "tool-descriptions"
           ? []
           : [AUTOMATION_AUTHORING_GUIDANCE]),
+        ...(capabilities.inlineVisuals === true
+          ? [
+              "When a chart, table, or comparison says more than prose, call trellis_show_visual and place its block in your reply.",
+            ]
+          : []),
         "Prefer trellis_create_automation with suggested: true when the user has not explicitly asked to create an automation. Suggested automations remain disabled until the user accepts their proposal card.",
         "Before trellis_update_automation, call trellis_view_automation. Resend all mutable fields, including unchanged ones: updates replace, not merge.",
         'Automation-dispatched turns receive an identity/run/memory envelope in the current user message. Only that current turn is automation-dispatched; the status never carries into a later manual follow-up such as "continue", even in the same thread.',
@@ -70,6 +83,7 @@ export function renderTrellisHarnessPolicy(capabilities: TrellisHarnessCapabilit
 
 export const TRELLIS_GATEWAY_HARNESS_POLICY = renderTrellisHarnessPolicy({
   gatewayControlAvailable: true,
+  inlineVisuals: INLINE_VISUALS_ENABLED,
 });
 
 export interface TrellisHarnessPolicyDeliveryState {
@@ -128,6 +142,7 @@ export function takeTrellisHarnessPolicyForProviderSession(
   return takeTrellisHarnessPolicyForSession(state, {
     gatewayControlAvailable: providerHasTrellisGatewayControl(input),
     enableComputerControl: state.enableComputerControl === true,
+    inlineVisuals: INLINE_VISUALS_ENABLED,
   });
 }
 
