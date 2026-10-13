@@ -399,6 +399,11 @@ const TRELLIS_MCP_TOOL_PRESENTATIONS = {
     completed: "Trellis moved a board card",
     failed: "Trellis couldn't move a board card",
   },
+  trellis_show_visual: {
+    running: "Trellis is showing a visual",
+    completed: "Trellis showed a visual",
+    failed: "Trellis couldn't show a visual",
+  },
   trellis_create_todo: {
     running: "Trellis is adding a to-do",
     completed: "Trellis added a to-do",

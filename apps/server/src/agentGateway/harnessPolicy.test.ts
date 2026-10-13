@@ -139,6 +139,24 @@ describe("Trellis harness policy", () => {
 
   it("keeps the gateway policy below its prompt budget", () => {
     assert.isAtMost(renderTrellisHarnessPolicy({ gatewayControlAvailable: true }).length, 6_030);
+    // Inline visuals add one line where the server offers them (Beta).
+    assert.isAtMost(
+      renderTrellisHarnessPolicy({ gatewayControlAvailable: true, inlineVisuals: true }).length,
+      6_160,
+    );
+  });
+
+  it("points to trellis_show_visual only when the session can call it", () => {
+    const visualLine = "call trellis_show_visual and place its block in your reply";
+    assert.include(
+      renderTrellisHarnessPolicy({ gatewayControlAvailable: true, inlineVisuals: true }),
+      visualLine,
+    );
+    assert.notInclude(renderTrellisHarnessPolicy({ gatewayControlAvailable: true }), visualLine);
+    assert.notInclude(
+      renderTrellisHarnessPolicy({ gatewayControlAvailable: false, inlineVisuals: true }),
+      visualLine,
+    );
   });
 
   it("withholds device guidance from sessions with no gateway control", () => {
