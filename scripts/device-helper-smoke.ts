@@ -30,7 +30,7 @@ import {
 } from "@trellis/shared/deviceHelperCache";
 import { sandboxedHelperCommand } from "../apps/server/src/device/helperSandbox.ts";
 
-import { HelperClient } from "./lib/device-smoke-client.ts";
+import { HelperClient, waitForAccessibility } from "./lib/device-smoke-client.ts";
 import { chooseDevice, type SimctlDevice } from "./lib/device-smoke-runtime.ts";
 
 const execFileAsync = promisify(execFile);
@@ -437,7 +437,7 @@ async function main(): Promise<void> {
     await sleep(1200);
 
     step("Dumping the accessibility tree");
-    const described = await client.call("describe-ui", { maxDepth: 6 });
+    const described = await waitForAccessibility(client);
     const tree = described["tree"] as { role?: string; children?: unknown[] } | undefined;
     assert(Boolean(tree), "describe-ui returned no tree");
     const children = tree!.children ?? [];

@@ -106,3 +106,29 @@ export class HelperClient {
     });
   }
 }
+
+/** SpringBoard accessibility can lag behind bootstatus and the first frame. */
+export async function waitForAccessibility(
+  client: Pick<HelperClient, "call">,
+  timeoutMs = 60_000,
+): Promise<Record<string, unknown>> {
+  const deadline = Date.now() + timeoutMs;
+  while (true) {
+    try {
+      return await client.call(
+        "describe-ui",
+        { maxDepth: 6 },
+        Math.min(45_000, Math.max(1, deadline - Date.now())),
+      );
+    } catch (error) {
+      if (
+        !(error instanceof Error) ||
+        !error.message.startsWith("accessibility tree unavailable: no frontmost application") ||
+        Date.now() >= deadline
+      ) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, Math.min(1000, deadline - Date.now())));
+    }
+  }
+}
