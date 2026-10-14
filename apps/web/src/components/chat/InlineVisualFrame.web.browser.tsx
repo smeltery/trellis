@@ -35,7 +35,7 @@ it("never fetches or executes agent HTML in an HTTP-hosted browser", async () =>
     await expect
       .element(
         screen.getByText(
-          "HTML visuals are available in Trellis Beta desktop. Use native components in the browser.",
+          "HTML visuals are available in Trellis desktop. Use native components in the browser.",
         ),
       )
       .toBeVisible();
