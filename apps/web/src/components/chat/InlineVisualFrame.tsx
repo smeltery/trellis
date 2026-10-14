@@ -45,7 +45,7 @@ export function InlineVisualFrame(props: {
   ) : (
     <InlineVisualNotice
       title={props.visual.title}
-      message="HTML visuals are available in Trellis Beta desktop. Use native components in the browser."
+      message="HTML visuals are available in Trellis desktop. Use native components in the browser."
     />
   );
 }

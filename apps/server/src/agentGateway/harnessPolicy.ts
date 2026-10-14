@@ -8,14 +8,14 @@ import { computerToolInstructions } from "./computerGuidance.ts";
 import { AUTOMATION_AUTHORING_GUIDANCE } from "./automationAuthoringGuidance.ts";
 
 /** Canonical, versioned host policy delivered to every supported provider. */
-export const TRELLIS_HARNESS_POLICY_VERSION = "2026-10-12.1";
+export const TRELLIS_HARNESS_POLICY_VERSION = "2026-10-14.1";
 export const TRELLIS_HARNESS_POLICY_MARKER = `[Trellis harness policy ${TRELLIS_HARNESS_POLICY_VERSION}]`;
 
 export interface TrellisHarnessCapabilities {
   readonly gatewayControlAvailable: boolean;
   readonly automationAuthoring?: "tool-descriptions";
   readonly enableComputerControl?: boolean | undefined;
-  /** The `trellis_show_visual` tool is offered (Beta-only feature). */
+  /** The `trellis_show_visual` tool is offered by this session. */
   readonly inlineVisuals?: boolean | undefined;
 }
 

@@ -263,8 +263,10 @@ final class FrameStream {
       ) -> Void
     if let imp = descriptor.method(for: damageSelector) {
       let block: @convention(block) (AnyObject?) -> Void = { [weak self] _ in
-        guard let self, let current = self.descriptor.currentFramebufferSurface() else { return }
-        self.encode(surface: current)
+        // The descriptor is a ROCK proxy. Querying it from a ROCK callback
+        // blocks the workers that must deliver the reply and can starve other
+        // simulator services, including accessibility.
+        self?.encode()
       }
       unsafeBitCast(imp, to: DamageFn.self)(descriptor, damageSelector, damageCallbackUUID, block)
       damageRegistered = true
@@ -354,11 +356,16 @@ final class FrameStream {
       value: kVTProfileLevel_H264_Baseline_AutoLevel)
     VTSessionSetProperty(
       session, key: kVTCompressionPropertyKey_AllowFrameReordering, value: kCFBooleanFalse)
+    // Keyframes come from one place: the forced one in `encodeOnQueue`, whose
+    // timer any keyframe resets. A frame-count limit (120) and a duration limit
+    // equal to the forced interval each added their own keyframe, so they
+    // arrived in pairs ~20 ms apart and the pane rebuilt its decoder twice.
+    // The duration limit stays only as a backstop at twice the interval.
     VTSessionSetProperty(
-      session, key: kVTCompressionPropertyKey_MaxKeyFrameInterval, value: 120 as CFNumber)
+      session, key: kVTCompressionPropertyKey_MaxKeyFrameInterval, value: 0 as CFNumber)
     VTSessionSetProperty(
       session, key: kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration,
-      value: keyframeIntervalSeconds as CFNumber)
+      value: (keyframeIntervalSeconds * 2) as CFNumber)
     VTSessionSetProperty(
       session, key: kVTCompressionPropertyKey_ExpectedFrameRate, value: 60 as CFNumber)
     VTCompressionSessionPrepareToEncodeFrames(session)
@@ -369,7 +376,7 @@ final class FrameStream {
   /// Encodes one surface. Returns immediately when an encode is already in
   /// flight: dropping is the correct response to a display that outruns the
   /// encoder, since only the newest frame matters.
-  private func encode(surface: IOSurfaceRef) {
+  private func encode(surface: IOSurfaceRef? = nil) {
     let generation = withStateLock { () -> UInt64? in
       if stopped { return nil }
       if encodingInFlight {
@@ -383,13 +390,16 @@ final class FrameStream {
 
     // The surface must be retained across the async hop: the simulator may
     // recycle it as soon as this callback returns.
-    let retained = Unmanaged.passRetained(surface as AnyObject)
+    let retained = surface.map { Unmanaged.passRetained($0 as AnyObject) }
     encodeQueue.async { [weak self] in
       defer {
-        retained.release()
+        retained?.release()
         self?.finishEncoding(generation: generation)
       }
-      self?.encodeOnQueue(surface: surface, generation: generation)
+      guard let self, self.accepts(generation: generation),
+        let current = surface ?? self.descriptor.currentFramebufferSurface()
+      else { return }
+      self.encodeOnQueue(surface: current, generation: generation)
     }
   }
 
@@ -406,11 +416,15 @@ final class FrameStream {
     let presentationTime = CMTime(seconds: elapsed, preferredTimescale: 1000)
 
     var properties: [CFString: Any]? = nil
-    if elapsed - lastKeyframeAt >= keyframeIntervalSeconds {
+    let keyframeDue = withStateLock { () -> Bool in
+      guard elapsed - lastKeyframeAt >= keyframeIntervalSeconds else { return false }
+      lastKeyframeAt = elapsed
+      return true
+    }
+    if keyframeDue {
       // Periodic keyframes bound how long a late joiner waits for a decodable
       // picture and give the consumer a resync point after dropped frames.
       properties = [kVTEncodeFrameOptionKey_ForceKeyFrame: kCFBooleanTrue!]
-      lastKeyframeAt = elapsed
     }
 
     VTCompressionSessionEncodeFrame(
@@ -439,6 +453,15 @@ final class FrameStream {
       let dictionary = entry as NSDictionary
       if let notSync = dictionary[kCMSampleAttachmentKey_NotSync] as? Bool {
         isKeyframe = !notSync
+      }
+    }
+
+    // Any keyframe, including one the encoder chose itself, restarts the
+    // forced-keyframe timer, so the next forced one is a full interval away.
+    if isKeyframe {
+      let presented = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
+      if presented.isFinite {
+        withStateLock { lastKeyframeAt = max(lastKeyframeAt, presented) }
       }
     }
 

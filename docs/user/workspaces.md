@@ -31,9 +31,8 @@ Provider capabilities differ. An approval request pauses the affected operation;
 read the proposed command and scope before approving. Stop a running turn from
 the conversation controls when you need to change direction.
 
-In Trellis Beta, agents can add inline visual components to a conversation.
-Desktop HTML visuals run in an isolated view; this feature is unavailable in
-Stable.
+In Stable and Beta, agents can add inline visual components to a conversation.
+HTML visuals run in an isolated view.
 
 Your conversation and project state are stored locally. Back up your data before
 manual recovery or moving between machines; see [configuration](configuration.md).

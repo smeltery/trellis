@@ -30,6 +30,9 @@ import {
 } from "@trellis/shared/deviceHelperCache";
 import { sandboxedHelperCommand } from "../apps/server/src/device/helperSandbox.ts";
 
+import { HelperClient, waitForAccessibility } from "./lib/device-smoke-client.ts";
+import { chooseDevice, type SimctlDevice } from "./lib/device-smoke-runtime.ts";
+
 const execFileAsync = promisify(execFile);
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -37,9 +40,6 @@ const helperDir = join(repoRoot, "apps/server/native/device-helper");
 
 /** Minimum frames the stream must deliver before the run is considered healthy. */
 const REQUIRED_FRAMES = 30;
-/** Preferred simulator device types, most modern first. */
-const PREFERRED_DEVICE_TYPES = ["iPhone 17 Pro", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone"];
-
 let stepIndex = 0;
 
 function step(message: string): void {
@@ -52,11 +52,8 @@ function info(message: string): void {
 }
 
 function fail(message: string, detail?: unknown): never {
-  console.error(`[device-smoke] FAIL: ${message}`);
-  if (detail !== undefined) {
-    console.error(detail instanceof Error ? (detail.stack ?? detail.message) : String(detail));
-  }
-  process.exit(1);
+  // Throw so simulator/process cleanup in finally also runs on a failed check.
+  throw new Error(`[device-smoke] FAIL: ${message}`, { cause: detail });
 }
 
 function assert(condition: boolean, message: string): asserts condition {
@@ -64,14 +61,6 @@ function assert(condition: boolean, message: string): asserts condition {
 }
 
 // ── Environment ──────────────────────────────────────────────────────
-
-interface SimctlDevice {
-  readonly udid: string;
-  readonly name: string;
-  readonly state: string;
-  readonly isAvailable?: boolean;
-  readonly runtime: string;
-}
 
 /**
  * The Xcode this run targets. `DEVELOPER_DIR` wins over the machine-wide
@@ -105,108 +94,7 @@ function listDevices(env: NodeJS.ProcessEnv): SimctlDevice[] {
   return devices;
 }
 
-/** Prefers an already-booted device so a developer's session is reused. */
-function chooseDevice(devices: SimctlDevice[]): { device: SimctlDevice; wasBooted: boolean } {
-  const booted = devices.find((device) => device.state === "Booted");
-  if (booted) {
-    return { device: booted, wasBooted: true };
-  }
-  for (const preference of PREFERRED_DEVICE_TYPES) {
-    const match = devices.find((device) => device.name.startsWith(preference));
-    if (match) return { device: match, wasBooted: false };
-  }
-  if (devices.length > 0) {
-    return { device: devices[0]!, wasBooted: false };
-  }
-  fail("no available iOS simulators; install a runtime via Xcode > Settings > Components");
-}
-
 // ── Helper process ───────────────────────────────────────────────────
-
-interface PendingRequest {
-  readonly resolve: (value: Record<string, unknown>) => void;
-  readonly reject: (error: Error) => void;
-}
-
-/** A JSON-RPC client over the helper's stdio. */
-class HelperClient {
-  private readonly pending = new Map<number, PendingRequest>();
-  private buffer = "";
-  private nextId = 1;
-  readonly stderr: string[] = [];
-
-  private readonly child: ChildProcessWithoutNullStreams;
-
-  constructor(child: ChildProcessWithoutNullStreams) {
-    this.child = child;
-    child.stdout.setEncoding("utf8");
-    child.stdout.on("data", (chunk: string) => this.consume(chunk));
-    child.stderr.setEncoding("utf8");
-    child.stderr.on("data", (chunk: string) => {
-      for (const line of chunk.split("\n")) {
-        if (line.trim()) this.stderr.push(line);
-      }
-    });
-    child.on("exit", (code, signal) => {
-      const error = new Error(`helper exited early (code ${code}, signal ${signal})`);
-      for (const [, request] of this.pending) request.reject(error);
-      this.pending.clear();
-    });
-  }
-
-  private consume(chunk: string): void {
-    this.buffer += chunk;
-    let newline = this.buffer.indexOf("\n");
-    while (newline >= 0) {
-      const line = this.buffer.slice(0, newline);
-      this.buffer = this.buffer.slice(newline + 1);
-      newline = this.buffer.indexOf("\n");
-      if (!line.trim()) continue;
-      let message: Record<string, unknown>;
-      try {
-        message = JSON.parse(line) as Record<string, unknown>;
-      } catch {
-        continue;
-      }
-      const id = message["id"];
-      if (typeof id !== "number") continue; // A notification.
-      const request = this.pending.get(id);
-      if (!request) continue;
-      this.pending.delete(id);
-      const error = message["error"] as { message?: string } | undefined;
-      if (error) {
-        request.reject(new Error(error.message ?? "unknown helper error"));
-        return;
-      }
-      request.resolve((message["result"] ?? {}) as Record<string, unknown>);
-    }
-  }
-
-  call(
-    method: string,
-    params: Record<string, unknown> = {},
-    timeoutMs = 45_000,
-  ): Promise<Record<string, unknown>> {
-    const id = this.nextId++;
-    return new Promise((resolvePromise, rejectPromise) => {
-      const timer = setTimeout(() => {
-        this.pending.delete(id);
-        rejectPromise(new Error(`helper method '${method}' timed out after ${timeoutMs}ms`));
-      }, timeoutMs);
-      this.pending.set(id, {
-        resolve: (value) => {
-          clearTimeout(timer);
-          resolvePromise(value);
-        },
-        reject: (error) => {
-          clearTimeout(timer);
-          rejectPromise(error);
-        },
-      });
-      this.child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id, method, params })}\n`);
-    });
-  }
-}
 
 /** Collects length-prefixed frames from the helper's Unix socket. */
 class FrameCollector {
@@ -413,7 +301,12 @@ async function main(): Promise<void> {
   }
 
   step("Selecting a simulator");
-  const { device, wasBooted } = chooseDevice(listDevices(toolchainEnv));
+  const sdkVersion = execFileSync("xcrun", ["--sdk", "iphonesimulator", "--show-sdk-version"], {
+    encoding: "utf8",
+    env: toolchainEnv,
+  }).trim();
+  const { device, wasBooted } = chooseDevice(listDevices(toolchainEnv), sdkVersion);
+  info(`iOS SDK ${sdkVersion}, runtime ${device.runtime}`);
   info(`${device.name} (${device.udid}) ${wasBooted ? "already booted" : "shutdown"}`);
 
   let bootedByUs = false;
@@ -458,6 +351,8 @@ async function main(): Promise<void> {
       env: toolchainEnv,
     });
     client = new HelperClient(child);
+    await client.waitUntilReady();
+    info("helper ready");
 
     step("Attaching");
     const attached = await client.call("attach", { udid: device.udid });
@@ -542,7 +437,7 @@ async function main(): Promise<void> {
     await sleep(1200);
 
     step("Dumping the accessibility tree");
-    const described = await client.call("describe-ui", { maxDepth: 6 });
+    const described = await waitForAccessibility(client);
     const tree = described["tree"] as { role?: string; children?: unknown[] } | undefined;
     assert(Boolean(tree), "describe-ui returned no tree");
     const children = tree!.children ?? [];
@@ -566,6 +461,19 @@ async function main(): Promise<void> {
 
     console.log("\n[device-smoke] PASS");
   } catch (error) {
+    if (child?.pid !== undefined && child.exitCode === null && child.signalCode === null) {
+      // Private framework calls can hang without stderr. Capture their stacks
+      // before cleanup kills the process, keeping diagnostics bounded as well.
+      try {
+        const sample = await execFileAsync("/usr/bin/sample", [String(child.pid), "1"], {
+          timeout: 10_000,
+          maxBuffer: 2 * 1024 * 1024,
+        });
+        console.error(`[device-smoke] helper process sample:\n${sample.stdout}`);
+      } catch (diagnosticError) {
+        console.error("[device-smoke] could not sample helper", diagnosticError);
+      }
+    }
     if (client && client.stderr.length > 0) {
       console.error("[device-smoke] helper stderr:");
       for (const line of client.stderr.slice(-20)) console.error(`  ${line}`);
@@ -574,7 +482,17 @@ async function main(): Promise<void> {
   } finally {
     collector.close();
     child?.stdin.end();
-    child?.kill();
+    if (child && child.exitCode === null && child.signalCode === null) {
+      const runningChild = child;
+      await new Promise<void>((resolveExit) => {
+        const timer = setTimeout(() => runningChild.kill("SIGKILL"), 5000);
+        runningChild.once("exit", () => {
+          clearTimeout(timer);
+          resolveExit();
+        });
+        runningChild.kill();
+      });
+    }
     for (const path of cleanupPaths) {
       rmSync(path, { recursive: true, force: true });
     }
@@ -583,6 +501,8 @@ async function main(): Promise<void> {
       console.log("[device-smoke] shutting down the simulator this run booted");
       try {
         execFileSync("xcrun", ["simctl", "shutdown", device.udid], {
+          timeout: 30_000,
+          killSignal: "SIGKILL",
           stdio: "inherit",
           env: toolchainEnv,
         });
@@ -593,4 +513,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+void main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

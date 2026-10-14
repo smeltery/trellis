@@ -194,7 +194,7 @@ const TRELLIS_GATEWAY_OWNED_TOOL_NAMES = [
   "trellis_create_todo",
   "trellis_list_todos",
   "trellis_update_todo",
-  // Inline visuals (inlineVisualTools.ts; Beta-only, absent from a Stable catalog)
+  // Inline visuals (inlineVisualTools.ts; available in Stable and Beta)
   "trellis_show_visual",
   // Thread write tools (Layers/AgentGateway.ts)
   "trellis_create_threads",
@@ -235,10 +235,12 @@ const TRELLIS_GATEWAY_OWNED_TOOL_NAMES = [
   "trellis_e2e_review",
   // Capability-gated device tools (deviceTools.ts — not in contracts)
   "device_boot",
+  "device_configure",
   "device_describe_ui",
   "device_install",
   "device_launch",
   "device_list",
+  "device_logs",
   "device_open_url",
   "device_press_button",
   "device_screenshot",
@@ -246,6 +248,7 @@ const TRELLIS_GATEWAY_OWNED_TOOL_NAMES = [
   "device_swipe",
   "device_tap",
   "device_type",
+  "device_wait",
 ] as const;
 
 /** Every tool name the agent gateway serves, from the shared catalogs. */

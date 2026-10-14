@@ -367,7 +367,7 @@ export function makeAgentGatewayBrowserTools(
       definition: {
         name: "trellis_e2e_review",
         description:
-          "Load Trellis's E2E testing workflow: delegate a test subagent, verify real journeys, and report screenshot proof. Call only for an explicit E2E request.",
+          "Load Trellis's E2E testing workflow for web apps and iOS simulator apps: delegate a test subagent, verify real journeys, and report screenshot proof. Call only for an explicit E2E request.",
         inputSchema: { type: "object", properties: {}, additionalProperties: false },
         annotations: {
           title: "E2E test workflow",
