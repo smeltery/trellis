@@ -52,11 +52,8 @@ function info(message: string): void {
 }
 
 function fail(message: string, detail?: unknown): never {
-  console.error(`[device-smoke] FAIL: ${message}`);
-  if (detail !== undefined) {
-    console.error(detail instanceof Error ? (detail.stack ?? detail.message) : String(detail));
-  }
-  process.exit(1);
+  // Throw so simulator/process cleanup in finally also runs on a failed check.
+  throw new Error(`[device-smoke] FAIL: ${message}`, { cause: detail });
 }
 
 function assert(condition: boolean, message: string): asserts condition {
@@ -169,6 +166,7 @@ class HelperClient {
         continue;
       }
       const id = message["id"];
+      if (message["method"] === "ready") info("helper ready");
       if (typeof id !== "number") continue; // A notification.
       const request = this.pending.get(id);
       if (!request) continue;
@@ -566,6 +564,19 @@ async function main(): Promise<void> {
 
     console.log("\n[device-smoke] PASS");
   } catch (error) {
+    if (child?.pid !== undefined && child.exitCode === null && child.signalCode === null) {
+      // Private framework calls can hang without stderr. Capture their stacks
+      // before cleanup kills the process, keeping diagnostics bounded as well.
+      try {
+        const sample = await execFileAsync("/usr/bin/sample", [String(child.pid), "1"], {
+          timeout: 10_000,
+          maxBuffer: 2 * 1024 * 1024,
+        });
+        console.error(`[device-smoke] helper process sample:\n${sample.stdout}`);
+      } catch (diagnosticError) {
+        console.error("[device-smoke] could not sample helper", diagnosticError);
+      }
+    }
     if (client && client.stderr.length > 0) {
       console.error("[device-smoke] helper stderr:");
       for (const line of client.stderr.slice(-20)) console.error(`  ${line}`);
@@ -593,4 +604,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+void main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});
