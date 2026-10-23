@@ -2,7 +2,9 @@ import { ORCHESTRATION_WS_METHODS, WS_METHODS } from "@trellis/contracts";
 import { Deferred, Effect, Fiber } from "effect";
 import { describe, expect, it } from "vitest";
 
-import { classifyWsRequest, makeWsRequestAdmission } from "./wsRequestAdmission";
+import { classifyWsRequest } from "@trellis/shared/wsRequestClass";
+
+import { makeWsRequestAdmission } from "./wsRequestAdmission";
 
 describe("WsRequestAdmission", () => {
   it("keeps lightweight shell reads out of the expensive lane", () => {

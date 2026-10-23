@@ -563,17 +563,7 @@ export function deriveWorkLogEntries(
     options,
   )
     .filter((entry) => !isUninformativeCommandStartEntry(entry))
-    .map(
-      ({
-        collapseCommand: _collapseCommand,
-        collapseKey: _collapseKey,
-        runtimeWarningMessage: _runtimeWarningMessage,
-        runtimeWarningRepeatCount: _runtimeWarningRepeatCount,
-        suppressStandaloneCommandStart: _suppressStandaloneCommandStart,
-        taskListHasTasks: _taskListHasTasks,
-        ...entry
-      }) => entry,
-    );
+    .map(toPublicWorkLogEntry);
   const handoffFastModeNotices = deriveHandoffFastModeNotices(ordered);
   if (handoffFastModeNotices.size > 0) {
     for (const [index, entry] of derived.entries()) {
@@ -858,20 +848,30 @@ export interface SubagentTaskEnd {
 /**
  * When and how each subagent task ended, keyed by its launching tool call id,
  * from the parent's task completions. A background subagent's own thread ends
- * its first turn at launch, so this is the only reliable end it has.
+ * its first turn at launch, so this is the only reliable end it has. An end
+ * that names only its task (an older session stop) resolves through the task's
+ * start while that task is still open.
  */
 export function deriveSubagentTaskEnds(
   activities: ReadonlyArray<OrchestrationThreadActivity>,
 ): ReadonlyMap<string, SubagentTaskEnd> {
   const ends = new Map<string, SubagentTaskEnd>();
   const resumed = new Set<string>();
+  const openToolUseIdByTaskId = new Map<string, string>();
   for (const activity of activities) {
     const payload = asRecord(activity.payload);
-    const toolUseId = asTrimmedString(payload?.toolUseId);
-    if (activity.kind === "task.started" && toolUseId && ends.has(toolUseId)) {
-      resumed.add(toolUseId);
+    const taskId = asTrimmedString(payload?.taskId);
+    const ownToolUseId = asTrimmedString(payload?.toolUseId);
+    if (activity.kind === "task.started" && taskId) {
+      if (ownToolUseId) openToolUseIdByTaskId.set(taskId, ownToolUseId);
+      else openToolUseIdByTaskId.delete(taskId);
+    }
+    if (activity.kind === "task.started" && ownToolUseId && ends.has(ownToolUseId)) {
+      resumed.add(ownToolUseId);
     }
     if (activity.kind !== "task.completed") continue;
+    const toolUseId = ownToolUseId ?? (taskId ? openToolUseIdByTaskId.get(taskId) : undefined);
+    if (taskId) openToolUseIdByTaskId.delete(taskId);
     const outcome = subagentOutcomeFromStatus(asTrimmedString(payload?.status));
     if (toolUseId && outcome) {
       const previous = resumed.has(toolUseId) ? ends.get(toolUseId) : ends.get(toolUseId)?.previous;
@@ -1159,6 +1159,10 @@ function deriveBackgroundTaskCompletionEntries(
   return completions;
 }
 
+export function isCodexRuntimeWarningType(nativeEventType: unknown): boolean {
+  return nativeEventType === "codex.guardianWarning" || nativeEventType === "codex.warning";
+}
+
 function shouldKeepActivityForWorkLog(
   activity: OrchestrationThreadActivity,
   latestTurnId: TurnId | undefined,
@@ -1183,6 +1187,14 @@ function shouldKeepActivityForWorkLog(
   // Authentication can start or finish outside a turn. Keep its latest state
   // visible even when the transcript has turn-scoped assistant messages.
   if (activity.kind === "auth.status") return true;
+
+  // Codex Guardian and hook warnings carry no provider turn id.
+  if (
+    activity.kind === "runtime.warning" &&
+    activity.turnId === null &&
+    isCodexRuntimeWarningType(asRecord(activity.payload)?.nativeEventType)
+  )
+    return true;
 
   // Thread-level compaction progress has no provider turn id but should stay visible.
   if (activity.kind === "context-compaction" && activity.turnId === null) {
@@ -1713,6 +1725,29 @@ function withUserInputExchanges(
     return exchangeEntry;
   });
   return withExchanges.filter((entry) => !answeredActivityIds.has(entry.id));
+}
+
+const publicWorkLogEntryCache = new WeakMap<DerivedWorkLogEntry, WorkLogEntry>();
+
+// Unchanged derived entries come back as the same objects (the per-activity cache),
+// so their public copy is reused too: each streamed pass then costs one lookup per
+// entry instead of an object spread, and consumers keep entry identity.
+function toPublicWorkLogEntry(derived: DerivedWorkLogEntry): WorkLogEntry {
+  const cached = publicWorkLogEntryCache.get(derived);
+  if (cached) {
+    return cached;
+  }
+  const {
+    collapseCommand: _collapseCommand,
+    collapseKey: _collapseKey,
+    runtimeWarningMessage: _runtimeWarningMessage,
+    runtimeWarningRepeatCount: _runtimeWarningRepeatCount,
+    suppressStandaloneCommandStart: _suppressStandaloneCommandStart,
+    taskListHasTasks: _taskListHasTasks,
+    ...entry
+  } = derived;
+  publicWorkLogEntryCache.set(derived, entry);
+  return entry;
 }
 
 const decodeInlineVisualPayload = Schema.decodeUnknownOption(InlineVisualActivityPayload);

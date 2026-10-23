@@ -123,11 +123,13 @@ import {
   providerContinuationIdentity,
 } from "../continuationIdentity.ts";
 
-const isStaleDevinSessionLoadError = (
+// Devin and Grok report a cursor they cannot reload faithfully (missing native
+// state, or created for other process-start model flags) as resume-state-unavailable.
+const isStaleNativeSessionLoadError = (
   provider: ProviderKind,
   error: ProviderAdapterError,
 ): error is ProviderAdapterProcessError =>
-  provider === "devin" &&
+  (provider === "devin" || provider === "grok") &&
   error instanceof ProviderAdapterProcessError &&
   error.reason === "resume-state-unavailable";
 
@@ -217,6 +219,7 @@ const ClearSessionResumeCursorInput = Schema.Struct({
 
 const CompletePriorTranscriptBootstrapInput = Schema.Struct({
   threadId: ThreadId,
+  expectedLifecycleGeneration: Schema.optional(TrimmedNonEmptyString),
 });
 
 const ImportExternalThreadInput = Schema.Struct({
@@ -787,6 +790,24 @@ function runtimeEventRetiredGatewayTurnAuthority(event: ProviderRuntimeEvent): b
   return runtimePayloadRecord(event.raw?.payload)[AGENT_GATEWAY_TURN_AUTHORITY_RETIRED] === true;
 }
 
+/**
+ * The adapter that retired a gateway bearer is the authoritative source for
+ * its own retired state. The persisted `AGENT_GATEWAY_CREDENTIAL_ROTATION_REQUIRED`
+ * marker is only a hint: it rides a terminal runtime event that can be dropped
+ * by binding/generation/turn-applicability gates after the bearer is already
+ * fenced, so routing must also consult the adapter directly.
+ */
+function adapterReportsRetiredGatewayCredential<TError>(
+  adapter: ProviderAdapterShape<TError>,
+  threadId: ThreadId,
+): Effect.Effect<boolean> {
+  return adapter.agentGatewayCredentialRetired === undefined
+    ? Effect.succeed(false)
+    : adapter
+        .agentGatewayCredentialRetired(threadId)
+        .pipe(Effect.catch(() => Effect.succeed(false)));
+}
+
 function runtimeActiveTurnId(value: unknown): string | undefined {
   const activeTurnId = runtimePayloadRecord(value).activeTurnId;
   return typeof activeTurnId === "string" ? activeTurnId : undefined;
@@ -977,17 +998,17 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
     type ResolvedProviderSessionStartInput = ProviderSessionStartInput & {
       readonly provider: ProviderKind;
     };
-    const startAdapterWithStaleDevinFallback = (
+    const startAdapterWithStaleSessionFallback = (
       adapter: ProviderAdapterShape<ProviderAdapterError>,
       startInput: ResolvedProviderSessionStartInput,
       startSession = adapter.startSession,
     ) =>
       startSession(startInput).pipe(
-        Effect.map((session) => ({ session, staleDevinFallbackOccurred: false })),
+        Effect.map((session) => ({ session, staleSessionFallbackOccurred: false })),
         Effect.catchIf(
           (error) =>
             hasResumeCursor(startInput.resumeCursor) &&
-            isStaleDevinSessionLoadError(startInput.provider, error),
+            isStaleNativeSessionLoadError(startInput.provider, error),
           (error) =>
             adapter.hasSession(startInput.threadId).pipe(
               Effect.flatMap((hasLiveSession) => {
@@ -997,7 +1018,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
                 const { resumeCursor: _staleResumeCursor, ...freshStartInput } = startInput;
                 return adapter
                   .startSession(freshStartInput)
-                  .pipe(Effect.map((session) => ({ session, staleDevinFallbackOccurred: true })));
+                  .pipe(Effect.map((session) => ({ session, staleSessionFallbackOccurred: true })));
               }),
             ),
         ),
@@ -2302,15 +2323,19 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
         const renewedAdapter = yield* lifecycle.runCurrent(threadId, () =>
           Effect.gen(function* () {
             let binding = yield* getCurrentBinding();
+            // The persisted marker rides a terminal event that can be dropped
+            // after the bearer is already fenced; the adapter is authoritative
+            // for its own retired state, so consult it before skipping
+            // rotation.
+            let adapter = yield* getAdapterForBinding(binding);
             const requiresCredentialRotation =
               runtimePayloadRecord(binding.runtimePayload)[
                 AGENT_GATEWAY_CREDENTIAL_ROTATION_REQUIRED
-              ] === true;
+              ] === true || (yield* adapterReportsRetiredGatewayCredential(adapter, threadId));
             if (!requiresCredentialRotation) {
               return;
             }
 
-            let adapter = yield* getAdapterForBinding(binding);
             if (!(yield* adapter.hasSession(threadId))) {
               return;
             }
@@ -2320,14 +2345,15 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
             // The drain may have waited for a while. Re-read all durable
             // routing state before stopping anything.
             binding = yield* getCurrentBinding();
+            adapter = yield* getAdapterForBinding(binding);
             if (
               runtimePayloadRecord(binding.runtimePayload)[
                 AGENT_GATEWAY_CREDENTIAL_ROTATION_REQUIRED
-              ] !== true
+              ] !== true &&
+              !(yield* adapterReportsRetiredGatewayCredential(adapter, threadId))
             ) {
               return;
             }
-            adapter = yield* getAdapterForBinding(binding);
             if (!(yield* adapter.hasSession(threadId))) {
               return;
             }
@@ -2457,6 +2483,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
             // phases. Adopt its fresh runtime instead of replacing it again.
             if (
               activeSession &&
+              (yield* providerAdapter.hasSession(threadId)) &&
               !requiresCredentialRotation &&
               sessionMatchesProviderInstance(
                 activeSession,
@@ -2667,12 +2694,33 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
           adapters,
           (adapter) =>
             adapter.listSessions().pipe(
-              Effect.map((sessions) => {
+              Effect.flatMap((sessions) => {
                 const session = sessions.find((candidate) => candidate.threadId === threadId);
-                return session ? { adapter, session } : null;
+                return session
+                  ? adapter
+                      .hasSession(threadId)
+                      .pipe(Effect.map((active) => (active ? { adapter, session } : null)))
+                  : Effect.succeed(null);
               }),
               Effect.orElseSucceed(() => null),
             ),
+          { concurrency: "unbounded" },
+        );
+        return matches.find((match) => match !== null) ?? null;
+      });
+
+    // Only adapters with a separate retained probe keep a context that
+    // hasSession reports inactive; the others are found by findLiveSession.
+    const findRetainedAdapter = (threadId: ThreadId) =>
+      Effect.gen(function* () {
+        const matches = yield* Effect.forEach(
+          adapters,
+          (adapter) =>
+            adapter.hasRetainedSession
+              ? adapter
+                  .hasRetainedSession(threadId)
+                  .pipe(Effect.map((retained) => (retained ? adapter : null)))
+              : Effect.succeed(null),
           { concurrency: "unbounded" },
         );
         return matches.find((match) => match !== null) ?? null;
@@ -2864,7 +2912,8 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
         const requiresCredentialRotation =
           runtimePayloadRecord(binding.runtimePayload)[
             AGENT_GATEWAY_CREDENTIAL_ROTATION_REQUIRED
-          ] === true;
+          ] === true ||
+          (yield* adapterReportsRetiredGatewayCredential(providerAdapter, input.threadId));
         // A live adapter session whose persisted generation no longer matches
         // the thread's current generation is a zombie: its runtime events are
         // rejected by the stale-generation gate, so a turn routed into it can
@@ -2878,6 +2927,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
           binding.lifecycleGeneration === lifecycle.currentGeneration(input.threadId);
         if (
           activeSession !== undefined &&
+          (yield* providerAdapter.hasSession(input.threadId)) &&
           sessionMatchesProviderInstance(
             activeSession,
             routedProviderInstanceId,
@@ -3079,6 +3129,13 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
               const continuationResetRequested =
                 persistedBinding !== undefined &&
                 readPersistedContinuationResetRequested(persistedBinding.runtimePayload);
+              // Only a switch to another driver may abandon the persisted
+              // continuation implicitly; a same-driver home or account change
+              // still has to be resolved by the user.
+              const abandonsOtherProviderContinuation =
+                outcomeOptions?.abandonOtherProviderContinuation === true &&
+                persistedBinding !== undefined &&
+                persistedBinding.provider !== resolved.instance.driver;
               const canReusePersistedResumeCursor =
                 persistedBinding !== undefined &&
                 hasResumeCursor(persistedBinding.resumeCursor) &&
@@ -3086,6 +3143,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
               if (
                 persistedBinding !== undefined &&
                 !continuationResetRequested &&
+                !abandonsOtherProviderContinuation &&
                 ((!hasAvailableResumeCursor && !exactPersistedLaunchMatch) ||
                   (hasAvailableResumeCursor && !continuationCompatible)) &&
                 (providerUsesProtectedNativeContinuation(persistedBinding.provider) ||
@@ -3187,7 +3245,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
                 // The lifecycle is updated inside observeProviderStartup; these taps
                 // only log the already-recorded outcome.
                 const started = yield* observeProviderStartup(
-                  startAdapterWithStaleDevinFallback(
+                  startAdapterWithStaleSessionFallback(
                     adapter,
                     resolvedAdapterStartInput,
                     preparedStart,
@@ -3234,18 +3292,20 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
                     )}ms for thread '${threadId}'.`,
                   );
                 }
-                const { session, staleDevinFallbackOccurred } = started.value;
+                const { session, staleSessionFallbackOccurred } = started.value;
                 startupLifecycle.transition("ready");
                 replacementStarted = true;
                 const nativeResumeAttempted = hasResumeCursor(effectiveResumeCursor);
                 const nativeResumeSucceeded =
-                  nativeResumeAttempted && !staleDevinFallbackOccurred
+                  nativeResumeAttempted && !staleSessionFallbackOccurred
                     ? (adapter.didResumeSession?.(resolvedAdapterStartInput, session) ?? true)
                     : false;
                 const priorTranscriptBootstrapPending =
                   persistedPriorTranscriptBootstrapPending ||
-                  staleDevinFallbackOccurred ||
-                  (outcomeOptions?.registerPriorTranscriptBootstrapOnFreshStart === true &&
+                  staleSessionFallbackOccurred ||
+                  abandonsOtherProviderContinuation ||
+                  ((nativeResumeAttempted ||
+                    outcomeOptions?.registerPriorTranscriptBootstrapOnFreshStart === true) &&
                     !nativeResumeSucceeded);
 
                 if (session.provider !== adapter.provider) {
@@ -3306,7 +3366,13 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
               }
 
               const previousAdapter = yield* getAdapterForBinding(persistedBinding);
-              if (!(yield* previousAdapter.hasSession(threadId))) {
+              // A retained but inactive context still needs cleanup, but only a
+              // live source is restored when the replacement fails.
+              const previousSessionLive = yield* previousAdapter.hasSession(threadId);
+              const previousSessionRetained = previousAdapter.hasRetainedSession
+                ? yield* previousAdapter.hasRetainedSession(threadId)
+                : previousSessionLive;
+              if (!previousSessionRetained) {
                 return yield* startAndPersistReplacement;
               }
 
@@ -3353,6 +3419,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
                         if (replacementStarted) {
                           yield* adapter.stopSession(threadId);
                         }
+                        if (!previousSessionLive) return;
                         const restored = yield* previousAdapter.startSession({
                           threadId,
                           provider: persistedBinding.provider,
@@ -3456,6 +3523,17 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
             const binding = Option.getOrUndefined(yield* directory.getBinding(input.threadId));
             if (!binding) {
               return;
+            }
+            // Check under the binding lock so a delayed accepted turn cannot
+            // retire a marker written by a newer session while it was waiting.
+            if (
+              input.expectedLifecycleGeneration !== undefined &&
+              binding.lifecycleGeneration !== input.expectedLifecycleGeneration
+            ) {
+              return yield* toValidationError(
+                "ProviderService.completePriorTranscriptBootstrap",
+                "Cannot complete transcript recovery from a replaced provider session.",
+              );
             }
             yield* directory.upsert({
               threadId: input.threadId,
@@ -4578,13 +4656,18 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
                   : Effect.fail(error),
               ),
             );
-            if (routed === null) return;
-            hasRoutableBinding = true;
+            // A Pi startup that fails after registering its context can retain
+            // that context with no binding while hasSession reports it inactive.
+            // Routing stays on hasSession; this cleanup falls back to the
+            // retained probe so a second teardown failure still fails the stop.
+            const adapter = routed?.adapter ?? (yield* findRetainedAdapter(input.threadId));
+            if (adapter === null) return;
+            hasRoutableBinding = routed !== null;
             // Start the physical cleanup under the old generation, alongside
             // its durable drain. Neither may wait for the other to begin, and
             // one failure must not cancel the remaining cleanup/drain work.
             yield* settleConcurrentTeardowns(
-              [routed.adapter.stopSession(input.threadId), flushRuntimeText(input.threadId)],
+              [adapter.stopSession(input.threadId), flushRuntimeText(input.threadId)],
               (teardown) => teardown,
             );
           }),
@@ -4683,14 +4766,20 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
               if (!binding || !isExpectedIdleStopCurrent()) return;
               const adapter = yield* getAdapterForBinding(binding);
               const hasActiveSession = yield* adapter.hasSession(input.threadId);
+              // A context retained by a failed stop is not live, but its cursor
+              // can be newer than a binding write that has not landed yet.
+              const hasRetainedSession = adapter.hasRetainedSession
+                ? yield* adapter.hasRetainedSession(input.threadId)
+                : hasActiveSession;
               let resumeCursor = binding.resumeCursor;
               if (!isExpectedIdleStopCurrent()) return;
-              if (hasActiveSession) {
+              if (hasRetainedSession) {
                 const activeSessions = yield* adapter.listSessions();
                 const activeSession = activeSessions.find(
                   (session) => session.threadId === input.threadId,
                 );
                 if (
+                  hasActiveSession &&
                   rawInput.onlyIfIdleSince !== undefined &&
                   (!activeSession ||
                     activeSession.status === "connecting" ||
@@ -4877,7 +4966,10 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
               const adapter = yield* getAdapterForBinding(binding);
               const hasActiveSession = yield* adapter.hasSession(input.threadId);
               const preserveActive = hasActiveSession && input.preserveActiveRuntime === true;
-              if (hasActiveSession && !preserveActive) {
+              const hasRetainedSession = adapter.hasRetainedSession
+                ? yield* adapter.hasRetainedSession(input.threadId)
+                : hasActiveSession;
+              if (hasRetainedSession && !preserveActive) {
                 yield* adapter.stopSession(input.threadId);
               }
               if (!preserveActive) {
@@ -4918,7 +5010,16 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
     const listSessions: ProviderServiceShape["listSessions"] = () =>
       Effect.gen(function* () {
         const activeSessions = (yield* Effect.forEach(adapters, (adapter) =>
-          adapter.listSessions(),
+          adapter.listSessions().pipe(
+            Effect.flatMap((sessions) =>
+              // An adapter with a retained probe keeps a context after a failed
+              // stop for cleanup retries. That context is not live, so it stays
+              // out of the listing that decides liveness and holds queued turns.
+              adapter.hasRetainedSession
+                ? Effect.filter(sessions, (session) => adapter.hasSession(session.threadId))
+                : Effect.succeed(sessions),
+            ),
+          ),
         )).flatMap((sessions) => sessions);
         // One `list()` query: `listBindings` already returns every persisted
         // binding (skipping rows with unknown providers, exactly as the per-thread
@@ -4963,6 +5064,20 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
           return Object.assign({}, session, overrides);
         });
       });
+
+    const listRetainedSessions: NonNullable<ProviderServiceShape["listRetainedSessions"]> = () =>
+      Effect.forEach(adapters, (adapter) =>
+        // The contexts the listing above leaves out. Their process may still
+        // be running, so safety checks such as the checkpoint revert guard
+        // read them here.
+        adapter.hasRetainedSession
+          ? Effect.flatMap(adapter.listSessions(), (sessions) =>
+              Effect.filter(sessions, (session) =>
+                adapter.hasSession(session.threadId).pipe(Effect.map((live) => !live)),
+              ),
+            )
+          : Effect.succeed<ReadonlyArray<ProviderSession>>([]),
+      ).pipe(Effect.map((sessions) => sessions.flatMap((entries) => entries)));
 
     const startClaudeCompaction: NonNullable<ProviderServiceShape["startClaudeCompaction"]> = (
       input,
@@ -5257,6 +5372,7 @@ const makeProviderService = (options?: ProviderServiceLiveOptions) =>
       hasLiveRuntimeTasks,
       clearSessionResumeCursor,
       listSessions,
+      listRetainedSessions,
       getCapabilities,
       getClaudeCacheObservation,
       startClaudeCompaction,
