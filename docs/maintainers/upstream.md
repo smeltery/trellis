@@ -60,3 +60,6 @@ original names. `brand:check` checks active source identities and key asset byte
 
 Inherited tags stay in a separate local namespace for migration checks; they are
 never pushed to the fork or counted as Trellis auto-release versions.
+Migration checks include both local and `upstream/v*` tags, filtering each by the
+database family selected by matching server and desktop package versions. Remote
+release tags must not enter Stable/Beta migration history, including when namespaced.
