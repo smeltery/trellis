@@ -103,6 +103,7 @@ function initRepoWithCommit(
     yield* core.initRepo({ cwd });
     yield* git(cwd, ["config", "user.email", "test@test.com"]);
     yield* git(cwd, ["config", "user.name", "Test"]);
+    yield* git(cwd, ["config", "commit.gpgsign", "false"]);
     yield* writeTextFile(path.join(cwd, "README.md"), "# test\n");
     yield* git(cwd, ["add", "."]);
     yield* git(cwd, ["commit", "-m", "initial commit"]);
@@ -117,6 +118,7 @@ function initRepoWithoutCommit(cwd: string): Effect.Effect<void, GitCommandError
     yield* core.initRepo({ cwd });
     yield* git(cwd, ["config", "user.email", "test@test.com"]);
     yield* git(cwd, ["config", "user.name", "Test"]);
+    yield* git(cwd, ["config", "commit.gpgsign", "false"]);
   });
 }
 
@@ -400,6 +402,7 @@ it.layer(TestLayer)("git integration", (it) => {
         const module = path.join(tmp, "vendor");
         yield* git(module, ["config", "user.email", "test@test.com"]);
         yield* git(module, ["config", "user.name", "Test"]);
+        yield* git(module, ["config", "commit.gpgsign", "false"]);
         yield* writeTextFile(path.join(module, "next.txt"), "next commit\n");
         yield* git(module, ["add", "."]);
         yield* git(module, ["commit", "-m", "next"]);
@@ -1257,6 +1260,7 @@ it.layer(TestLayer)("git integration", (it) => {
         yield* git(clone, ["clone", remote, "."]);
         yield* git(clone, ["config", "user.email", "test@test.com"]);
         yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["config", "commit.gpgsign", "false"]);
         yield* git(clone, ["checkout", "-b", featureBranch, "--track", `origin/${featureBranch}`]);
         yield* writeTextFile(path.join(clone, "feature.txt"), "feature from remote\n");
         yield* git(clone, ["add", "feature.txt"]);
@@ -3355,6 +3359,7 @@ it.layer(TestLayer)("git integration", (it) => {
         yield* git(tmp, ["init", "--initial-branch=trunk"]);
         yield* git(tmp, ["config", "user.email", "test@test.com"]);
         yield* git(tmp, ["config", "user.name", "Test"]);
+        yield* git(tmp, ["config", "commit.gpgsign", "false"]);
         yield* writeTextFile(path.join(tmp, "README.md"), "hello\n");
         yield* git(tmp, ["add", "README.md"]);
         yield* git(tmp, ["commit", "-m", "initial"]);
@@ -3380,6 +3385,7 @@ it.layer(TestLayer)("git integration", (it) => {
         yield* git(tmp, ["init", "--initial-branch=main"]);
         yield* git(tmp, ["config", "user.email", "test@test.com"]);
         yield* git(tmp, ["config", "user.name", "Test"]);
+        yield* git(tmp, ["config", "commit.gpgsign", "false"]);
         yield* writeTextFile(path.join(tmp, "README.md"), "hello\n");
         yield* git(tmp, ["add", "README.md"]);
         yield* git(tmp, ["commit", "-m", "initial"]);
@@ -3558,6 +3564,7 @@ it.layer(TestLayer)("git integration", (it) => {
           yield* git(clone, ["clone", remote, "."]);
           yield* git(clone, ["config", "user.email", "test@test.com"]);
           yield* git(clone, ["config", "user.name", "Test"]);
+          yield* git(clone, ["config", "commit.gpgsign", "false"]);
           yield* git(clone, [
             "checkout",
             "-B",
@@ -3884,6 +3891,7 @@ it.layer(TestLayer)("git integration", (it) => {
         yield* git(clone, ["clone", remote, "."]);
         yield* git(clone, ["config", "user.email", "test@test.com"]);
         yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["config", "commit.gpgsign", "false"]);
         yield* writeTextFile(path.join(clone, "CHANGELOG.md"), "remote change\n");
         yield* git(clone, ["add", "CHANGELOG.md"]);
         yield* git(clone, ["commit", "-m", "remote update"]);
@@ -3928,6 +3936,7 @@ it.layer(TestLayer)("git integration", (it) => {
         yield* git(clone, ["clone", remote, "."]);
         yield* git(clone, ["config", "user.email", "test@test.com"]);
         yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["config", "commit.gpgsign", "false"]);
         yield* writeTextFile(path.join(clone, "README.md"), "remote change\n");
         yield* git(clone, ["add", "README.md"]);
         yield* git(clone, ["commit", "-m", "remote update"]);

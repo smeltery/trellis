@@ -70,6 +70,8 @@ import { extractTrailingBrowserAnnotations } from "../lib/browserAnnotations";
 import { isMacNavigatorPlatform } from "../lib/utils";
 import { STARRED_MODELS_STORAGE_KEY } from "../lib/starredModels";
 import { readNativeApi } from "../nativeApi";
+import { setLanguagePreference } from "~/i18n";
+import { DEFAULT_THEME_STATE, getCodeThemeSeed } from "~/theme/theme.logic";
 import { emitWsTransportState } from "../wsTransportEvents";
 import { dispatchKanbanDraftThread } from "../lib/kanbanDispatch";
 import {
@@ -117,7 +119,7 @@ import { useWorkspacePathsStore } from "../workspacePathsStore";
 import { getWorkspaceEditorSession } from "../lib/workspaceEditorSession";
 import { resetWsNativeApiForTest } from "../wsNativeApi";
 import { trackWsTurnSettlement } from "../wsTransportEvents";
-import { hasActiveComposerSend } from "../lib/composerSendOwnership";
+import { hasActiveComposerSend, runComposerSendOnce } from "../lib/composerSendOwnership";
 import { useProjectAgentSummariesStore } from "./chat/project/useProjectAgentSummaries";
 import { useThreadDispatchStore } from "./chat/useChatLocalDispatch";
 import { hasUnseenSnoozeReturn } from "./Sidebar.logic";
@@ -170,6 +172,7 @@ interface TestFixture {
   welcome: WsWelcomePayload;
   gitBranchByCwd: Record<string, string>;
   projectAgentOverviews: Record<string, unknown>;
+  projectAgentSummariesPending?: boolean;
 }
 
 let fixture: TestFixture;
@@ -758,6 +761,47 @@ function withStudioProject(snapshot: OrchestrationReadModel): OrchestrationReadM
         deletedAt: null,
       },
     ],
+  };
+}
+
+// Shared configured-coordinator fixture for recovery and hub composer tests.
+function createCoordinatorOverview(
+  projectId: ProjectId,
+  coordinatorThreadId: ThreadId,
+): ProjectAgentOverview {
+  return {
+    projectId,
+    configured: true,
+    config: {
+      projectId,
+      coordinatorThreadId,
+      coordinatorName: "Studio lead",
+      coordinatorModelSelection: { provider: "codex", model: "gpt-5" },
+      workerRouting: {
+        modelSelection: { provider: "claudeAgent", model: "claude-opus-4-5" },
+        providerOptions: { claudeAgent: { enableArtifacts: true } },
+      },
+      limits: {
+        maxConcurrentWorkers: 8,
+        maxNewWorkersPerTurn: 8,
+        maxWorkerCreationsPerGoal: 40,
+        maxAutomaticContinuationsPerGoal: 20,
+        maxRepairRoundsPerTask: 2,
+      },
+      captureEnabled: true,
+      enabled: true,
+      automationId: null,
+      revision: 1,
+      createdAt: NOW_ISO,
+      updatedAt: NOW_ISO,
+      disabledAt: null,
+    },
+    linkedProjectIds: [],
+    goal: null,
+    digest: null,
+    blockers: [],
+    recentOutcomes: [],
+    coordinatorStatus: "idle",
   };
 }
 
@@ -1394,6 +1438,7 @@ function installDeterministicSendNativeApi(options?: {
   rejectTurnStart?: boolean;
   beforeWorktreeCreation?: () => Promise<void>;
   beforeTurnStart?: () => Promise<void>;
+  beforeTerminalOpen?: () => Promise<void>;
   projectThreadCommands?: boolean;
 }): () => void {
   const previousNativeApi = window.nativeApi;
@@ -1430,6 +1475,7 @@ function installDeterministicSendNativeApi(options?: {
             ...input,
           };
           wsRequests.push(request);
+          await options?.beforeTerminalOpen?.();
           return resolveWsRpc(request) as Awaited<ReturnType<typeof wsNativeApi.terminal.open>>;
         },
         write: async (input: Parameters<typeof wsNativeApi.terminal.write>[0]) => {
@@ -1562,6 +1608,10 @@ const worker = setupWorker(
             providers: fixture.providerStatusesSnapshot,
           });
         }
+        return;
+      }
+      // A slow initial discovery request stays pending without emitting updates or retries.
+      if (method === WS_METHODS.projectAgentListSummaries && fixture.projectAgentSummariesPending) {
         return;
       }
       if (
@@ -2367,6 +2417,8 @@ describe("ChatView transcript geometry (full app)", () => {
     attachmentCancelBarrier = null;
     localStorage.clear();
     acknowledgeStartupAnnouncementsForTest(createBaseServerConfig());
+    // Clearing localStorage does not reset the live Zustand dock state.
+    useRightDockStore.setState({ dockStateByThreadId: {} });
     useProjectEnvironmentStore.setState({ envModeByProjectId: {} });
     useThreadDispatchStore.setState({ threads: {} });
     useLatestProjectStore.setState({ latestProjectId: null });
@@ -2428,111 +2480,149 @@ describe("ChatView transcript geometry (full app)", () => {
     document.body.innerHTML = "";
   });
 
-  it("keeps persistent turn failure visible after reopening and admits one manual continuation", async () => {
-    const base = createSnapshotForTargetUser({
-      targetMessageId: MessageId.makeUnsafe("failure-user"),
-      targetText: "Review the requested pull requests",
-    });
-    const turnId = TurnId.makeUnsafe("failed-turn");
-    const cause = "Selected model is at capacity. Please try a different model.";
-    const snapshot: OrchestrationReadModel = {
-      ...base,
-      threads: [
-        {
-          ...base.threads[0]!,
-          messages: [
-            createUserMessage({
-              id: MessageId.makeUnsafe("failure-user"),
-              text: "Review the requested pull requests",
-              offsetSeconds: 0,
-            }),
-            {
-              ...createAssistantMessage({
-                id: MessageId.makeUnsafe("progress"),
-                text: "I am checking the pull requests and their conflicts.",
-                offsetSeconds: 3,
-              }),
-              turnId,
-            },
-          ],
-          latestTurn: {
-            turnId,
-            state: "error",
-            requestedAt: NOW_ISO,
-            startedAt: NOW_ISO,
-            completedAt: isoAt(10),
-            assistantMessageId: null,
-          },
-          activities: [
-            {
-              id: EventId.makeUnsafe("fatal-error"),
-              turnId,
-              createdAt: isoAt(10),
-              sequence: 1,
-              kind: "runtime.error",
-              tone: "error",
-              summary: "Provider runtime error",
-              payload: { message: cause, class: "provider_error" },
-            },
-            {
-              id: EventId.makeUnsafe("failed-completed"),
-              turnId,
-              createdAt: isoAt(10),
-              sequence: 2,
-              kind: "turn.completed",
-              tone: "error",
-              summary: "Turn failed",
-              payload: { state: "failed", errorMessage: cause },
-            },
-          ],
-        },
-      ],
-    };
-    const first = await mountChatView({ viewport: DEFAULT_VIEWPORT, snapshot });
-    await expect.element(page.getByText("Task interrupted", { exact: true })).toBeVisible();
-    await first.cleanup();
-    const reopened = await mountChatView({ viewport: DEFAULT_VIEWPORT, snapshot });
-    let releaseSend!: () => void;
-    const barrier = new Promise<void>((resolve) => {
-      releaseSend = resolve;
-    });
-    const restoreApi = installDeterministicSendNativeApi({ beforeTurnStart: () => barrier });
-    try {
-      await expect.element(page.getByText("Task interrupted", { exact: true })).toBeVisible();
-      expect(document.querySelectorAll("[data-turn-failure]")).toHaveLength(1);
-      await page.getByRole("button", { name: "Change model", exact: true }).click();
-      await expect.element(page.getByLabelText("Search models", { exact: true })).toBeVisible();
-      page
-        .getByLabelText("Search models", { exact: true })
-        .element()
-        .dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-      await page.getByRole("button", { name: "Continue task", exact: true }).click();
-      // Exercise a second click before the first dispatch settles.
-      (
-        page
-          .getByRole("button", { name: "Continue task", exact: true })
-          .element() as HTMLButtonElement
-      ).click();
-      await vi.waitFor(() => {
-        const starts = wsRequests.filter(
-          (request) =>
-            request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
-            "command" in request &&
-            (request.command as { type?: string }).type === "thread.turn.start",
-        );
-        expect(starts).toHaveLength(1);
-        expect(starts[0]?.command).toMatchObject({
-          threadId: THREAD_ID,
-          message: { text: expect.stringContaining("avoid repeating") },
-        });
+  it.each(["project", "hub discovery pending"] as const)(
+    "keeps persistent turn failure visible after reopening and admits one manual continuation (%s)",
+    async (surface) => {
+      const previousSummaries = useProjectAgentSummariesStore.getState();
+      onTestFinished(() => useProjectAgentSummariesStore.setState(previousSummaries));
+      const originalConsoleError = console.error;
+      // Stop a passive-effect loop at React's own diagnostic instead of hanging the browser.
+      const consoleError = vi.spyOn(console, "error").mockImplementation((message, ...args) => {
+        if (String(message).includes("Maximum update depth exceeded")) {
+          throw new Error(String(message));
+        }
+        originalConsoleError(message, ...args);
       });
-      expect(document.querySelectorAll("[data-turn-failure]")).toHaveLength(1);
-    } finally {
-      releaseSend();
-      restoreApi();
-      await reopened.cleanup();
-    }
-  });
+      onTestFinished(() => consoleError.mockRestore());
+      const base = createSnapshotForTargetUser({
+        targetMessageId: MessageId.makeUnsafe("history-user"),
+        targetText: "Review the requested pull requests",
+      });
+      const turnId = TurnId.makeUnsafe("failed-turn");
+      const cause = "Selected model is at capacity. Please try a different model.";
+      const snapshot: OrchestrationReadModel = {
+        ...(surface === "hub discovery pending" ? withStudioProject(base) : base),
+        threads: [
+          {
+            ...base.threads[0]!,
+            projectId: surface === "hub discovery pending" ? STUDIO_PROJECT_ID : PROJECT_ID,
+            messages: [
+              ...(surface === "hub discovery pending" ? base.threads[0]!.messages : []),
+              createUserMessage({
+                id: MessageId.makeUnsafe("failure-user"),
+                text: "Review the requested pull requests",
+                offsetSeconds: 140,
+              }),
+              {
+                ...createAssistantMessage({
+                  id: MessageId.makeUnsafe("progress"),
+                  text: "I am checking the pull requests and their conflicts.",
+                  offsetSeconds: 143,
+                }),
+                turnId,
+              },
+            ],
+            latestTurn: {
+              turnId,
+              state: "error",
+              requestedAt: isoAt(140),
+              startedAt: isoAt(140),
+              completedAt: isoAt(150),
+              assistantMessageId: null,
+            },
+            activities: [
+              {
+                id: EventId.makeUnsafe("fatal-error"),
+                turnId,
+                createdAt: isoAt(150),
+                sequence: 1,
+                kind: "runtime.error",
+                tone: "error",
+                summary: "Provider runtime error",
+                payload: { message: cause, class: "provider_error" },
+              },
+              {
+                id: EventId.makeUnsafe("failed-completed"),
+                turnId,
+                createdAt: isoAt(150),
+                sequence: 2,
+                kind: "turn.completed",
+                tone: "error",
+                summary: "Turn failed",
+                payload: { state: "failed", errorMessage: cause },
+              },
+            ],
+          },
+        ],
+      };
+      const configureFixture = (nextFixture: TestFixture) => {
+        if (surface !== "hub discovery pending") return;
+        nextFixture.welcome = {
+          ...nextFixture.welcome,
+          studioWorkspaceRoot: "/Users/tester/Documents/Trellis/Studio",
+        };
+        const overview = createCoordinatorOverview(STUDIO_PROJECT_ID, THREAD_ID);
+        nextFixture.projectAgentOverviews[STUDIO_PROJECT_ID] = overview;
+        nextFixture.projectAgentSummariesPending = true;
+      };
+      const first = await mountChatView({ viewport: DEFAULT_VIEWPORT, snapshot, configureFixture });
+      await expect.element(page.getByText("Task interrupted", { exact: true })).toBeVisible();
+      await first.cleanup();
+      const reopened = await mountChatView({
+        viewport: DEFAULT_VIEWPORT,
+        snapshot,
+        configureFixture,
+      });
+      let releaseSend!: () => void;
+      const barrier = new Promise<void>((resolve) => {
+        releaseSend = resolve;
+      });
+      const restoreApi = installDeterministicSendNativeApi({ beforeTurnStart: () => barrier });
+      try {
+        await expect.element(page.getByText("Task interrupted", { exact: true })).toBeVisible();
+        expect(document.querySelectorAll("[data-turn-failure]")).toHaveLength(1);
+        if (surface === "hub discovery pending") {
+          expect(
+            wsRequests.some((request) => request._tag === WS_METHODS.projectAgentListSummaries),
+          ).toBe(true);
+          expect(
+            useProjectAgentSummariesStore.getState().summariesByProjectId.get(STUDIO_PROJECT_ID),
+          ).toBeUndefined();
+        }
+        await page.getByRole("button", { name: "Change model", exact: true }).click();
+        await expect.element(page.getByLabelText("Search models", { exact: true })).toBeVisible();
+        page
+          .getByLabelText("Search models", { exact: true })
+          .element()
+          .dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await page.getByRole("button", { name: "Continue task", exact: true }).click();
+        // Exercise a second click before the first dispatch settles.
+        (
+          page
+            .getByRole("button", { name: "Continue task", exact: true })
+            .element() as HTMLButtonElement
+        ).click();
+        await vi.waitFor(() => {
+          const starts = wsRequests.filter(
+            (request) =>
+              request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+              "command" in request &&
+              (request.command as { type?: string }).type === "thread.turn.start",
+          );
+          expect(starts).toHaveLength(1);
+          expect(starts[0]?.command).toMatchObject({
+            threadId: THREAD_ID,
+            message: { text: expect.stringContaining("avoid repeating") },
+          });
+        });
+        expect(document.querySelectorAll("[data-turn-failure]")).toHaveLength(1);
+      } finally {
+        releaseSend();
+        restoreApi();
+        await reopened.cleanup();
+      }
+    },
+  );
 
   it.each([
     { activityViewEnabled: false, customShortcut: false },
@@ -3951,6 +4041,87 @@ describe("ChatView transcript geometry (full app)", () => {
           () => JSON.parse(localStorage.getItem("trellis:app-settings:v1") ?? "{}").railShortcuts,
         )
         .toEqual(["project:temporarily-absent", "space:void"]);
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("keeps the selected Activity grouping after switching back from classic view", async () => {
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: withActiveHomeChatThread(
+        createSnapshotForTargetUser({
+          targetMessageId: "msg-user-activity-grouping" as MessageId,
+          targetText: "activity grouping",
+        }),
+      ),
+    });
+
+    try {
+      await page.getByRole("button", { name: "Switch to activity view" }).click();
+      await page.getByRole("button", { name: "Activity options", exact: true }).click();
+      await page.getByRole("menuitemradio", { name: "Project" }).click();
+      await userEvent.keyboard("{Escape}");
+      await vi.waitFor(() => {
+        expect(document.querySelector('[role="menu"]')).toBeNull();
+      });
+
+      await page.getByRole("button", { name: "Switch to classic view" }).click();
+      await page.getByRole("button", { name: "Switch to activity view" }).click();
+      await page.getByRole("button", { name: "Activity options", exact: true }).click();
+
+      await expect
+        .element(page.getByRole("menuitemradio", { name: "Project" }))
+        .toHaveAttribute("aria-checked", "true");
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("restores Activity grouping on mount and adopts an external grouping change", async () => {
+    const key = "trellis:sidebar-ui:v1";
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        activityViewEnabled: true,
+        activityGroupMode: "project",
+        activityScope: PROJECT_ID,
+      }),
+    );
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: createSnapshotForTargetUser({
+        targetMessageId: MessageId.makeUnsafe("activity-grouping-external"),
+        targetText: "Stored Activity grouping",
+      }),
+    });
+    try {
+      await page.getByRole("button", { name: "Activity options", exact: true }).click();
+      await expect
+        .element(page.getByRole("menuitemradio", { name: "Project", exact: true }))
+        .toHaveAttribute("aria-checked", "true");
+      await userEvent.keyboard("{Escape}");
+      await vi.waitFor(() => {
+        expect(document.querySelector('[role="menu"]')).toBeNull();
+      });
+
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          ...JSON.parse(localStorage.getItem(key) ?? "{}"),
+          activityGroupMode: "time",
+          activityScope: null,
+        }),
+      );
+      window.dispatchEvent(new StorageEvent("storage", { key, storageArea: localStorage }));
+      await page.getByRole("button", { name: "Activity options", exact: true }).click();
+      await expect
+        .element(page.getByRole("menuitemradio", { name: "Time", exact: true }))
+        .toHaveAttribute("aria-checked", "true");
+      await page.getByRole("menuitemradio", { name: "Project", exact: true }).click();
+      await expect
+        .poll(() => JSON.parse(localStorage.getItem(key) ?? "{}"))
+        .toMatchObject({ activityGroupMode: "project", activityScope: null });
     } finally {
       await mounted.cleanup();
     }
@@ -9101,6 +9272,99 @@ describe("ChatView transcript geometry (full app)", () => {
     }
   });
 
+  it.each([
+    { picker: "model", label: "Change model and reasoning", terminalDock: false },
+    { picker: "permissions", label: "Full access", terminalDock: false },
+    {
+      picker: "model with a restored terminal dock",
+      label: "Change model and reasoning",
+      terminalDock: true,
+    },
+    {
+      picker: "permissions with a restored terminal dock",
+      label: "Full access",
+      terminalDock: true,
+    },
+  ])("preserves the $picker picker on first window activation", async ({ label, terminalDock }) => {
+    let releaseTerminalOpen = () => {};
+    let terminalOpenStarted = false;
+    let terminalOpenSettled = false;
+    const terminalOpenBarrier = new Promise<void>((resolve) => {
+      releaseTerminalOpen = resolve;
+    });
+    const restoreNativeApi = terminalDock
+      ? installDeterministicSendNativeApi({
+          beforeTerminalOpen: async () => {
+            terminalOpenStarted = true;
+            await terminalOpenBarrier;
+            terminalOpenSettled = true;
+          },
+        })
+      : () => {};
+    if (terminalDock) {
+      useRightDockStore.getState().openPane(THREAD_ID, { kind: "terminal" });
+    }
+    // Vitest hosts the real app in a same-origin frame. Give its parent actual
+    // focus before mounting, so the app must defer its initial composer focus.
+    // No focus result, event, requestAnimationFrame, or production callback is mocked.
+    expect(window.parent).not.toBe(window);
+    const parentBody = window.parent.document.body;
+    const originalTabIndex = parentBody.getAttribute("tabindex");
+    parentBody.tabIndex = -1;
+    parentBody.focus();
+    let mounted: MountedChatView | undefined;
+    try {
+      await expect.poll(() => document.hasFocus()).toBe(false);
+      localStorage.setItem(
+        "trellis:app-settings:v1",
+        JSON.stringify({ composerEffortSlider: true }),
+      );
+      mounted = await mountChatView({
+        viewport: DEFAULT_VIEWPORT,
+        snapshot: createSnapshotForTargetUser({
+          targetMessageId: MessageId.makeUnsafe("first-window-picker"),
+          targetText: "Keep the picker I click when this window becomes active.",
+        }),
+      });
+      const editor = await waitForComposerEditor();
+      const trigger = page.getByRole("button", { name: label, exact: true });
+      await expect.element(trigger).toBeVisible();
+      if (terminalDock) {
+        await vi.waitFor(() => expect(terminalOpenStarted).toBe(true));
+      }
+      await waitForLayout();
+      expect(document.hasFocus()).toBe(false);
+      expect(document.activeElement).not.toBe(editor);
+
+      await trigger.click();
+      await expect.element(trigger).toHaveAttribute("aria-expanded", "true");
+      await expect.poll(() => document.hasFocus()).toBe(true);
+      if (terminalDock) {
+        // The terminal starts in the background, then finishes opening only
+        // after the activation click has chosen the picker instead.
+        releaseTerminalOpen();
+        await vi.waitFor(() => expect(terminalOpenSettled).toBe(true));
+      }
+      // Let both the activation frame and subsequent popup work settle; a
+      // fleeting visible popup during its close transition cannot satisfy this.
+      for (let frame = 0; frame < 4; frame += 1) {
+        await waitForLayout();
+        await expect.element(trigger).toHaveAttribute("aria-expanded", "true");
+        expect(document.activeElement).not.toBe(editor);
+        if (terminalDock) expect(document.activeElement?.closest(".xterm")).toBeNull();
+      }
+      await expect.element(page.getByRole("menu")).toBeVisible();
+      await userEvent.keyboard("{Escape}");
+      await expect.element(trigger).toHaveAttribute("aria-expanded", "false");
+    } finally {
+      releaseTerminalOpen();
+      await mounted?.cleanup();
+      restoreNativeApi();
+      if (originalTabIndex === null) parentBody.removeAttribute("tabindex");
+      else parentBody.setAttribute("tabindex", originalTabIndex);
+    }
+  });
+
   it("opens the composer model picker with configured keybinding labels loaded", async () => {
     const mounted = await mountChatView({
       viewport: DEFAULT_VIEWPORT,
@@ -10770,6 +11034,84 @@ describe("ChatView transcript geometry (full app)", () => {
     }
   });
 
+  it("keeps the project environment when global New thread creates a draft from Home", async () => {
+    useLatestProjectStore.setState({ latestProjectId: PROJECT_ID });
+    useProjectEnvironmentStore.setState({ envModeByProjectId: { [PROJECT_ID]: "worktree" } });
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: withActiveHomeChatThread(
+        createSnapshotForTargetUser({
+          targetMessageId: "msg-user-global-new-thread-project-environment" as MessageId,
+          targetText: "global new thread project environment",
+        }),
+      ),
+    });
+
+    try {
+      await page.getByRole("button", { name: "New thread", exact: true }).click();
+      const path = await waitForURL(
+        mounted.router,
+        (path) => UUID_ROUTE_RE.test(path),
+        "Global New thread should use the project's saved Worktree choice.",
+      );
+      const draftId = ThreadId.makeUnsafe(path.slice(1));
+      await vi.waitFor(() =>
+        expect(useComposerDraftStore.getState().getDraftThread(draftId)).toMatchObject({
+          projectId: PROJECT_ID,
+          envMode: "worktree",
+          worktreePath: null,
+        }),
+      );
+      await expect.element(await waitForWorktreeCheckbox()).toHaveAttribute("aria-checked", "true");
+      expect(useProjectEnvironmentStore.getState().envModeByProjectId[PROJECT_ID]).toBe("worktree");
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("keeps the stored draft environment when global New thread reopens it from Home", async () => {
+    const draftId = ThreadId.makeUnsafe("00000000-0000-4000-8000-000000000369");
+    useLatestProjectStore.setState({ latestProjectId: PROJECT_ID });
+    useProjectEnvironmentStore.setState({ envModeByProjectId: { [PROJECT_ID]: "local" } });
+    useComposerDraftStore.getState().setProjectDraftThreadId(PROJECT_ID, draftId, {
+      entryPoint: "chat",
+      envMode: "worktree",
+    });
+    useComposerDraftStore.getState().setPrompt(draftId, "Preserve this Worktree draft");
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: withActiveHomeChatThread(
+        createSnapshotForTargetUser({
+          targetMessageId: "msg-user-global-new-thread-draft-environment" as MessageId,
+          targetText: "global new thread draft environment",
+        }),
+      ),
+    });
+
+    try {
+      await page.getByRole("button", { name: "New thread", exact: true }).click();
+      await waitForURL(
+        mounted.router,
+        (path) => path === `/${draftId}`,
+        "Global New thread should reopen the existing project draft.",
+      );
+      expect(
+        useComposerDraftStore.getState().getDraftThreadByProjectId(PROJECT_ID, "chat"),
+      ).toMatchObject({
+        threadId: draftId,
+        envMode: "worktree",
+      });
+      const composerEditor = await waitForComposerEditor();
+      await vi.waitFor(() =>
+        expect(composerEditor.textContent).toBe("Preserve this Worktree draft"),
+      );
+      await expect.element(await waitForWorktreeCheckbox()).toHaveAttribute("aria-checked", "true");
+      expect(useProjectEnvironmentStore.getState().envModeByProjectId[PROJECT_ID]).toBe("local");
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
   it("opens Add project when the global New thread action has no usable project target", async () => {
     useLatestProjectStore.setState({ latestProjectId: PROJECT_ID });
     const snapshot = withActiveHomeChatThread(
@@ -10814,9 +11156,19 @@ describe("ChatView transcript geometry (full app)", () => {
     });
 
     try {
+      // Neutralize the WS fixture so an in-flight getShellSnapshot cannot restore
+      // projects and defeat the pre-hydration guard under CI load.
+      fixture = buildFixture({
+        ...fixture.snapshot,
+        projects: [],
+        updatedAt: NOW_ISO,
+      });
       useStore.setState({ projects: [], threadsHydrated: false });
       await waitForLayout();
+      // Wait until Sidebar has committed the loading empty-state from the cleared store.
+      await expect.element(page.getByLabelText("Loading projects")).toBeInTheDocument();
       const initialPath = mounted.router.state.location.pathname;
+      expect(initialPath).toBe(`/${THREAD_ID}`);
       const newThreadButton = page.getByRole("button", { name: "New thread", exact: true });
       await expect.element(newThreadButton).toBeInTheDocument();
       await newThreadButton.click();
@@ -11153,40 +11505,10 @@ describe("ChatView transcript geometry (full app)", () => {
           ...nextFixture.welcome,
           studioWorkspaceRoot: "/Users/tester/Documents/Trellis/Studio",
         };
-        nextFixture.projectAgentOverviews[STUDIO_PROJECT_ID] = {
-          projectId: STUDIO_PROJECT_ID,
-          configured: true,
-          config: {
-            projectId: STUDIO_PROJECT_ID,
-            coordinatorThreadId: THREAD_ID,
-            coordinatorName: "Studio lead",
-            coordinatorModelSelection: { provider: "codex", model: "gpt-5" },
-            workerRouting: {
-              modelSelection: { provider: "claudeAgent", model: "claude-opus-4-5" },
-              providerOptions: { claudeAgent: { enableArtifacts: true } },
-            },
-            limits: {
-              maxConcurrentWorkers: 8,
-              maxNewWorkersPerTurn: 8,
-              maxWorkerCreationsPerGoal: 40,
-              maxAutomaticContinuationsPerGoal: 20,
-              maxRepairRoundsPerTask: 2,
-            },
-            captureEnabled: true,
-            enabled: true,
-            automationId: null,
-            revision: 1,
-            createdAt: NOW_ISO,
-            updatedAt: NOW_ISO,
-            disabledAt: null,
-          },
-          linkedProjectIds: [],
-          goal: null,
-          digest: null,
-          blockers: [],
-          recentOutcomes: [],
-          coordinatorStatus: "idle",
-        };
+        nextFixture.projectAgentOverviews[STUDIO_PROJECT_ID] = createCoordinatorOverview(
+          STUDIO_PROJECT_ID,
+          THREAD_ID,
+        );
       },
     });
     try {
@@ -11285,40 +11607,10 @@ describe("ChatView transcript geometry (full app)", () => {
           chatWorkspaceRoot: "/Users/tester/Documents/Trellis",
           studioWorkspaceRoot: "/Users/tester/Documents/Trellis/Studio",
         };
-        nextFixture.projectAgentOverviews[STUDIO_PROJECT_ID] = {
-          projectId: STUDIO_PROJECT_ID,
-          configured: true,
-          config: {
-            projectId: STUDIO_PROJECT_ID,
-            coordinatorThreadId: "thread-studio-coordinator" as ThreadId,
-            coordinatorName: "Studio lead",
-            coordinatorModelSelection: { provider: "codex", model: "gpt-5" },
-            workerRouting: {
-              modelSelection: { provider: "claudeAgent", model: "claude-opus-4-5" },
-              providerOptions: { claudeAgent: { enableArtifacts: true } },
-            },
-            limits: {
-              maxConcurrentWorkers: 8,
-              maxNewWorkersPerTurn: 8,
-              maxWorkerCreationsPerGoal: 40,
-              maxAutomaticContinuationsPerGoal: 20,
-              maxRepairRoundsPerTask: 2,
-            },
-            captureEnabled: true,
-            enabled: true,
-            automationId: null,
-            revision: 1,
-            createdAt: NOW_ISO,
-            updatedAt: NOW_ISO,
-            disabledAt: null,
-          },
-          linkedProjectIds: [],
-          goal: null,
-          digest: null,
-          blockers: [],
-          recentOutcomes: [],
-          coordinatorStatus: "idle",
-        };
+        nextFixture.projectAgentOverviews[STUDIO_PROJECT_ID] = createCoordinatorOverview(
+          STUDIO_PROJECT_ID,
+          ThreadId.makeUnsafe("thread-studio-coordinator"),
+        );
       },
     });
 
@@ -12472,6 +12764,84 @@ describe("ChatView transcript geometry (full app)", () => {
     }
   });
 
+  it.each([
+    "stored project draft",
+    "active project",
+    "temporary project draft",
+    "sending project draft",
+  ] as const)("respects the %s when the thread-strip + opens a chat", async (workspaceSource) => {
+    const activeWorkspace = "/repo/worktrees/header-active";
+    const draftWorkspace = "/repo/worktrees/header-draft";
+    const snapshot = createSnapshotForTargetUser({
+      targetMessageId: MessageId.makeUnsafe("header-new-thread-workspace"),
+      targetText: "Saved chat in the active workspace",
+    });
+    const mounted = await mountChatView({
+      viewport: { ...DEFAULT_VIEWPORT, width: 1_800 },
+      snapshot: {
+        ...snapshot,
+        threads: snapshot.threads.map((thread) => ({
+          ...thread,
+          branch: "feature/active",
+          worktreePath: activeWorkspace,
+          envMode: "worktree",
+        })),
+      },
+    });
+    let releaseSend: (() => void) | undefined;
+    let pendingSend: Promise<boolean> | undefined;
+    try {
+      const reusesDraft = workspaceSource === "stored project draft";
+      if (workspaceSource !== "active project") {
+        useComposerDraftStore.getState().setProjectDraftThreadId(PROJECT_ID, OTHER_THREAD_ID, {
+          branch: "feature/draft",
+          worktreePath: draftWorkspace,
+          envMode: "worktree",
+          isTemporary: workspaceSource === "temporary project draft",
+        });
+        useComposerDraftStore.getState().setPrompt(OTHER_THREAD_ID, "Keep this unsent work");
+        if (workspaceSource === "sending project draft") {
+          pendingSend = runComposerSendOnce(
+            OTHER_THREAD_ID,
+            () =>
+              new Promise<boolean>((resolve) => {
+                releaseSend = () => resolve(true);
+              }),
+          );
+        }
+      }
+
+      await page.getByRole("button", { name: "New thread in this workspace" }).click();
+      await waitForURL(
+        mounted.router,
+        (path) => path !== `/${THREAD_ID}`,
+        "The thread-strip + should open the project draft.",
+      );
+      const targetId = ThreadId.makeUnsafe(mounted.router.state.location.pathname.slice(1));
+      if (reusesDraft) expect(targetId).toBe(OTHER_THREAD_ID);
+      else expect(targetId).not.toBe(OTHER_THREAD_ID);
+      const draft = useComposerDraftStore.getState().getDraftThread(targetId);
+      expect(draft).toMatchObject({
+        projectId: PROJECT_ID,
+        branch: reusesDraft ? "feature/draft" : "feature/active",
+        worktreePath: reusesDraft ? draftWorkspace : activeWorkspace,
+        envMode: "worktree",
+      });
+      if (reusesDraft) {
+        expect(useComposerDraftStore.getState().draftsByThreadId[targetId]?.prompt).toBe(
+          "Keep this unsent work",
+        );
+        await expect
+          .poll(async () => (await waitForComposerEditor()).textContent)
+          .toContain("Keep this unsent work");
+      }
+    } finally {
+      releaseSend?.();
+      await pendingSend;
+      await mounted.cleanup();
+    }
+  });
+
   it("keeps composer edits made while New thread reopens a stored draft", async () => {
     const mounted = await mountChatView({
       viewport: DEFAULT_VIEWPORT,
@@ -12626,6 +12996,68 @@ describe("ChatView transcript geometry (full app)", () => {
           .element(page.getByRole("combobox", { name: "main", exact: true }))
           .not.toBeInTheDocument();
       } finally {
+        await mounted.cleanup();
+      }
+    },
+  );
+
+  it.each([
+    { language: "en", variant: "dark", reset: "Restore defaults", label: "Dark theme pack" },
+    {
+      language: "es",
+      variant: "light",
+      reset: "Restaurar valores predeterminados",
+      label: "Paquete de tema claro",
+    },
+    { language: "zh-CN", variant: "dark", reset: "恢复默认设置", label: "深色主题包" },
+  ] as const)(
+    "names the customized theme pack in the localized reset confirmation ($language)",
+    async ({ language, variant, reset, label }) => {
+      const previousTheme = localStorage.getItem("trellis:theme");
+      localStorage.setItem(
+        "trellis:theme",
+        JSON.stringify({
+          ...DEFAULT_THEME_STATE,
+          mode: variant,
+          codeThemeIds: { ...DEFAULT_THEME_STATE.codeThemeIds, [variant]: "codex" },
+          chromeThemes: {
+            ...DEFAULT_THEME_STATE.chromeThemes,
+            [variant]: getCodeThemeSeed("codex", variant),
+          },
+        }),
+      );
+      const mounted = await mountChatView({
+        viewport: DEFAULT_VIEWPORT,
+        snapshot: addThreadToSnapshot(createDraftOnlySnapshot(), THREAD_ID),
+      });
+      // The theme store subscribes while mounted; notify it after attaching the real app.
+      window.dispatchEvent(new StorageEvent("storage", { key: "trellis:theme" }));
+      const previousNativeApi = window.nativeApi;
+      const api = readNativeApi()!;
+      const confirm = vi.fn(async () => false);
+      Object.defineProperty(window, "nativeApi", {
+        configurable: true,
+        value: { ...api, dialogs: { ...api.dialogs, confirm } },
+      });
+      try {
+        await expect
+          .poll(() => document.documentElement.getAttribute("data-theme-variant"))
+          .toBe(variant);
+        await mounted.router.navigate({ to: "/settings", search: { section: "appearance" } });
+        setLanguagePreference(language);
+        await page.getByRole("button", { name: reset, exact: true }).click();
+        await expect.poll(() => confirm.mock.calls.length).toBe(1);
+        expect(confirm).toHaveBeenCalledWith(expect.stringContaining(label));
+        expect(confirm).not.toHaveBeenCalledWith(expect.stringContaining("settings:"));
+      } finally {
+        setLanguagePreference("en");
+        Object.defineProperty(window, "nativeApi", {
+          configurable: true,
+          value: previousNativeApi,
+        });
+        if (previousTheme === null) localStorage.removeItem("trellis:theme");
+        else localStorage.setItem("trellis:theme", previousTheme);
+        window.dispatchEvent(new StorageEvent("storage", { key: "trellis:theme" }));
         await mounted.cleanup();
       }
     },
@@ -15329,6 +15761,111 @@ describe("ChatView transcript geometry (full app)", () => {
       }
     },
   );
+
+  it.each([
+    { sessionStatus: "ready" as const, startBehavior: "start-with-message" },
+    { sessionStatus: "running" as const, startBehavior: undefined },
+  ])(
+    "sends a new /goal as a visible message only when the thread is idle ($sessionStatus)",
+    async ({ sessionStatus, startBehavior }) => {
+      useComposerDraftStore.getState().setPrompt(THREAD_ID, "/goal ship the release");
+      const restoreNativeApi = installDeterministicSendNativeApi();
+      const mounted = await mountChatView({
+        viewport: DEFAULT_VIEWPORT,
+        snapshot: createSnapshotForTargetUser({
+          targetMessageId: "msg-user-new-goal-test" as MessageId,
+          targetText: "new goal test",
+          sessionStatus,
+        }),
+      });
+
+      try {
+        const composerForm = await waitForElement(
+          () => document.querySelector<HTMLFormElement>('form[data-chat-composer-form="true"]'),
+          "Unable to find composer form.",
+        );
+        composerForm.requestSubmit();
+
+        const goalUpdateIndex = () =>
+          wsRequests.findIndex(
+            (request) => readDispatchedCommand(request)?.type === "thread.meta.update",
+          );
+        await vi.waitFor(() => expect(goalUpdateIndex()).toBeGreaterThanOrEqual(0));
+        const goalUpdate = readDispatchedCommand(wsRequests[goalUpdateIndex()]!);
+        expect(goalUpdate?.goal).toBe("ship the release");
+        // One server command owns persistence, the visible message, and the first turn.
+        expect(goalUpdate?.goalStartBehavior).toBe(startBehavior);
+        expect(wsRequests.map(turnStartText).filter((text) => text !== null)).toEqual([]);
+      } finally {
+        restoreNativeApi();
+        await mounted.cleanup();
+      }
+    },
+  );
+
+  it("preserves a rejected first /goal command for retry", async () => {
+    useComposerDraftStore.getState().setPrompt(THREAD_ID, "/goal ship the release");
+    const restoreNativeApi = installDeterministicSendNativeApi();
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: createSnapshotForTargetUser({
+        targetMessageId: "msg-user-goal-retry" as MessageId,
+        targetText: "goal retry",
+      }),
+    });
+    const api = readNativeApi()!;
+    let rejectGoal = true;
+    const goalCommands: unknown[] = [];
+    Object.defineProperty(window, "nativeApi", {
+      configurable: true,
+      value: {
+        ...api,
+        orchestration: {
+          ...api.orchestration,
+          dispatchCommand: async (
+            command: Parameters<typeof api.orchestration.dispatchCommand>[0],
+          ) => {
+            if (command.type === "thread.meta.update" && command.goal !== undefined) {
+              goalCommands.push(command);
+              if (rejectGoal) throw new Error("Goal was not accepted.");
+            }
+            return api.orchestration.dispatchCommand(command);
+          },
+        },
+      },
+    });
+    try {
+      const form = await waitForElement(
+        () => document.querySelector<HTMLFormElement>('form[data-chat-composer-form="true"]'),
+        "Unable to find composer form.",
+      );
+      form.requestSubmit();
+      await expect.element(page.getByText("Could not update thread goal")).toBeInTheDocument();
+      expect(useComposerDraftStore.getState().draftsByThreadId[THREAD_ID]?.prompt).toBe(
+        "/goal ship the release",
+      );
+      rejectGoal = false;
+      form.requestSubmit();
+      await vi.waitFor(() => expect(goalCommands).toHaveLength(2));
+      expect(goalCommands).toEqual([
+        expect.objectContaining({
+          goal: "ship the release",
+          goalStartBehavior: "start-with-message",
+        }),
+        expect.objectContaining({
+          goal: "ship the release",
+          goalStartBehavior: "start-with-message",
+        }),
+      ]);
+      await vi.waitFor(() =>
+        expect(useComposerDraftStore.getState().draftsByThreadId[THREAD_ID]?.prompt ?? "").toBe(""),
+      );
+      expect(wsRequests.map(turnStartText).filter((text) => text !== null)).toEqual([]);
+    } finally {
+      restoreNativeApi();
+      await mounted.cleanup();
+    }
+  });
 
   it("activates Debug with /debug and returns to Default from the badge and /default", async () => {
     const mounted = await mountChatView({

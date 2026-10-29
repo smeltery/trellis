@@ -1,7 +1,7 @@
 // FILE: betaFeatures.ts
 // Purpose: The web app's read of the shared Beta-only feature list.
 // Layer: Route/UI support
-// Exports: isBetaFeatureOn, visibleProviderDescriptors, VISIBLE_PROVIDER_DESCRIPTORS
+// Exports: DESKTOP_FLAVOR, isBetaFeatureOn, visibleProviderDescriptors, VISIBLE_PROVIDER_DESCRIPTORS
 
 import {
   desktopFlavorFromProtocol,
@@ -20,7 +20,7 @@ import { PROVIDER_DESCRIPTORS } from "@trellis/shared/providerMetadata";
 // build serves `trellis:` too, so import.meta.env.DEV disambiguates it. SSR and
 // tests have no window and resolve to "unknown", which keeps Beta-only
 // features on — the server gate is the authoritative one.
-const DESKTOP_FLAVOR = desktopFlavorFromProtocol(
+export const DESKTOP_FLAVOR = desktopFlavorFromProtocol(
   typeof window === "undefined" ? undefined : window.location?.protocol,
   import.meta.env.DEV,
 );
@@ -51,12 +51,12 @@ export const PULL_REQUEST_AUTO_FIX_ON = isBetaFeatureOn(PULL_REQUEST_AUTO_FIX_BE
 export const INLINE_VISUALS_ON = isBetaFeatureOn(INLINE_VISUALS_BETA_FEATURE);
 
 /**
- * Connectors are Beta-only: Settings → Connectors and their `@` mentions. The
- * server refuses the Connectors RPCs on Stable regardless.
+ * Connectors are available in Stable and Beta, including Settings and `@`
+ * mentions for provider sessions that support them.
  */
 export const MCP_CONNECTORS_ON = isBetaFeatureOn(MCP_CONNECTORS_BETA_FEATURE);
 
-/** Which engine edits files: the native (Code OSS) engine in Beta, Pierre on Stable. */
+/** The native Code OSS engine is enabled in Stable and Beta; Pierre remains the gated alternative. */
 export type CodeEditorEngine = "native" | "pierre";
 
 export function codeEditorEngine(
@@ -66,9 +66,8 @@ export function codeEditorEngine(
 }
 
 /**
- * The native editor is Beta-only: Stable keeps the Pierre engine for file, diff
- * and preview editing and shows no language-service or debugger controls. The
- * server refuses the `editor.*` RPCs on Stable regardless.
+ * Stable and Beta use the same native editing engine, language-service and
+ * debugger controls. The server applies the same shared availability policy.
  */
 export const CODE_EDITOR_ENGINE = codeEditorEngine();
 export const NATIVE_EDITOR_ON = CODE_EDITOR_ENGINE === "native";

@@ -34,6 +34,7 @@ import {
   TurnId,
 } from "@trellis/contracts";
 import { Cause, Effect, Layer, Option, Queue, Schema, ServiceMap, Stream } from "effect";
+import { sanitizeUserFacingErrorMessage } from "@trellis/shared/errorMessages";
 
 import {
   ProviderAdapterProcessError,
@@ -180,17 +181,6 @@ function toMessage(cause: unknown, fallback: string): string {
     return sanitizeUserFacingErrorMessage(cause.message, fallback);
   }
   return fallback;
-}
-
-function sanitizeUserFacingErrorMessage(message: string, fallback: string): string {
-  const normalized = message.trim();
-  if (normalized.length === 0) {
-    return fallback;
-  }
-
-  const firstLine = normalized.split("\n")[0]?.trim() ?? "";
-  const withoutInlineStack = firstLine.replace(/\s+at file:\/\/.*$/s, "").trim();
-  return withoutInlineStack.length > 0 ? withoutInlineStack : fallback;
 }
 
 function composeCodexInputWithFileAttachments(input: {
@@ -1542,19 +1532,20 @@ function mapToRuntimeEvents(
   }
 
   if (event.method === "turn/diff/updated") {
-    // Each patch resends the whole cumulative turn diff. Keep it only in
-    // payload.unifiedDiff: copying it into raw doubles every journal write,
-    // sizing pass and decode for no reader.
+    // Keep the cumulative body once. Metadata records its original UTF-8 size
+    // so a journal-compacted prefix cannot masquerade as a complete patch.
+    const unifiedDiff =
+      asString(payload?.unifiedDiff) ?? asString(payload?.diff) ?? asString(payload?.patch) ?? "";
+    const base = runtimeDeltaEventBase(event, canonicalThreadId);
     return [
       {
-        ...runtimeDeltaEventBase(event, canonicalThreadId),
+        ...base,
         type: "turn.diff.updated",
-        payload: {
-          unifiedDiff:
-            asString(payload?.unifiedDiff) ??
-            asString(payload?.diff) ??
-            asString(payload?.patch) ??
-            "",
+        payload: { unifiedDiff },
+        raw: {
+          source: base.raw?.source ?? eventRawSource(event),
+          method: event.method,
+          payload: { unifiedDiffBytes: Buffer.byteLength(unifiedDiff, "utf8") },
         },
       },
     ];

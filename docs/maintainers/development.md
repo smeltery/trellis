@@ -1,7 +1,13 @@
 # Development, Flox, and CI
 
 Flox is the reproducible development entry point. Its committed manifest and
-lockfile supply Bun, Node 24, Git, pre-commit, actionlint, and ShellCheck. The locked
+lockfile supply Node 24, Git, pre-commit, actionlint, ShellCheck, and unzip. Until
+the Flox catalog carries Bun 1.4.4, activation downloads that exact official
+release through `fork/bootstrap-bun.mjs`, verifies its pinned SHA-256 digest, and
+caches it in `FLOX_ENV_CACHE`. First activation requires GitHub access; subsequent
+activations reuse the cached binary. Linux uses the official glibc builds (the
+x64 baseline avoids requiring AVX2). The bootstrap must track `packageManager`
+in `package.json`; return Bun to the manifest once the catalog catches up. The locked
 environment supports Apple Silicon macOS and x64/ARM64 Linux. Windows and Intel
 Mac developers can use the versions in `package.json` directly; Windows runtime
 checks remain native GitHub Actions jobs.
@@ -26,14 +32,14 @@ flowchart LR
   Browser --> Gate[Required quality gate]
 ```
 
-| Command                    | Purpose                                                                                             |
-| -------------------------- | --------------------------------------------------------------------------------------------------- |
-| `bun run check:static`     | Branding, Markdown, Mermaid, links, formatting, lint, CI contracts, Windows boundary, release smoke |
-| `bun run check`            | Static checks, workspace types/tests, desktop and marketing builds                                  |
-| `bun run docs:check`       | Markdown style, real Mermaid parsing, local link existence                                          |
-| `bun run test`             | Vitest workspace tests; do not substitute `bun test`                                                |
-| `bun run migrations:check` | Released migration lineage; requires fetched release tags                                           |
-| `actionlint`               | GitHub Actions syntax validation                                                                    |
+| Command                    | Purpose                                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `bun run check:static`     | Branding, localization, Markdown, Mermaid, links, formatting, lint, CI contracts, Windows boundary, release smoke |
+| `bun run check`            | Static checks, workspace types/tests, desktop and marketing builds                                                |
+| `bun run docs:check`       | Markdown style, real Mermaid parsing, local link existence                                                        |
+| `bun run test`             | Vitest workspace tests; do not substitute `bun test`                                                              |
+| `bun run migrations:check` | Released migration lineage; requires fetched release tags                                                         |
+| `actionlint`               | GitHub Actions syntax validation                                                                                  |
 
 Hooks call the same commands as CI through Flox. Browser and native OS checks run
 in CI on their intended platforms. Install Chromium before running browser tests

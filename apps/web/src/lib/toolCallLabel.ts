@@ -5,9 +5,10 @@
 // Depends on: @trellis/contracts tool lifecycle item types
 
 import type { ToolLifecycleItemType } from "@trellis/contracts";
+import { t } from "~/i18n";
 import { BROWSER_TOOL_TITLES } from "@trellis/shared/browserAutomationPresentation";
 import {
-  COMPUTER_TOOL_TITLES,
+  COMPUTER_TOOL_TITLE_KEYS,
   computerToolName,
   type ComputerToolName,
 } from "./computerToolPresentation";
@@ -121,11 +122,13 @@ export interface ReadableToolTitleInput {
   readonly isRunning?: boolean;
 }
 
-interface TrellisMcpToolPresentation {
+interface TrellisMcpToolSourcePresentation {
   readonly running: string;
   readonly completed: string;
   readonly failed: string;
 }
+
+type TrellisMcpToolPresentation = Readonly<Record<TrellisMcpToolStatus, string>>;
 
 // Historical messages still contain retired tools; presentation does not expose them to agents.
 const BROWSER_HISTORY_TITLES = {
@@ -153,7 +156,7 @@ const TRELLIS_BROWSER_TOOL_PRESENTATIONS = Object.fromEntries(
     const title = BROWSER_HISTORY_TITLES[toolName];
     return [`trellis_${toolName}`, { running: title, completed: title, failed: title }];
   }),
-) as Record<TrellisBrowserToolName, TrellisMcpToolPresentation>;
+) as Record<TrellisBrowserToolName, TrellisMcpToolSourcePresentation>;
 
 /**
  * The desktop tools, spoken. Every browser tool had a curated presentation and
@@ -278,9 +281,9 @@ const TRELLIS_COMPUTER_TOOL_PRESENTATIONS = {
     "pressing Enter in the browser",
     "pressed Enter in the browser",
   ),
-} as const satisfies Record<`trellis_${ComputerToolName}`, TrellisMcpToolPresentation>;
+} as const satisfies Record<`trellis_${ComputerToolName}`, TrellisMcpToolSourcePresentation>;
 
-function presentComputerTool(present: string, past: string): TrellisMcpToolPresentation {
+function presentComputerTool(present: string, past: string): TrellisMcpToolSourcePresentation {
   return {
     running: `Trellis is ${present}`,
     completed: `Trellis ${past}`,
@@ -471,7 +474,638 @@ const TRELLIS_MCP_TOOL_PRESENTATIONS = {
   },
   ...TRELLIS_BROWSER_TOOL_PRESENTATIONS,
   ...TRELLIS_COMPUTER_TOOL_PRESENTATIONS,
-} as const satisfies Record<string, TrellisMcpToolPresentation>;
+} as const satisfies Record<string, TrellisMcpToolSourcePresentation>;
+
+// Semantic presentation IDs are separate from the source titles used to classify historical events.
+const TRELLIS_MCP_TOOL_PRESENTATION_KEYS = {
+  trellis_computer_screenshot: {
+    running: "common:trellisIsTakingAScreenshot",
+    completed: "common:trellisTookAScreenshot",
+    failed: "common:trellisCouldnTFinishTakingAScreenshot",
+    cancelled: "common:trellisStoppedTakingAScreenshot",
+  },
+  trellis_computer_get_state: {
+    running: "common:trellisIsReadingTheScreen",
+    completed: "common:trellisReadTheScreen",
+    failed: "common:trellisCouldnTFinishReadingTheScreen",
+    cancelled: "common:trellisStoppedReadingTheScreen",
+  },
+  trellis_computer_get_screen_size: {
+    running: "common:trellisIsMeasuringTheScreen",
+    completed: "common:trellisMeasuredTheScreen",
+    failed: "common:trellisCouldnTFinishMeasuringTheScreen",
+    cancelled: "common:trellisStoppedMeasuringTheScreen",
+  },
+  trellis_computer_list_windows: {
+    running: "common:trellisIsListingWindows",
+    completed: "common:trellisListedTheWindows",
+    failed: "common:trellisCouldnTFinishListingWindows",
+    cancelled: "common:trellisStoppedListingWindows",
+  },
+  trellis_computer_list_apps: {
+    running: "common:trellisIsListingApps",
+    completed: "common:trellisListedTheApps",
+    failed: "common:trellisCouldnTFinishListingApps",
+    cancelled: "common:trellisStoppedListingApps",
+  },
+  trellis_computer_verify_state: {
+    running: "common:trellisIsCheckingDesktopState",
+    completed: "common:trellisCheckedDesktopState",
+    failed: "common:trellisCouldnTFinishCheckingDesktopState",
+    cancelled: "common:trellisStoppedCheckingDesktopState",
+  },
+  trellis_computer_zoom: {
+    running: "common:trellisIsZoomingIntoAWindow",
+    completed: "common:trellisZoomedIntoAWindow",
+    failed: "common:trellisCouldnTFinishZoomingIntoAWindow",
+    cancelled: "common:trellisStoppedZoomingIntoAWindow",
+  },
+  trellis_computer_get_accessibility_tree: {
+    running: "common:trellisIsListingAppsAndWindows",
+    completed: "common:trellisListedAppsAndWindows",
+    failed: "common:trellisCouldnTFinishListingAppsAndWindows",
+    cancelled: "common:trellisStoppedListingAppsAndWindows",
+  },
+  trellis_computer_get_cursor_position: {
+    running: "common:trellisIsReadingTheCursorPosition",
+    completed: "common:trellisReadTheCursorPosition",
+    failed: "common:trellisCouldnTFinishReadingTheCursorPosition",
+    cancelled: "common:trellisStoppedReadingTheCursorPosition",
+  },
+  trellis_computer_help: {
+    running: "common:trellisIsReadingTheComputerPlaybook",
+    completed: "common:trellisReadTheComputerPlaybook",
+    failed: "common:trellisCouldnTFinishReadingTheComputerPlaybook",
+    cancelled: "common:trellisStoppedReadingTheComputerPlaybook",
+  },
+  trellis_computer_click: {
+    running: "common:trellisIsClickingTheDesktop",
+    completed: "common:trellisClickedTheDesktop",
+    failed: "common:trellisCouldnTFinishClickingTheDesktop",
+    cancelled: "common:trellisStoppedClickingTheDesktop",
+  },
+  trellis_computer_move_cursor: {
+    running: "common:trellisIsMovingTheCursor",
+    completed: "common:trellisMovedTheCursor",
+    failed: "common:trellisCouldnTFinishMovingTheCursor",
+    cancelled: "common:trellisStoppedMovingTheCursor",
+  },
+  trellis_computer_drag: {
+    running: "common:trellisIsDraggingOnTheDesktop",
+    completed: "common:trellisDraggedOnTheDesktop",
+    failed: "common:trellisCouldnTFinishDraggingOnTheDesktop",
+    cancelled: "common:trellisStoppedDraggingOnTheDesktop",
+  },
+  trellis_computer_scroll: {
+    running: "common:trellisIsScrollingTheDesktop",
+    completed: "common:trellisScrolledTheDesktop",
+    failed: "common:trellisCouldnTFinishScrollingTheDesktop",
+    cancelled: "common:trellisStoppedScrollingTheDesktop",
+  },
+  trellis_computer_type_text: {
+    running: "common:trellisIsTypingOnTheDesktop",
+    completed: "common:trellisTypedOnTheDesktop",
+    failed: "common:trellisCouldnTFinishTypingOnTheDesktop",
+    cancelled: "common:trellisStoppedTypingOnTheDesktop",
+  },
+  trellis_computer_press_key: {
+    running: "common:trellisIsPressingAKey",
+    completed: "common:trellisPressedAKey",
+    failed: "common:trellisCouldnTFinishPressingAKey",
+    cancelled: "common:trellisStoppedPressingAKey",
+  },
+  trellis_computer_set_value: {
+    running: "common:trellisIsSettingAField",
+    completed: "common:trellisSetAField",
+    failed: "common:trellisCouldnTFinishSettingAField",
+    cancelled: "common:trellisStoppedSettingAField",
+  },
+  trellis_computer_select_text: {
+    running: "common:trellisIsSelectingText",
+    completed: "common:trellisSelectedText",
+    failed: "common:trellisCouldnTFinishSelectingText",
+    cancelled: "common:trellisStoppedSelectingText",
+  },
+  trellis_computer_perform_action: {
+    running: "common:trellisIsActivatingAControl",
+    completed: "common:trellisActivatedAControl",
+    failed: "common:trellisCouldnTFinishActivatingAControl",
+    cancelled: "common:trellisStoppedActivatingAControl",
+  },
+  trellis_computer_launch_app: {
+    running: "common:trellisIsOpeningAnApp",
+    completed: "common:trellisOpenedAnApp",
+    failed: "common:trellisCouldnTFinishOpeningAnApp",
+    cancelled: "common:trellisStoppedOpeningAnApp",
+  },
+  trellis_computer_activate_window: {
+    running: "common:trellisIsActivatingAWindow",
+    completed: "common:trellisActivatedAWindow",
+    failed: "common:trellisCouldnTFinishActivatingAWindow",
+    cancelled: "common:trellisStoppedActivatingAWindow",
+  },
+  trellis_computer_set_window_frame: {
+    running: "common:trellisIsMovingOrResizingAWindow",
+    completed: "common:trellisMovedOrResizedAWindow",
+    failed: "common:trellisCouldnTFinishMovingOrResizingAWindow",
+    cancelled: "common:trellisStoppedMovingOrResizingAWindow",
+  },
+  trellis_computer_invoke_menu: {
+    running: "common:trellisIsInvokingAMenuItem",
+    completed: "common:trellisInvokedAMenuItem",
+    failed: "common:trellisCouldnTFinishInvokingAMenuItem",
+    cancelled: "common:trellisStoppedInvokingAMenuItem",
+  },
+  trellis_computer_kill_app: {
+    running: "common:trellisIsForceQuittingAnApp",
+    completed: "common:trellisForceQuitAnApp",
+    failed: "common:trellisCouldnTFinishForceQuittingAnApp",
+    cancelled: "common:trellisStoppedForceQuittingAnApp",
+  },
+  trellis_computer_set_window_minimized: {
+    running: "common:trellisIsChangingAWindowSVisibility",
+    completed: "common:trellisChangedAWindowSVisibility",
+    failed: "common:trellisCouldnTFinishChangingAWindowSVisibility",
+    cancelled: "common:trellisStoppedChangingAWindowSVisibility",
+  },
+  trellis_computer_set_app_visibility: {
+    running: "common:trellisIsChangingAnAppSVisibility",
+    completed: "common:trellisChangedAnAppSVisibility",
+    failed: "common:trellisCouldnTFinishChangingAnAppSVisibility",
+    cancelled: "common:trellisStoppedChangingAnAppSVisibility",
+  },
+  trellis_computer_wait: {
+    running: "common:trellisIsWaitingForTheDesktop",
+    completed: "common:trellisWaitedForTheDesktop",
+    failed: "common:trellisCouldnTFinishWaitingForTheDesktop",
+    cancelled: "common:trellisStoppedWaitingForTheDesktop",
+  },
+  trellis_computer_read_clipboard: {
+    running: "common:trellisIsReadingTheClipboard",
+    completed: "common:trellisReadTheClipboard",
+    failed: "common:trellisCouldnTFinishReadingTheClipboard",
+    cancelled: "common:trellisStoppedReadingTheClipboard",
+  },
+  trellis_computer_write_clipboard: {
+    running: "common:trellisIsWritingToTheClipboard",
+    completed: "common:trellisWroteToTheClipboard",
+    failed: "common:trellisCouldnTFinishWritingToTheClipboard",
+    cancelled: "common:trellisStoppedWritingToTheClipboard",
+  },
+  trellis_computer_paste: {
+    running: "common:trellisIsPastingText",
+    completed: "common:trellisPastedText",
+    failed: "common:trellisCouldnTFinishPastingText",
+    cancelled: "common:trellisStoppedPastingText",
+  },
+  trellis_computer_run: {
+    running: "common:trellisIsRunningADesktopSequence",
+    completed: "common:trellisRanADesktopSequence",
+    failed: "common:trellisCouldnTFinishRunningADesktopSequence",
+    cancelled: "common:trellisStoppedRunningADesktopSequence",
+  },
+  trellis_computer_inspect: {
+    running: "common:trellisIsInspectingTheComputer",
+    completed: "common:trellisInspectedTheComputer",
+    failed: "common:trellisCouldnTFinishInspectingTheComputer",
+    cancelled: "common:trellisStoppedInspectingTheComputer",
+  },
+  trellis_computer_spaces: {
+    running: "common:trellisIsInspectingDesktopSpaces",
+    completed: "common:trellisInspectedDesktopSpaces",
+    failed: "common:trellisCouldnTFinishInspectingDesktopSpaces",
+    cancelled: "common:trellisStoppedInspectingDesktopSpaces",
+  },
+  trellis_computer_browser_state: {
+    running: "common:trellisIsReadingTheBrowserPage",
+    completed: "common:trellisReadTheBrowserPage",
+    failed: "common:trellisCouldnTFinishReadingTheBrowserPage",
+    cancelled: "common:trellisStoppedReadingTheBrowserPage",
+  },
+  trellis_computer_browser_prepare: {
+    running: "common:trellisIsPreparingABrowser",
+    completed: "common:trellisPreparedABrowser",
+    failed: "common:trellisCouldnTFinishPreparingABrowser",
+    cancelled: "common:trellisStoppedPreparingABrowser",
+  },
+  trellis_computer_browser_navigate: {
+    running: "common:trellisIsOpeningABrowserPage",
+    completed: "common:trellisOpenedABrowserPage",
+    failed: "common:trellisCouldnTFinishOpeningABrowserPage",
+    cancelled: "common:trellisStoppedOpeningABrowserPage",
+  },
+  trellis_computer_browser_click: {
+    running: "common:trellisIsClickingInTheBrowser",
+    completed: "common:trellisClickedInTheBrowser",
+    failed: "common:trellisCouldnTFinishClickingInTheBrowser",
+    cancelled: "common:trellisStoppedClickingInTheBrowser",
+  },
+  trellis_computer_browser_type: {
+    running: "common:trellisIsTypingInABrowserField",
+    completed: "common:trellisTypedInABrowserField",
+    failed: "common:trellisCouldnTFinishTypingInABrowserField",
+    cancelled: "common:trellisStoppedTypingInABrowserField",
+  },
+  trellis_computer_browser_dialog: {
+    running: "common:trellisIsHandlingABrowserDialog",
+    completed: "common:trellisHandledABrowserDialog",
+    failed: "common:trellisCouldnTFinishHandlingABrowserDialog",
+    cancelled: "common:trellisStoppedHandlingABrowserDialog",
+  },
+  trellis_computer_browser_upload: {
+    running: "common:trellisIsAttachingFilesInTheBrowser",
+    completed: "common:trellisAttachedFilesInTheBrowser",
+    failed: "common:trellisCouldnTFinishAttachingFilesInTheBrowser",
+    cancelled: "common:trellisStoppedAttachingFilesInTheBrowser",
+  },
+  trellis_computer_browser_download: {
+    running: "common:trellisIsDownloadingAFile",
+    completed: "common:trellisDownloadedAFile",
+    failed: "common:trellisCouldnTFinishDownloadingAFile",
+    cancelled: "common:trellisStoppedDownloadingAFile",
+  },
+  trellis_computer_browser_pointer: {
+    running: "common:trellisIsUsingThePointerInTheBrowser",
+    completed: "common:trellisUsedThePointerInTheBrowser",
+    failed: "common:trellisCouldnTFinishUsingThePointerInThe",
+    cancelled: "common:trellisStoppedUsingThePointerInTheBrowser",
+  },
+  trellis_computer_browser_press: {
+    running: "common:trellisIsPressingEnterInTheBrowser",
+    completed: "common:trellisPressedEnterInTheBrowser",
+    failed: "common:trellisCouldnTFinishPressingEnterInTheBrowser",
+    cancelled: "common:trellisStoppedPressingEnterInTheBrowser",
+  },
+  trellis_context: {
+    running: "chat:trellisIsCheckingItsContext",
+    completed: "chat:trellisCheckedItsContext",
+    failed: "chat:trellisCouldnTCheckItsContext",
+    cancelled: "common:trellisStoppedCheckingItsContext",
+  },
+  trellis_capabilities: {
+    running: "chat:trellisIsCheckingAvailableAgents",
+    completed: "chat:trellisCheckedAvailableAgents",
+    failed: "chat:trellisCouldnTCheckAvailableAgents",
+    cancelled: "common:trellisStoppedCheckingAvailableAgents",
+  },
+  trellis_overview: {
+    running: "chat:trellisIsGatheringAnOverview",
+    completed: "chat:trellisGatheredAnOverview",
+    failed: "chat:trellisCouldnTGatherAnOverview",
+    cancelled: "common:trellisStoppedGatheringAnOverview",
+  },
+  trellis_list_allowed_projects: {
+    running: "chat:trellisIsListingAllowedProjects",
+    completed: "chat:trellisListedAllowedProjects",
+    failed: "chat:trellisCouldnTListAllowedProjects",
+    cancelled: "common:trellisStoppedListingAllowedProjects",
+  },
+  trellis_create_task: {
+    running: "chat:trellisIsCreatingATask",
+    completed: "chat:trellisCreatedATask",
+    failed: "chat:trellisCouldnTCreateATask",
+    cancelled: "common:trellisStoppedCreatingATask",
+  },
+  trellis_wait_for_task: {
+    running: "chat:trellisIsWaitingForATask",
+    completed: "chat:trellisFinishedWaitingForATask",
+    failed: "chat:trellisCouldnTWaitForATask",
+    cancelled: "common:trellisStoppedWaitingForATask",
+  },
+  trellis_read_task: {
+    running: "chat:trellisIsReadingATask",
+    completed: "chat:trellisReadATask",
+    failed: "chat:trellisCouldnTReadATask",
+    cancelled: "common:trellisStoppedReadingATask",
+  },
+  trellis_list_projects: {
+    running: "chat:trellisIsListingProjects",
+    completed: "chat:trellisListedProjects",
+    failed: "chat:trellisCouldnTListProjects",
+    cancelled: "common:trellisStoppedListingProjects",
+  },
+  trellis_list_threads: {
+    running: "chat:trellisIsListingThreads",
+    completed: "chat:trellisListedThreads",
+    failed: "chat:trellisCouldnTListThreads",
+    cancelled: "common:trellisStoppedListingThreads",
+  },
+  trellis_read_thread: {
+    running: "chat:trellisIsReadingAThread",
+    completed: "chat:trellisReadAThread",
+    failed: "chat:trellisCouldnTReadAThread",
+    cancelled: "common:trellisStoppedReadingAThread",
+  },
+  trellis_read_thread_activity: {
+    running: "chat:trellisIsReadingThreadActivity",
+    completed: "chat:trellisReadThreadActivity",
+    failed: "chat:trellisCouldnTReadThreadActivity",
+    cancelled: "common:trellisStoppedReadingThreadActivity",
+  },
+  trellis_read_thread_events: {
+    running: "chat:trellisIsReadingThreadEvents",
+    completed: "chat:trellisReadThreadEvents",
+    failed: "chat:trellisCouldnTReadThreadEvents",
+    cancelled: "common:trellisStoppedReadingThreadEvents",
+  },
+  trellis_read_thread_runtime_events: {
+    running: "chat:trellisIsReadingThreadRuntimeEvents",
+    completed: "chat:trellisReadThreadRuntimeEvents",
+    failed: "chat:trellisCouldnTReadThreadRuntimeEvents",
+    cancelled: "common:trellisStoppedReadingThreadRuntimeEvents",
+  },
+  trellis_diagnose_thread: {
+    running: "chat:trellisIsDiagnosingAThread",
+    completed: "chat:trellisDiagnosedAThread",
+    failed: "chat:trellisCouldnTDiagnoseAThread",
+    cancelled: "common:trellisStoppedDiagnosingAThread",
+  },
+  trellis_create_thread: {
+    running: "chat:trellisIsCreatingAThread",
+    completed: "chat:trellisCreatedAThread",
+    failed: "chat:trellisCouldnTCreateAThread",
+    cancelled: "common:trellisStoppedCreatingAThread",
+  },
+  trellis_create_threads: {
+    running: "chat:trellisIsCreatingThreads",
+    completed: "chat:trellisCreatedThreads",
+    failed: "chat:trellisCouldnTCreateThreads",
+    cancelled: "common:trellisStoppedCreatingThreads",
+  },
+  trellis_wait_for_threads: {
+    running: "chat:trellisIsWaitingForThreads",
+    completed: "chat:trellisFinishedWaitingForThreads",
+    failed: "chat:trellisCouldnTWaitForThreads",
+    cancelled: "common:trellisStoppedWaitingForThreads",
+  },
+  trellis_send_message: {
+    running: "chat:trellisIsSendingAMessage",
+    completed: "chat:trellisSentAMessage",
+    failed: "chat:trellisCouldnTSendAMessage",
+    cancelled: "common:trellisStoppedSendingAMessage",
+  },
+  trellis_read_kanban_board: {
+    running: "chat:trellisIsReadingTheBoard",
+    completed: "chat:trellisReadTheBoard",
+    failed: "chat:trellisCouldnTReadTheBoard",
+    cancelled: "common:trellisStoppedReadingTheBoard",
+  },
+  trellis_read_kanban_card: {
+    running: "chat:trellisIsReadingABoardCard",
+    completed: "chat:trellisReadABoardCard",
+    failed: "chat:trellisCouldnTReadABoardCard",
+    cancelled: "common:trellisStoppedReadingABoardCard",
+  },
+  trellis_create_kanban_task: {
+    running: "chat:trellisIsCreatingABoardTask",
+    completed: "chat:trellisCreatedABoardTask",
+    failed: "chat:trellisCouldnTCreateABoardTask",
+    cancelled: "common:trellisStoppedCreatingABoardTask",
+  },
+  trellis_move_kanban_card: {
+    running: "chat:trellisIsMovingABoardCard",
+    completed: "chat:trellisMovedABoardCard",
+    failed: "chat:trellisCouldnTMoveABoardCard",
+    cancelled: "common:trellisStoppedMovingABoardCard",
+  },
+  trellis_show_visual: {
+    running: "chat:trellisIsShowingAVisual",
+    completed: "chat:trellisShowedAVisual",
+    failed: "chat:trellisCouldnTShowAVisual",
+    cancelled: "common:trellisStoppedShowingAVisual",
+  },
+  trellis_create_todo: {
+    running: "chat:trellisIsAddingAToDo",
+    completed: "chat:trellisAddedAToDo",
+    failed: "chat:trellisCouldnTAddAToDo",
+    cancelled: "common:trellisStoppedAddingAToDo",
+  },
+  trellis_list_todos: {
+    running: "chat:trellisIsReadingYourToDos",
+    completed: "chat:trellisReadYourToDos",
+    failed: "chat:trellisCouldnTReadYourToDos",
+    cancelled: "common:trellisStoppedReadingYourToDos",
+  },
+  trellis_update_todo: {
+    running: "chat:trellisIsUpdatingAToDo",
+    completed: "chat:trellisUpdatedAToDo",
+    failed: "chat:trellisCouldnTUpdateAToDo",
+    cancelled: "common:trellisStoppedUpdatingAToDo",
+  },
+  trellis_interrupt_thread: {
+    running: "chat:trellisIsInterruptingAThread",
+    completed: "chat:trellisInterruptedAThread",
+    failed: "chat:trellisCouldnTInterruptAThread",
+    cancelled: "common:trellisStoppedInterruptingAThread",
+  },
+  trellis_set_thread_title: {
+    running: "chat:trellisIsRenamingAThread",
+    completed: "chat:trellisRenamedAThread",
+    failed: "chat:trellisCouldnTRenameAThread",
+    cancelled: "common:trellisStoppedRenamingAThread",
+  },
+  trellis_set_thread_archived: {
+    running: "chat:trellisIsUpdatingAThread",
+    completed: "chat:trellisUpdatedAThread",
+    failed: "chat:trellisCouldnTUpdateAThread",
+    cancelled: "common:trellisStoppedUpdatingAThread",
+  },
+  trellis_create_automation: {
+    running: "chat:trellisIsCreatingAnAutomation",
+    completed: "chat:trellisCreatedAnAutomation",
+    failed: "chat:trellisCouldnTCreateAnAutomation",
+    cancelled: "common:trellisStoppedCreatingAnAutomation",
+  },
+  trellis_list_automations: {
+    running: "chat:trellisIsListingAutomations",
+    completed: "chat:trellisListedAutomations",
+    failed: "chat:trellisCouldnTListAutomations",
+    cancelled: "common:trellisStoppedListingAutomations",
+  },
+  trellis_view_automation: {
+    running: "chat:trellisIsViewingAnAutomation",
+    completed: "chat:trellisViewedAnAutomation",
+    failed: "chat:trellisCouldnTViewAnAutomation",
+    cancelled: "common:trellisStoppedViewingAnAutomation",
+  },
+  trellis_update_automation: {
+    running: "chat:trellisIsUpdatingAnAutomation",
+    completed: "chat:trellisUpdatedAnAutomation",
+    failed: "chat:trellisCouldnTUpdateAnAutomation",
+    cancelled: "common:trellisStoppedUpdatingAnAutomation",
+  },
+  trellis_update_automation_memory: {
+    running: "chat:trellisIsUpdatingAutomationMemory",
+    completed: "chat:trellisUpdatedAutomationMemory",
+    failed: "chat:trellisCouldnTUpdateAutomationMemory",
+    cancelled: "common:trellisStoppedUpdatingAutomationMemory",
+  },
+  trellis_report_automation_result: {
+    running: "chat:trellisIsReportingAnAutomationResult",
+    completed: "chat:trellisReportedAnAutomationResult",
+    failed: "chat:trellisCouldnTReportAnAutomationResult",
+    cancelled: "common:trellisStoppedReportingAnAutomationResult",
+  },
+  trellis_cancel_automation: {
+    running: "chat:trellisIsStoppingAnAutomation",
+    completed: "chat:trellisStoppedAnAutomation",
+    failed: "chat:trellisCouldnTStopAnAutomation",
+    cancelled: "common:trellisStoppedStoppingAnAutomation",
+  },
+  trellis_browser_status: {
+    running: "common:checkBrowserStatus",
+    completed: "common:checkBrowserStatus",
+    failed: "common:checkBrowserStatus",
+    cancelled: "common:cancelledCheckBrowserStatus",
+  },
+  trellis_browser_tabs: {
+    running: "common:listBrowserTabs",
+    completed: "common:listBrowserTabs",
+    failed: "common:listBrowserTabs",
+    cancelled: "common:cancelledListBrowserTabs",
+  },
+  trellis_browser_open: {
+    running: "common:openBrowserTab",
+    completed: "common:openBrowserTab",
+    failed: "common:openBrowserTab",
+    cancelled: "common:cancelledOpenBrowserTab",
+  },
+  trellis_browser_navigate: {
+    running: "common:navigateBrowserTab",
+    completed: "common:navigateBrowserTab",
+    failed: "common:navigateBrowserTab",
+    cancelled: "common:cancelledNavigateBrowserTab",
+  },
+  trellis_browser_back: {
+    running: "common:goBackInBrowserHistory",
+    completed: "common:goBackInBrowserHistory",
+    failed: "common:goBackInBrowserHistory",
+    cancelled: "common:cancelledGoBackInBrowserHistory",
+  },
+  trellis_browser_forward: {
+    running: "common:goForwardInBrowserHistory",
+    completed: "common:goForwardInBrowserHistory",
+    failed: "common:goForwardInBrowserHistory",
+    cancelled: "common:cancelledGoForwardInBrowserHistory",
+  },
+  trellis_browser_reload: {
+    running: "common:reloadBrowserPage",
+    completed: "common:reloadBrowserPage",
+    failed: "common:reloadBrowserPage",
+    cancelled: "common:cancelledReloadBrowserPage",
+  },
+  trellis_browser_resize: {
+    running: "common:resizeBrowserViewport",
+    completed: "common:resizeBrowserViewport",
+    failed: "common:resizeBrowserViewport",
+    cancelled: "common:cancelledResizeBrowserViewport",
+  },
+  trellis_browser_screenshot: {
+    running: "common:captureBrowserScreenshot",
+    completed: "common:captureBrowserScreenshot",
+    failed: "common:captureBrowserScreenshot",
+    cancelled: "common:cancelledCaptureBrowserScreenshot",
+  },
+  trellis_browser_logs: {
+    running: "common:readBrowserDiagnostics",
+    completed: "common:readBrowserDiagnostics",
+    failed: "common:readBrowserDiagnostics",
+    cancelled: "common:cancelledReadBrowserDiagnostics",
+  },
+  trellis_browser_upload: {
+    running: "common:uploadWorkspaceFiles",
+    completed: "common:uploadWorkspaceFiles",
+    failed: "common:uploadWorkspaceFiles",
+    cancelled: "common:cancelledUploadWorkspaceFiles",
+  },
+  trellis_browser_run: {
+    running: "common:runBrowserActions",
+    completed: "common:runBrowserActions",
+    failed: "common:runBrowserActions",
+    cancelled: "common:cancelledRunBrowserActions",
+  },
+  trellis_browser_close: {
+    running: "common:closeBrowserTab",
+    completed: "common:closeBrowserTab",
+    failed: "common:closeBrowserTab",
+    cancelled: "common:cancelledCloseBrowserTab",
+  },
+  trellis_browser_snapshot: {
+    running: "chat:snapshotBrowserPage",
+    completed: "chat:snapshotBrowserPage",
+    failed: "chat:snapshotBrowserPage",
+    cancelled: "common:cancelledSnapshotBrowserPage",
+  },
+  trellis_browser_webmcp_tools: {
+    running: "chat:discoverPageWebMCPTools",
+    completed: "chat:discoverPageWebMCPTools",
+    failed: "chat:discoverPageWebMCPTools",
+    cancelled: "common:cancelledDiscoverPageWebMCPTools",
+  },
+  trellis_browser_webmcp_call: {
+    running: "chat:callPageWebMCPTool",
+    completed: "chat:callPageWebMCPTool",
+    failed: "chat:callPageWebMCPTool",
+    cancelled: "common:cancelledCallPageWebMCPTool",
+  },
+  trellis_browser_click: {
+    running: "chat:clickBrowserTarget",
+    completed: "chat:clickBrowserTarget",
+    failed: "chat:clickBrowserTarget",
+    cancelled: "common:cancelledClickBrowserTarget",
+  },
+  trellis_browser_hover: {
+    running: "chat:hoverBrowserTarget",
+    completed: "chat:hoverBrowserTarget",
+    failed: "chat:hoverBrowserTarget",
+    cancelled: "common:cancelledHoverBrowserTarget",
+  },
+  trellis_browser_drag: {
+    running: "chat:dragBetweenBrowserTargets",
+    completed: "chat:dragBetweenBrowserTargets",
+    failed: "chat:dragBetweenBrowserTargets",
+    cancelled: "common:cancelledDragBetweenBrowserTargets",
+  },
+  trellis_browser_type: {
+    running: "chat:typeIntoBrowserTarget",
+    completed: "chat:typeIntoBrowserTarget",
+    failed: "chat:typeIntoBrowserTarget",
+    cancelled: "common:cancelledTypeIntoBrowserTarget",
+  },
+  trellis_browser_select: {
+    running: "chat:selectBrowserOptions",
+    completed: "chat:selectBrowserOptions",
+    failed: "chat:selectBrowserOptions",
+    cancelled: "common:cancelledSelectBrowserOptions",
+  },
+  trellis_browser_press: {
+    running: "chat:pressBrowserKeys",
+    completed: "chat:pressBrowserKeys",
+    failed: "chat:pressBrowserKeys",
+    cancelled: "common:cancelledPressBrowserKeys",
+  },
+  trellis_browser_scroll: {
+    running: "chat:scrollBrowserPage",
+    completed: "chat:scrollBrowserPage",
+    failed: "chat:scrollBrowserPage",
+    cancelled: "common:cancelledScrollBrowserPage",
+  },
+  trellis_browser_wait: {
+    running: "chat:waitForBrowserCondition",
+    completed: "chat:waitForBrowserCondition",
+    failed: "chat:waitForBrowserCondition",
+    cancelled: "common:cancelledWaitForBrowserCondition",
+  },
+  trellis_browser_evaluate: {
+    running: "chat:evaluateBrowserExpression",
+    completed: "chat:evaluateBrowserExpression",
+    failed: "chat:evaluateBrowserExpression",
+    cancelled: "common:cancelledEvaluateBrowserExpression",
+  },
+} as const satisfies Record<
+  keyof typeof TRELLIS_MCP_TOOL_PRESENTATIONS,
+  Record<TrellisMcpToolStatus, string>
+>;
 
 function normalizeTrellisMcpIdentifier(value: string): string {
   return value
@@ -534,21 +1168,39 @@ function resolveTrellisBrowserToolName(
   return null;
 }
 
-function fallbackTrellisMcpToolPresentation(toolName: string): TrellisMcpToolPresentation {
+function fallbackTrellisMcpToolPresentation(
+  toolName: string,
+  translate: typeof t,
+): TrellisMcpToolPresentation {
   const action =
     toolName
       .replace(/^trellis_/, "")
       .replace(/_+/g, " ")
-      .trim() || "an action";
+      .trim() || translate("chat:anAction");
   return {
-    running: `Trellis is handling ${action}`,
-    completed: `Trellis handled ${action}`,
-    failed: `Trellis couldn't handle ${action}`,
+    running: translate("chat:trellisIsHandling", { action }),
+    completed: translate("chat:trellisHandled", { action }),
+    failed: translate("chat:trellisCouldnTHandle", { action }),
+    cancelled: translate("chat:trellisStoppedHandling", { action }),
+  };
+}
+
+function localizeTrellisMcpToolPresentation(
+  toolName: keyof typeof TRELLIS_MCP_TOOL_PRESENTATIONS,
+  translate: typeof t,
+): TrellisMcpToolPresentation {
+  const keys = TRELLIS_MCP_TOOL_PRESENTATION_KEYS[toolName];
+  return {
+    running: translate(keys.running),
+    completed: translate(keys.completed),
+    failed: translate(keys.failed),
+    cancelled: translate(keys.cancelled),
   };
 }
 
 function resolveTrellisMcpToolPresentation(
   candidates: ReadonlyArray<string | null | undefined>,
+  translate: typeof t,
 ): TrellisMcpToolPresentation | null {
   for (const candidate of candidates) {
     if (!candidate) {
@@ -561,17 +1213,23 @@ function resolveTrellisMcpToolPresentation(
         normalizedCandidate === entry.normalizedCompleted ||
         normalizedCandidate === entry.normalizedFailed
       ) {
-        return entry.presentation;
+        return localizeTrellisMcpToolPresentation(
+          entry.toolName as keyof typeof TRELLIS_MCP_TOOL_PRESENTATIONS,
+          translate,
+        );
       }
     }
     const toolName = extractTrellisMcpToolName(normalizedCandidate);
     const knownPresentation = toolName
       ? (TRELLIS_MCP_TOOL_PRESENTATIONS[toolName as keyof typeof TRELLIS_MCP_TOOL_PRESENTATIONS] as
-          | TrellisMcpToolPresentation
+          | TrellisMcpToolSourcePresentation
           | undefined)
       : undefined;
     if (knownPresentation) {
-      return knownPresentation;
+      return localizeTrellisMcpToolPresentation(
+        toolName as keyof typeof TRELLIS_MCP_TOOL_PRESENTATIONS,
+        translate,
+      );
     }
     // Free-text summaries (e.g. reconciler activity lines) can begin with the
     // word "Trellis" and normalize into a fake tool identifier; only
@@ -582,22 +1240,25 @@ function resolveTrellisMcpToolPresentation(
     if (normalizedCandidate.startsWith("trellis_is_handling_")) {
       return fallbackTrellisMcpToolPresentation(
         `trellis_${normalizedCandidate.slice("trellis_is_handling_".length)}`,
+        translate,
       );
     }
     if (normalizedCandidate.startsWith("trellis_handled_")) {
       return fallbackTrellisMcpToolPresentation(
         `trellis_${normalizedCandidate.slice("trellis_handled_".length)}`,
+        translate,
       );
     }
     if (normalizedCandidate.startsWith("trellis_couldn_t_handle_")) {
       return fallbackTrellisMcpToolPresentation(
         `trellis_${normalizedCandidate.slice("trellis_couldn_t_handle_".length)}`,
+        translate,
       );
     }
     if (!toolName) {
       continue;
     }
-    return fallbackTrellisMcpToolPresentation(toolName);
+    return fallbackTrellisMcpToolPresentation(toolName, translate);
   }
   return null;
 }
@@ -618,61 +1279,61 @@ export function isTrellisBrowserToolCall(input: TrellisMcpToolTitleInput): boole
 // Every provider exposes Trellis's MCP tools differently: MCP, dynamic, and even
 // file-change rows can all represent the same gateway action. Normalize by tool
 // identity instead of provider item type so transport details never reach the UI.
-export function deriveTrellisMcpToolTitle(input: TrellisMcpToolTitleInput): string | null {
-  const presentation = resolveTrellisMcpToolPresentation([
-    input.toolName,
-    input.title,
-    input.fallbackLabel,
-  ]);
+export function deriveTrellisMcpToolTitle(
+  input: TrellisMcpToolTitleInput,
+  translate: typeof t = t,
+): string | null {
+  const presentation = resolveTrellisMcpToolPresentation(
+    [input.toolName, input.title, input.fallbackLabel],
+    translate,
+  );
   if (!presentation) {
     return null;
   }
-  switch (input.status ?? "completed") {
-    case "running":
-      return presentation.running;
-    case "completed":
-      return presentation.completed;
-    case "failed":
-      return presentation.failed;
-    case "cancelled":
-      return presentation.running.startsWith("Trellis is ")
-        ? `Trellis stopped ${presentation.running.slice("Trellis is ".length)}`
-        : `Cancelled ${presentation.running}`;
-  }
+  return presentation[input.status ?? "completed"];
 }
 
-export function sanitizeTrellisMcpToolPreview(input: {
-  readonly preview?: string | null | undefined;
-  readonly heading: string;
-  readonly status?: TrellisMcpToolStatus | undefined;
-}): string | null {
+export function sanitizeTrellisMcpToolPreview(
+  input: {
+    readonly preview?: string | null | undefined;
+    readonly heading: string;
+    readonly status?: TrellisMcpToolStatus | undefined;
+  },
+  translate: typeof t = t,
+): string | null {
   const preview = input.preview?.trim();
   if (!preview) return null;
-  const previewTitle = deriveTrellisMcpToolTitle({ title: preview, status: input.status });
+  const previewTitle = deriveTrellisMcpToolTitle(
+    { title: preview, status: input.status },
+    translate,
+  );
   if (
     previewTitle &&
-    normalizeTrellisMcpIdentifier(previewTitle) === normalizeTrellisMcpIdentifier(input.heading)
+    normalizeToolTextForComparison(previewTitle) === normalizeToolTextForComparison(input.heading)
   ) {
     return null;
   }
   return preview;
 }
 
-export function deriveReadableToolTitle(input: ReadableToolTitleInput): string | null {
+export function deriveReadableToolTitle(
+  input: ReadableToolTitleInput,
+  translate: typeof t = t,
+): string | null {
   const normalizedTitle = normalizeCompactToolLabel(input.title ?? "");
   const normalizedFallback = normalizeCompactToolLabel(input.fallbackLabel);
   const commandLabel = input.command
-    ? deriveReadableCommandDisplay(input.command, input.isRunning).verb
+    ? deriveReadableCommandDisplay(input.command, input.isRunning, translate).verb
     : null;
   const commandLike = input.itemType === "command_execution" || input.requestKind === "command";
 
   // Derive a verbal label from requestKind when the title is generic
-  const requestKindLabel = humanizeRequestKind(input.requestKind, input.itemType);
+  const requestKindLabel = humanizeRequestKind(input.requestKind, input.itemType, translate);
 
   if (normalizedTitle.length > 0 && !isGenericToolTitle(normalizedTitle)) {
     return (input.itemType === "mcp_tool_call" || input.itemType === "dynamic_tool_call") &&
       /[_-]/.test(normalizedTitle)
-      ? (normalizeToolDescriptor(normalizedTitle) ?? normalizedTitle)
+      ? (normalizeToolDescriptor(normalizedTitle, translate) ?? normalizedTitle)
       : normalizedTitle;
   }
 
@@ -680,7 +1341,10 @@ export function deriveReadableToolTitle(input: ReadableToolTitleInput): string |
     return commandLabel;
   }
 
-  const descriptor = normalizeToolDescriptor(extractToolDescriptorFromPayload(input.payload));
+  const descriptor = normalizeToolDescriptor(
+    extractToolDescriptorFromPayload(input.payload),
+    translate,
+  );
   if (descriptor && !isGenericToolTitle(descriptor)) {
     return descriptor;
   }
@@ -716,15 +1380,17 @@ export type CommandVisualKind = "read" | "search" | "git" | "github" | "terminal
 function humanizeRequestKind(
   requestKind: ReadableToolTitleInput["requestKind"],
   itemType: ReadableToolTitleInput["itemType"],
+  translate: typeof t,
 ): string | null {
-  if (requestKind === "file-read") return "Read";
-  if (requestKind === "file-change" || itemType === "file_change") return "Edited";
-  if (requestKind === "tool") return "Tool";
+  if (requestKind === "file-read") return translate("chat:detail_read", { context: "command" });
+  if (requestKind === "file-change" || itemType === "file_change")
+    return translate("chat:timeline_edited");
+  if (requestKind === "tool") return translate("chat:tool");
   // Don't handle command types here — let humanizeCommandToolLabel produce more specific labels
-  if (itemType === "web_search") return "Searched the web";
-  if (itemType === "image_generation") return "Generated image";
-  if (itemType === "image_view") return "Viewed image";
-  if (itemType === "collab_agent_tool_call") return "Agent task";
+  if (itemType === "web_search") return translate("chat:searchedTheWeb");
+  if (itemType === "image_generation") return translate("chat:generatedImage_generatedImage");
+  if (itemType === "image_view") return translate("chat:viewedImage");
+  if (itemType === "collab_agent_tool_call") return translate("chat:agentTask");
   return null;
 }
 
@@ -752,13 +1418,13 @@ export function isGenericToolTitle(value: string): boolean {
   );
 }
 
-function normalizeToolDescriptor(value: string | null): string | null {
+function normalizeToolDescriptor(value: string | null, translate: typeof t): string | null {
   if (!value) {
     return null;
   }
   const computerTool = computerToolName(value);
   if (computerTool) {
-    return COMPUTER_TOOL_TITLES[computerTool];
+    return translate(COMPUTER_TOOL_TITLE_KEYS[computerTool], { context: "computerTool" });
   }
   const mcpIdentifier = humanizeMcpToolIdentifier(value);
   if (mcpIdentifier) {
@@ -781,10 +1447,10 @@ function normalizeToolDescriptor(value: string | null): string | null {
   }
   const lowerCollapsed = collapsed.toLowerCase();
   if (lowerCollapsed === "read") {
-    return "Read";
+    return translate("chat:detail_read", { context: "command" });
   }
   if (lowerCollapsed === "search" || lowerCollapsed === "find" || lowerCollapsed === "searched") {
-    return "Search";
+    return translate("workspace:primaryActions_search");
   }
   const readable = /[_-]/.test(value) ? humanizeMcpToken(collapsed) : collapsed;
   return readable.length > 64 ? `${readable.slice(0, 61).trimEnd()}...` : readable;
@@ -964,6 +1630,7 @@ const LIST_COMMAND_TOOLS = new Set(["ls"]);
 export function deriveReadableCommandDisplay(
   rawCommand: string,
   isRunning = false,
+  translate: typeof t = t,
 ): ReadableCommandDisplay {
   const command = stripCommandDisplayWrappers(unwrapShellCommandIfPresent(rawCommand));
   const primaryCommand = firstShellCommandSegment(command);
@@ -971,29 +1638,29 @@ export function deriveReadableCommandDisplay(
 
   if (READ_FILE_COMMAND_TOOLS.has(tool)) {
     return {
-      verb: isRunning ? "Reading" : "Read",
-      target: lastPathComponents(args, "file"),
+      verb: translate(isRunning ? "chat:reading" : "chat:detail_read", { context: "command" }),
+      target: lastPathComponents(args, translate("common:file"), translate),
       fullCommand: rawCommand,
     };
   }
   if (SEARCH_COMMAND_TOOLS.has(tool)) {
     return {
-      verb: isRunning ? "Searching" : "Searched",
-      target: searchSummary(args),
+      verb: translate(isRunning ? "chat:searching" : "chat:searched", { context: "command" }),
+      target: searchSummary(args, translate),
       fullCommand: rawCommand,
     };
   }
   if (LIST_COMMAND_TOOLS.has(tool)) {
     return {
-      verb: isRunning ? "Listing" : "Listed",
-      target: lastPathComponents(args, "directory"),
+      verb: translate(isRunning ? "chat:listing" : "chat:listed", { context: "command" }),
+      target: lastPathComponents(args, translate("workspace:directory"), translate),
       fullCommand: rawCommand,
     };
   }
   if (FIND_COMMAND_TOOLS.has(tool)) {
     return {
-      verb: isRunning ? "Finding" : "Found",
-      target: findTarget(args, "files"),
+      verb: translate(isRunning ? "chat:finding" : "chat:found", { context: "command" }),
+      target: findTarget(args, translate("chat:files"), translate),
       fullCommand: rawCommand,
     };
   }
@@ -1001,31 +1668,34 @@ export function deriveReadableCommandDisplay(
   switch (tool) {
     case "mkdir":
       return {
-        verb: isRunning ? "Creating" : "Created",
-        target: lastPathComponents(args, "directory"),
+        verb: translate(isRunning ? "chat:creating" : "settings:created", { context: "command" }),
+        target: lastPathComponents(args, translate("workspace:directory"), translate),
         fullCommand: rawCommand,
       };
     case "rm":
       return {
-        verb: isRunning ? "Removing" : "Removed",
-        target: lastPathComponents(args, "file"),
+        verb: translate(isRunning ? "chat:removing" : "chat:removed", { context: "command" }),
+        target: lastPathComponents(args, translate("common:file"), translate),
         fullCommand: rawCommand,
       };
     case "cp":
     case "mv":
       return {
-        verb: isRunning
-          ? tool === "cp"
-            ? "Copying"
-            : "Moving"
-          : tool === "cp"
-            ? "Copied"
-            : "Moved",
-        target: lastPathComponents(args, "file"),
+        verb: translate(
+          isRunning
+            ? tool === "cp"
+              ? "chat:copying"
+              : "chat:moving"
+            : tool === "cp"
+              ? "chat:theme_copied"
+              : "chat:moved",
+          { context: "command" },
+        ),
+        target: lastPathComponents(args, translate("common:file"), translate),
         fullCommand: rawCommand,
       };
     case "git":
-      return humanizeGitCommand(args, rawCommand, isRunning);
+      return humanizeGitCommand(args, rawCommand, isRunning, translate);
     case "node":
     case "bun":
     case "deno":
@@ -1034,19 +1704,19 @@ export function deriveReadableCommandDisplay(
     case "ruby":
     case "perl":
       return {
-        verb: isRunning ? "Running" : "Ran",
-        target: inlineScriptTarget(tool, command, args) ?? compactInlineCommand(command),
+        verb: translate(isRunning ? "chat:runStatus_running" : "chat:ran", { context: "command" }),
+        target: inlineScriptTarget(tool, command, args, translate) ?? compactInlineCommand(command),
         fullCommand: rawCommand,
       };
     case "osascript":
       return {
-        verb: isRunning ? "Running" : "Ran",
+        verb: translate(isRunning ? "chat:runStatus_running" : "chat:ran", { context: "command" }),
         target: "AppleScript",
         fullCommand: rawCommand,
       };
     default:
       return {
-        verb: isRunning ? "Running" : "Ran",
+        verb: translate(isRunning ? "chat:runStatus_running" : "chat:ran", { context: "command" }),
         target: compactInlineCommand(command),
         fullCommand: rawCommand,
       };
@@ -1074,7 +1744,7 @@ export function deriveFriendlyCommandTarget(rawCommand: string): string {
     return "PowerShell";
   }
   if (executable === "cmd" || executable === "cmd.exe") {
-    return "Command Prompt";
+    return t("chat:commandPrompt");
   }
 
   const target = deriveReadableCommandDisplay(rawCommand).target.trim();
@@ -1237,68 +1907,71 @@ function humanizeGitCommand(
   args: string,
   rawCommand: string,
   isRunning: boolean,
+  translate: typeof t,
 ): ReadableCommandDisplay {
   const normalizedArgs = stripGitGlobalOptions(args);
   const subcommand = normalizedArgs.split(/\s+/, 1)[0]?.toLowerCase() ?? "";
   switch (subcommand) {
     case "status":
       return {
-        verb: isRunning ? "Checking" : "Checked",
+        verb: translate(isRunning ? "chat:providerModelPicker_checking" : "chat:checked", {
+          context: "command",
+        }),
         target: "git status",
         fullCommand: rawCommand,
       };
     case "diff":
       return {
-        verb: isRunning ? "Comparing" : "Compared",
-        target: "changes",
+        verb: translate(isRunning ? "chat:comparing" : "chat:compared", { context: "command" }),
+        target: translate("chat:changes"),
         fullCommand: rawCommand,
       };
     case "show":
       return {
-        verb: isRunning ? "Inspecting" : "Inspected",
+        verb: translate(isRunning ? "chat:inspecting" : "chat:inspected", { context: "command" }),
         target: "commit",
         fullCommand: rawCommand,
       };
     case "log":
       return {
-        verb: isRunning ? "Reviewing" : "Reviewed",
-        target: "git history",
+        verb: translate(isRunning ? "chat:reviewing" : "chat:reviewed", { context: "command" }),
+        target: translate("chat:gitHistory"),
         fullCommand: rawCommand,
       };
     case "add":
       return {
-        verb: isRunning ? "Staging" : "Staged",
-        target: "changes",
+        verb: translate(isRunning ? "chat:staging" : "git:gitPanel_staged", { context: "command" }),
+        target: translate("chat:changes"),
         fullCommand: rawCommand,
       };
     case "commit":
       return {
-        verb: isRunning ? "Committing" : "Committed",
-        target: "changes",
+        verb: translate(isRunning ? "chat:committing" : "chat:committed", { context: "command" }),
+        target: translate("chat:changes"),
         fullCommand: rawCommand,
       };
     case "push":
       return {
-        verb: isRunning ? "Pushing" : "Pushed",
-        target: "to remote",
+        verb: translate(isRunning ? "chat:pushing" : "workspace:pushed", { context: "command" }),
+        target: translate("chat:toRemote"),
         fullCommand: rawCommand,
       };
     case "pull":
       return {
-        verb: isRunning ? "Pulling" : "Pulled",
-        target: "from remote",
+        verb: translate(isRunning ? "chat:pulling" : "chat:pulled", { context: "command" }),
+        target: translate("chat:fromRemote"),
         fullCommand: rawCommand,
       };
     case "checkout":
     case "switch":
       return {
-        verb: isRunning ? "Switching to" : "Switched to",
-        target: checkoutTarget(args),
+        verb: translate(isRunning ? "chat:switchingTo" : "chat:switchedTo", { context: "command" }),
+        target: checkoutTarget(args, translate),
         fullCommand: rawCommand,
       };
     default:
       return {
-        verb: isRunning ? "Running" : "Ran",
+        verb: translate(isRunning ? "chat:runStatus_running" : "chat:ran", { context: "command" }),
         target: compactInlineCommand(`git ${normalizedArgs}`.trim()),
         fullCommand: rawCommand,
       };
@@ -1332,24 +2005,24 @@ function stripGitGlobalOptions(args: string): string {
   return tokens.slice(index).join(" ");
 }
 
-function checkoutTarget(args: string): string {
+function checkoutTarget(args: string, translate: typeof t): string {
   const branch = tokenizeCommandArgs(args).at(-1)?.trim();
-  return branch ? branch : "branch";
+  return branch ? branch : translate("common:branch");
 }
 
-function lastPathComponents(args: string, fallback: string): string {
+function lastPathComponents(args: string, fallback: string, translate: typeof t): string {
   const tokens = tokenizeCommandArgs(args);
   for (let index = tokens.length - 1; index >= 0; index -= 1) {
     const token = tokens[index]!.replace(/^['"]|['"]$/g, "");
     if (!token || token.startsWith("-")) {
       continue;
     }
-    return compactPath(token);
+    return compactPath(token, true, translate);
   }
   return fallback;
 }
 
-function findTarget(args: string, fallback: string): string {
+function findTarget(args: string, fallback: string, translate: typeof t): string {
   const tokens = tokenizeCommandArgs(args);
   let skipNext = false;
   for (const token of tokens) {
@@ -1369,17 +2042,17 @@ function findTarget(args: string, fallback: string): string {
       }
       continue;
     }
-    return compactPath(token);
+    return compactPath(token, true, translate);
   }
   return fallback;
 }
 
-function compactPath(path: string): string {
+function compactPath(path: string, localized = false, translate: typeof t = t): string {
   if (path === ".") {
-    return "current directory";
+    return localized ? translate("chat:currentDirectory") : "current directory";
   }
   if (path === "..") {
-    return "parent directory";
+    return localized ? translate("chat:parentDirectory") : "parent directory";
   }
   const parts = path.split(/[\\/]/).filter(Boolean);
   if (parts.length <= 2) {
@@ -1401,10 +2074,15 @@ function firstShellCommandSegment(command: string): string {
   return chain ? command.slice(0, chain.operatorStart).trim() : command;
 }
 
-function inlineScriptTarget(tool: string, command: string, args: string): string | null {
+function inlineScriptTarget(
+  tool: string,
+  command: string,
+  args: string,
+  translate: typeof t,
+): string | null {
   const normalizedTool = tool === "python3" ? "python" : tool;
   if (containsHeredoc(command) || hasInlineScriptFlag(args)) {
-    return `${normalizedTool} script`;
+    return translate("chat:script", { tool: normalizedTool });
   }
   return null;
 }
@@ -1418,27 +2096,32 @@ function hasInlineScriptFlag(args: string): boolean {
   return tokens.some((token) => token === "-e" || token === "-c" || token.startsWith("-e="));
 }
 
-function searchSummary(args: string): string {
-  const { pattern, path } = extractSearchPatternAndPath(args);
+function searchSummary(args: string, translate: typeof t): string {
+  const { pattern, path, directoryReference } = extractSearchPatternAndPath(args);
+  const displayPath = directoryReference
+    ? translate(path === "parent directory" ? "chat:parentDirectory" : "chat:currentDirectory")
+    : path;
   if (pattern && path) {
-    return `for ${pattern} in ${path}`;
+    return translate("chat:forIn", { pattern, path: displayPath });
   }
   if (pattern) {
-    return `for ${pattern}`;
+    return translate("chat:for", { pattern });
   }
   if (path) {
-    return `in ${path}`;
+    return translate("chat:in", { path: displayPath });
   }
-  return "files";
+  return translate("chat:files");
 }
 
 function extractSearchPatternAndPath(args: string): {
   pattern: string | null;
   path: string | null;
+  directoryReference: boolean;
 } {
   const tokens = tokenizeCommandArgs(args);
   let pattern: string | null = null;
   let path: string | null = null;
+  let directoryReference = false;
   let skipNext = false;
 
   for (const token of tokens) {
@@ -1464,6 +2147,7 @@ function extractSearchPatternAndPath(args: string): {
         const normalizedPath = normalizeSearchPathToken(token);
         if (normalizedPath && (!path || path === "current directory")) {
           path = normalizedPath;
+          directoryReference = token.trim() === "." || token.trim() === "..";
         }
         continue;
       }
@@ -1471,17 +2155,22 @@ function extractSearchPatternAndPath(args: string): {
       continue;
     }
     if (!path || path === "current directory") {
-      path = normalizeSearchPathToken(token) ?? path;
+      const normalizedPath = normalizeSearchPathToken(token);
+      if (normalizedPath) {
+        path = normalizedPath;
+        directoryReference = token.trim() === "." || token.trim() === "..";
+      }
       continue;
     }
   }
 
   if (pattern && path === "current directory" && looksLikeSearchPath(pattern)) {
     path = normalizeSearchPathToken(pattern);
+    directoryReference = false;
     pattern = null;
   }
 
-  return { pattern, path };
+  return { pattern, path, directoryReference };
 }
 
 function normalizeSearchPatternToken(token: string): string | null {

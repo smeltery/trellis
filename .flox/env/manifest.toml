@@ -1,8 +1,7 @@
 schema-version = "1.17.0"
 
 [install]
-bun.pkg-path = "bun"
-bun.version = "1.4.2"
+unzip.pkg-path = "unzip"
 nodejs.pkg-path = "nodejs_24"
 nodejs.version = ">=24.13.1 <25"
 git.pkg-path = "git"
@@ -17,7 +16,14 @@ systems = ["aarch64-darwin", "aarch64-linux", "x86_64-linux"]
 web.command = "bun run dev"
 marketing.command = "bun run dev:marketing"
 
+[hook]
+on-activate = '''
+TRELLIS_BUN_BIN="$(node "$FLOX_ENV_PROJECT/fork/bootstrap-bun.mjs")" || exit 1
+export TRELLIS_BUN_BIN
+export PATH="$TRELLIS_BUN_BIN:$FLOX_ENV_PROJECT/node_modules/.bin:$PATH"
+'''
+
 [profile]
 common = '''
-export PATH="$FLOX_ENV_PROJECT/node_modules/.bin:$PATH"
+export PATH="$TRELLIS_BUN_BIN:$FLOX_ENV_PROJECT/node_modules/.bin:$PATH"
 '''

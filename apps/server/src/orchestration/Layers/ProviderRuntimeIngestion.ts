@@ -45,6 +45,7 @@ import { providerSupportsNativeTurnSteering } from "@trellis/shared/providerMeta
 import { isProviderKind } from "@trellis/shared/providerInstances";
 import {
   coalesceProviderRuntimeProgress,
+  providerRuntimeCommandProgressKey,
   providerRuntimeProgressKey,
   PROVIDER_RUNTIME_PROGRESS_WINDOW_MS,
 } from "../providerRuntimeProgressCoalescing.ts";
@@ -61,6 +62,12 @@ import {
   isCodexGeneratedImageArtifact,
 } from "../../codexGeneratedImages.ts";
 import { copyAndAttributeStudioGeneratedImage } from "../../studioGeneratedImages.ts";
+import { stageAssistantImageAttachments } from "../../assistantImageAttachments.ts";
+import { ServerConfig } from "../../config.ts";
+import { ManagedAttachmentRepository } from "../../persistence/Services/ManagedAttachments.ts";
+import { ManagedAttachmentRepositoryLive } from "../../persistence/Layers/ManagedAttachments.ts";
+import { GitCore } from "../../git/Services/GitCore.ts";
+import { listLocalPreviewWorktreeRoots } from "../../workspace/localPreviewWorktrees.ts";
 import { parseCheckpointFilesFromUnifiedDiff } from "../../checkpointing/Diffs.ts";
 import { ProviderService } from "../../provider/Services/ProviderService.ts";
 import { ComputerService } from "../../computer/Services/ComputerService.ts";
@@ -95,6 +102,7 @@ import { resolveThreadWorkspaceCwd } from "../../checkpointing/Utils.ts";
 import { isGitRepository } from "../../git/isRepo.ts";
 import {
   OrchestrationCommandIdentityCollisionError,
+  OrchestrationCommandInternalError,
   OrchestrationCommandPreviouslyRejectedError,
 } from "../Errors.ts";
 import { makeRuntimeJournalPoisonGate } from "../runtimeJournalPoisonGate.ts";
@@ -824,6 +832,9 @@ export function selectProviderRuntimeJournalStream(input: {
 
 const make = Effect.gen(function* () {
   const orchestrationEngine = yield* OrchestrationEngineService;
+  const serverConfig = yield* ServerConfig;
+  const managedAttachmentRepository = yield* ManagedAttachmentRepository;
+  const gitCore = yield* GitCore;
   const projectionSnapshotQuery = yield* ProjectionSnapshotQuery;
   const providerService = yield* ProviderService;
   const computerService = yield* Effect.serviceOption(ComputerService);
@@ -1077,10 +1088,7 @@ const make = Effect.gen(function* () {
   });
   // Keep row identity after the text buffer is consumed. On a cache miss the
   // durable activity restores ordering and terminal state across recovery.
-  const claudeReasoningActivityById = yield* Cache.make<
-    string,
-    OrchestrationThreadActivity | undefined
-  >({
+  const stableActivityById = yield* Cache.make<string, OrchestrationThreadActivity | undefined>({
     capacity: BUFFERED_REASONING_SUMMARY_BY_KEY_CACHE_CAPACITY,
     timeToLive: BUFFERED_REASONING_SUMMARY_BY_KEY_TTL,
     lookup: () => Effect.succeed(undefined),
@@ -1185,10 +1193,10 @@ const make = Effect.gen(function* () {
       event.provider === "claudeAgent" &&
       (event.type === "item.updated" || event.type === "item.completed") &&
       event.payload.itemType === "reasoning";
-    if (isClaudeReasoning) {
-      const cached = Option.getOrUndefined(
-        yield* Cache.getOption(claudeReasoningActivityById, activity.id),
-      );
+    const hasStableActivity =
+      isClaudeReasoning || providerRuntimeCommandProgressKey(event) !== undefined;
+    if (hasStableActivity) {
+      const cached = Option.getOrUndefined(yield* Cache.getOption(stableActivityById, activity.id));
       const durable = cached
         ? undefined
         : Option.getOrUndefined(
@@ -1212,7 +1220,7 @@ const make = Effect.gen(function* () {
             }
           : undefined);
       if (previous) {
-        yield* Cache.set(claudeReasoningActivityById, activity.id, previous);
+        yield* Cache.set(stableActivityById, activity.id, previous);
         // Interruption/failure is final; a delayed delta must not reopen a
         // completed block either. Completed snapshots may refine its detail.
         if (
@@ -1244,11 +1252,24 @@ const make = Effect.gen(function* () {
       activity,
       createdAt: activity.createdAt,
     });
-    if (isClaudeReasoning) {
-      yield* Cache.set(claudeReasoningActivityById, activity.id, activity);
+    if (hasStableActivity) {
+      yield* Cache.set(stableActivityById, activity.id, activity);
     }
     if (key && fingerprint) {
       yield* Cache.set(latestActivityUpdateFingerprintByKey, key, fingerprint);
+    }
+    if (
+      event.provider === "devin" &&
+      activity.kind === "tool.completed" &&
+      asObject(activity.payload)?.itemType === "collab_agent_tool_call"
+    ) {
+      // Native replay can confirm a locally stopped child is still running.
+      // Its identical pre-stop snapshot must reach the durable projection again.
+      const updateKey = providerActivityUpdateDedupeKey(event, threadId, {
+        ...activity,
+        kind: "tool.updated",
+      });
+      if (updateKey) yield* Cache.invalidate(latestActivityUpdateFingerprintByKey, updateKey);
     }
   });
 
@@ -1819,6 +1840,109 @@ const make = Effect.gen(function* () {
       }
     });
 
+  // Snapshot only the completed message's actual workspace images; never rescan history.
+  const stageInlineMessageImages = (
+    threadId: ThreadId,
+    messageId: MessageId,
+    commandId: string,
+    appendedText = "",
+  ) =>
+    Effect.gen(function* () {
+      // A receipt freezes the original attachment set, including no snapshots.
+      // Re-importing a newly available file would change this command's fingerprint.
+      const receipt = yield* commandReceipts.getByCommandId({
+        commandId: CommandId.makeUnsafe(commandId),
+      });
+      if (Option.isSome(receipt) && receipt.value.status === "accepted") {
+        const sequence = receipt.value.resultSequence;
+        const committed = yield* Stream.runCollect(
+          orchestrationEngine.readEventsThrough(Math.max(0, sequence - 1), sequence, 1),
+        );
+        const event = committed[0];
+        if (
+          event?.type !== "thread.message-sent" ||
+          event.commandId !== commandId ||
+          event.payload.threadId !== threadId ||
+          event.payload.messageId !== messageId ||
+          event.payload.role !== "assistant"
+        ) {
+          return yield* new OrchestrationCommandInternalError({
+            commandId,
+            commandType: "assistant-image-finalization-replay",
+            detail: "The accepted assistant message event is unavailable.",
+          });
+        }
+        const attachments = event.payload.attachments?.filter((item) => item.type === "image");
+        return { attachments, attachmentIds: attachments?.map((item) => item.id) ?? [] };
+      }
+      return yield* Effect.gen(function* () {
+        const stored = yield* projectionThreadMessageRepository.getByThreadAndMessageId({
+          threadId,
+          messageId,
+        });
+        if (Option.isNone(stored)) return { attachments: [], attachmentIds: [] };
+        const text = `${stored.value.text}${appendedText}`;
+        if (!text.includes("![")) return { attachments: [], attachmentIds: [] };
+        const shell = yield* projectionSnapshotQuery.getThreadShellById(threadId);
+        if (Option.isNone(shell)) return { attachments: [], attachmentIds: [] };
+        const project = yield* getProjectShell(shell.value);
+        if (!project) return { attachments: [], attachmentIds: [] };
+        const cwd = resolveThreadWorkspaceCwd({ thread: shell.value, projects: [project] });
+        if (!cwd) return { attachments: [], attachmentIds: [] };
+        return yield* stageAssistantImageAttachments({
+          text,
+          threadId,
+          messageId,
+          commandId,
+          cwd,
+          sourceRoots: [cwd],
+          attachmentsDir: serverConfig.attachmentsDir,
+          additionalSourceRoots: listLocalPreviewWorktreeRoots({ cwd }).pipe(
+            Effect.provideService(GitCore, gitCore),
+          ),
+          existingAttachments: stored.value.attachments ?? [],
+          repository: managedAttachmentRepository,
+        });
+      }).pipe(
+        Effect.catchCause((cause) => {
+          if (Cause.hasInterruptsOnly(cause)) return Effect.failCause(cause);
+          return Effect.logWarning("assistant image snapshots unavailable").pipe(
+            Effect.as({ attachments: [], attachmentIds: [] }),
+          );
+        }),
+        Effect.map((prepared) => ({
+          ...prepared,
+          attachments: prepared.attachments.length ? prepared.attachments : undefined,
+        })),
+      );
+    });
+
+  const completeAssistantMessage = (input: {
+    event: ProviderRuntimeEvent;
+    threadId: ThreadId;
+    messageId: MessageId;
+    turnId?: TurnId;
+    createdAt: string;
+    commandTag: string;
+    asyncQuestions?: import("@trellis/contracts").AsyncUserInputQuestions;
+  }) =>
+    Effect.gen(function* () {
+      const commandId = providerCommandId(input.event, input.commandTag, input.messageId);
+      const prepared = yield* stageInlineMessageImages(input.threadId, input.messageId, commandId);
+      // Dispatch failures can be retryable or uncertain. Keep staging for the same
+      // journal operation to reclaim; abandoned uploads expire through the normal TTL.
+      yield* orchestrationEngine.dispatch({
+        type: "thread.message.assistant.complete",
+        commandId,
+        threadId: input.threadId,
+        messageId: input.messageId,
+        ...(prepared.attachments !== undefined ? { attachments: prepared.attachments } : {}),
+        ...(input.asyncQuestions ? { asyncQuestions: input.asyncQuestions } : {}),
+        ...(input.turnId ? { turnId: input.turnId } : {}),
+        createdAt: input.createdAt,
+      });
+    });
+
   const finalizeAssistantMessage = (input: {
     event: ProviderRuntimeEvent;
     threadId: ThreadId;
@@ -1871,15 +1995,7 @@ const make = Effect.gen(function* () {
         return;
       }
 
-      yield* orchestrationEngine.dispatch({
-        type: "thread.message.assistant.complete",
-        commandId: providerCommandId(input.event, input.commandTag, input.messageId),
-        threadId: input.threadId,
-        messageId: input.messageId,
-        ...(input.asyncQuestions ? { asyncQuestions: input.asyncQuestions } : {}),
-        ...(input.turnId ? { turnId: input.turnId } : {}),
-        createdAt: input.createdAt,
-      });
+      yield* completeAssistantMessage(input);
       yield* clearAssistantMessageState(input.threadId, input.messageId);
     });
 
@@ -1939,11 +2055,11 @@ const make = Effect.gen(function* () {
       // and duplicate provider notifications from emitting redundant message-sent events.
       const shouldComplete = dispatchedDelta || !input.targetMessage || targetIsStreaming;
       if (shouldComplete) {
-        yield* orchestrationEngine.dispatch({
-          type: "thread.message.assistant.complete",
-          commandId: providerCommandId(input.event, "generated-image-complete", targetMessageId),
+        yield* completeAssistantMessage({
+          event: input.event,
           threadId: input.threadId,
           messageId: targetMessageId,
+          commandTag: "generated-image-complete",
           ...(input.turnId ? { turnId: input.turnId } : {}),
           createdAt: input.createdAt,
         });
@@ -3164,23 +3280,36 @@ const make = Effect.gen(function* () {
         if (lateForFinalizedTurn) {
           // Never leave a late row streaming: no terminal event for this turn
           // is coming to complete it.
-          const known = (yield* orchestrationEngine.getReadModel()).threads
-            .find((entry) => entry.id === thread.id)
-            ?.messages.find((message) => message.id === assistantMessageId);
+          const known = yield* projectionThreadMessageRepository.getByThreadAndMessageId({
+            threadId: thread.id,
+            messageId: assistantMessageId,
+          });
+          const commandId = providerCommandId(event, "assistant-delta-late", assistantMessageId);
+          const settled =
+            Option.isSome(known) && known.value.role === "assistant" && !known.value.isStreaming;
+          const prepared = settled
+            ? yield* stageInlineMessageImages(
+                thread.id,
+                assistantMessageId,
+                commandId,
+                assistantDelta,
+              )
+            : undefined;
           yield* orchestrationEngine.dispatch({
             type: "thread.message.assistant.delta",
-            commandId: providerCommandId(event, "assistant-delta-late", assistantMessageId),
+            commandId,
             threadId: thread.id,
             messageId: assistantMessageId,
             delta: assistantDelta,
+            ...(prepared?.attachments !== undefined ? { attachments: prepared.attachments } : {}),
             ...(turnId ? { turnId } : {}),
             createdAt: now,
           });
-          // The decider already re-settles a known finalized message.
-          if (!known || known.streaming) {
-            yield* orchestrationEngine.dispatch({
-              type: "thread.message.assistant.complete",
-              commandId: providerCommandId(event, "assistant-complete-late", assistantMessageId),
+          // A settled row is re-finalized by its delta, avoiding a second Ready event.
+          if (!settled) {
+            yield* completeAssistantMessage({
+              event,
+              commandTag: "assistant-complete-late",
               threadId: thread.id,
               messageId: assistantMessageId,
               ...(turnId ? { turnId } : {}),
@@ -3583,6 +3712,26 @@ const make = Effect.gen(function* () {
         });
       }
 
+      // A native subagent's resolved model (agent definition, env or tool input)
+      // only shows up in its own messages. Child threads only: the parent's
+      // model is the user's selection.
+      if (event.type === "thread.metadata.updated" && thread.id !== parentThread.id) {
+        const resolvedModel = event.payload.metadata?.model;
+        if (
+          thread.creationSource === "provider_native" &&
+          typeof resolvedModel === "string" &&
+          resolvedModel.length > 0 &&
+          resolvedModel !== thread.modelSelection.model
+        ) {
+          yield* orchestrationEngine.dispatch({
+            type: "thread.meta.update",
+            commandId: providerCommandId(event, "subagent-thread-model-update", thread.id),
+            threadId: thread.id,
+            modelSelection: { ...thread.modelSelection, model: resolvedModel },
+          });
+        }
+      }
+
       // A newer snapshot of this turn's cumulative diff later in the same journal
       // page supersedes this one (see coalesceProviderRuntimeProgress): skip the
       // patch parse and placeholder write, the survivor carries the newest files.
@@ -3628,9 +3777,10 @@ const make = Effect.gen(function* () {
               trackedPlaceholder?.files ??
               existingCheckpoint?.files ??
               [];
-            const checkpointRef =
-              livePlaceholder?.checkpointRef ??
-              CheckpointRef.makeUnsafe(`provider-diff:${event.eventId}`);
+            const checkpointRef = canParseLiveDiffPatch
+              ? CheckpointRef.makeUnsafe(`provider-diff:${event.eventId}`)
+              : (livePlaceholder?.checkpointRef ??
+                CheckpointRef.makeUnsafe(`provider-diff:${event.eventId}`));
             const checkpointTurnCount = livePlaceholder?.checkpointTurnCount ?? maxTurnCount + 1;
             // Leave assistantMessageId undefined on the placeholder: the real
             // capture performed by CheckpointReactor will resolve the actual
@@ -4396,6 +4546,7 @@ export const ProviderRuntimeIngestionLive = Layer.effect(
       OrchestrationCommandReceiptRepositoryLive,
       ProjectionThreadSessionRepositoryLive,
       ProjectionThreadMessageRepositoryLive,
+      ManagedAttachmentRepositoryLive,
     ),
   ),
 );

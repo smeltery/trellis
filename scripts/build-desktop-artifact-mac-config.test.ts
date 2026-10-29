@@ -24,6 +24,16 @@ import {
 } from "./lib/desktop-platform-build-config.ts";
 
 describe("createDesktopPlatformBuildConfig", () => {
+  it("keeps app-authored Chinese permission descriptions out of Stable bundles", () => {
+    for (const flavor of TRELLIS_PACKAGED_DESKTOP_FLAVORS) {
+      const config = createDesktopPlatformBuildConfig({ platform: "mac", target: "dir", flavor });
+      const folders = config.extraFiles?.map((entry) => entry.to);
+      assert.ok(folders?.includes("Resources/en.lproj"));
+      assert.ok(folders?.includes("Resources/es.lproj"));
+      assert.equal(folders?.includes("Resources/zh-Hans.lproj"), flavor !== "production");
+    }
+  });
+
   it("retains TypeScript runtime libraries on every desktop platform", () => {
     const require = createRequire(import.meta.url);
     for (const platform of ["mac", "linux", "win"] as const) {
@@ -75,6 +85,7 @@ describe("createDesktopPlatformBuildConfig", () => {
 
     assert.deepStrictEqual(mac.target, ["dmg"]);
     assert.equal(mac.icon, "icon.icns");
+    assert.equal(mac.minimumSystemVersion, "13.0");
     assert.deepStrictEqual(config.asarUnpack, ["node_modules/node-pty/**"]);
     assert.equal(mac.hardenedRuntime, true);
     assert.equal(mac.notarize, false);
@@ -124,6 +135,8 @@ describe("createDesktopPlatformBuildConfig", () => {
         from: MAC_ICON_ASSETS_CAR_STAGE_PATH,
         to: MAC_ICON_ASSETS_CAR_BUNDLE_PATH,
       },
+      { from: "apps/desktop/resources/localizations/en.lproj", to: "Resources/en.lproj" },
+      { from: "apps/desktop/resources/localizations/es.lproj", to: "Resources/es.lproj" },
     ]);
     assert.equal(MAC_ICON_ASSETS_CAR_STAGE_PATH, "apps/desktop/resources/Assets.car");
     assert.equal(MAC_ICON_ASSETS_CAR_BUNDLE_PATH, "Resources/Assets.car");
@@ -161,6 +174,7 @@ describe("createDesktopPlatformBuildConfig", () => {
       writeUpdateInfo: false,
     });
     assert.equal(config.mac?.identity, undefined);
+    assert.equal(config.mac?.minimumSystemVersion, "13.0");
   });
 
   it("seals isolated local app bundles with the existing nested signing policy", () => {
@@ -172,6 +186,7 @@ describe("createDesktopPlatformBuildConfig", () => {
     });
 
     assert.equal(config.mac?.identity, "-");
+    assert.equal(config.mac?.minimumSystemVersion, "13.0");
     assert.equal(config.mac?.timestamp, "none");
     assert.equal(config.mac?.hardenedRuntime, false);
     assert.equal(config.mac?.notarize, false);
@@ -189,6 +204,7 @@ describe("createDesktopPlatformBuildConfig", () => {
     });
 
     assert.equal(config.mac?.identity, undefined);
+    assert.equal(config.mac?.minimumSystemVersion, "13.0");
     assert.equal(config.mac?.timestamp, undefined);
     assert.equal(config.mac?.hardenedRuntime, true);
     assert.equal(config.mac?.notarize, false);

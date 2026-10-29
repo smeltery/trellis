@@ -55,7 +55,8 @@ describe("resolveInboxDay", () => {
       process.env.TZ = "Europe/Rome";
     });
     afterAll(() => {
-      process.env.TZ = originalTimeZone;
+      if (originalTimeZone === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTimeZone;
     });
 
     it.each([
