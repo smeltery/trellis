@@ -48,6 +48,32 @@ with an error while unrelated tasks remain usable. Persisted Claude compaction r
 unavailable owner remain held for reconciliation; startup skips their provider recovery instead
 of failing or resending the held message.
 
+An uncertain delivery remains blocked after a server restart. **Unblock thread** reconciles
+that delivery; it does not stop a provider process that is still running. For a stalled Claude
+turn, use **Stop** first and wait for session retirement, then abandon the uncertain delivery
+with **Unblock thread** before explicitly sending a new message. An ambiguous Claude send
+on a root thread stays blocked while this server owns a live or unverified runtime. Stop's dispatch acknowledgement
+alone does not prove that cleanup finished. A missing native interrupt acknowledgement is not
+reported as a failed explicit root Claude Stop when that same command's receipt confirms retirement
+of the observed runtime generation. Failed or unverified cleanup remains an error.
+If a failed local startup leaves the session idle,
+or a locally owned query remains ready without an active turn, an explicit user Stop can retire
+that known generation before Unblock. The idle Stop refuses a newer turn or replacement runtime.
+Ordinary idle Stops without an uncertain root Claude send remain no-ops. After a server restart, Unblock may reconcile an
+untouched inherited delivery once the new server confirms it owns no live, retained or background
+work for that task. This restores delivery; it does not prove that every process from an older
+server exited or that its external effects were cancelled. Synara does not automatically resend
+the original ambiguous message. This guard applies to ambiguous root Claude sends; child
+threads retain their existing manual-abandon behavior without stopping the parent. Child
+recovery is not covered by the root-runtime retirement proof.
+
+A Claude steer can wait for permission-mode control or attachment preparation before entering
+the native prompt queue. If its original turn ends or the runtime is replaced during that wait,
+Synara rejects the unsent steer and preserves the newer session state. The final ownership check
+and queue admission run synchronously, so cooperative yielding cannot admit the old steer to a
+newer turn. Queued follow-ups retain their normal turn boundary and wait for any replacement turn
+to settle.
+
 Codex native resume is confirmed only when the runtime returns the requested thread ID.
 If a recoverable resume failure starts a fresh Codex thread instead, Synara treats its native
 history as unavailable and carries the stored transcript through the existing bounded recovery
@@ -80,6 +106,14 @@ immediately. Native interruption and session teardown begin before waiting for t
 Session teardown and the text drain run concurrently under the old lifecycle generation;
 retirement waits for both, and a teardown failure preserves that generation and the accepted text.
 Stop, session replacement and graceful shutdown flush before retiring the text's owner.
+Conditional Stop records its command identity, original runtime generation and exact provider turn
+before sending physical control. A database retry can finish that same retirement, but cannot adopt
+a replacement runtime or a later turn in the same runtime. The receipt uses the existing internal
+runtime payload; it adds no transport field or database migration. Failed observations remain
+retryable or explicitly uncertain rather than being acknowledged as a successful Stop.
+If the initial target cannot be saved, Stop is rejected before any adapter call; a new explicit
+Stop may observe the current target. Interrupt-only controls for steer and goal fences preserve
+queued messages and transcript bootstrap when finishing the same receipt after a retry.
 Unknown metadata or nonempty raw payloads retain their original events.
 
 This optimization requires the adapter's explicit `fresh-ids-once` delivery guarantee: each
@@ -100,6 +134,13 @@ Pi preserves separate assistant messages within a turn, including progress befor
 and the final response. Reasoning items also end with their SDK message. Retries start new
 message items while the overall turn remains active until Pi settles. This applies to newly
 received messages; previously stored concatenated replies are not rewritten.
+
+Devin ACP subagents and background shells use the existing task and subagent controls. Their
+activity stays with the launching turn and child thread, including nested work that continues
+after the parent response ends. Stopping one task leaves the parent and sibling tasks running.
+A local stop remains subject to a later native completion; after restart, session replay can
+restore the original ownership and correct the recorded outcome. If native resume fails, Synara
+reports that the old task can no longer be tracked or controlled rather than claiming it completed.
 
 Claude's readable reasoning appears as compact progress text between tool actions while it works.
 Open a reasoning row to read its available detail. This text comes from the running provider;
@@ -285,6 +326,11 @@ Install V2 following the [official guide](https://opencode.ai/v2/docs/), then se
 `opencode` executable in the existing provider account. Restart provider sessions and refresh
 model discovery. V2 uses `@opencode/cli` or `anomalyco/tap/opencode-v2` for package updates;
 V1 retains its own packages. External-server updates belong to that server's operator.
+
+V2 discovery loads models before reading provider metadata, so Console providers initialized by
+that first lookup appear on cold servers. When CLI help advertises `--standalone`, the model-list
+fallback uses a private server with the selected account's environment instead of the background
+service's shared port.
 
 Preserve the OpenCode account/data directories to retain native session IDs. OpenCode owns
 migration of its history and credentials. Synara does not copy provider databases or silently
@@ -568,6 +614,12 @@ appropriate machine. Synara never submits browser credentials or accepts consent
 Pi-family **Sign-in options** sends the native `/login` TUI command after you have completed startup
 prompts. It is never passed as a model prompt. OpenCode accounts configured for an external server
 must authenticate on that server; Synara reports this instead of changing a local account.
+
+For local OpenCode sign-in, Synara checks `auth login --help` and adds `--standalone` when supported.
+The private login server uses the selected account's home and XDG directories without connecting
+to another account's background service. Legacy CLIs keep `auth login`. Authentication terminals
+use the embedded renderer's terminal and color capabilities, including when the server inherited
+`TERM=dumb` or `NO_COLOR`.
 
 For non-default native Devin, Antigravity, and Droid accounts, the first launch saves isolated home
 and credential-directory environment settings so later managed sessions and health checks use the

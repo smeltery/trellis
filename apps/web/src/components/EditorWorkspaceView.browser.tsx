@@ -4,7 +4,13 @@
 
 import "../index.css";
 import { page } from "vitest/browser";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
+
+// Resolve the real feature policy as a packaged Stable host, independent of HTTP test hosting.
+vi.mock("@trellis/shared/betaFeatures", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@trellis/shared/betaFeatures")>()),
+  desktopFlavorFromProtocol: () => "production",
+}));
 import { render } from "vitest-browser-react";
 import { useEditorRailStore } from "../editorRailStore";
 import { installEditorWorkspaceFixture, makeView } from "./EditorWorkspaceView.test-support";
@@ -41,8 +47,7 @@ it.each(["light", "dark"] as const)(
         { ...originalPack, theme: { ...originalPack.theme, opaqueWindows: scope === "none" } },
         theme,
         {
-          electron: true,
-          isMac: true,
+          windowTranslucency: "native",
           translucency: { opacity: 0.8, blur: 20, sidebarOnly: scope === "sidebar" },
         },
       );

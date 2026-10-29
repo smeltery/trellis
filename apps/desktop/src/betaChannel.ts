@@ -35,7 +35,10 @@ import {
   TRELLIS_STABLE_WINDOWS_INSTALLER_GUID,
   type BetaImportResult,
 } from "@trellis/shared/betaChannel";
-import { TRELLIS_DESKTOP_SMOKE_USER_DATA_ENV } from "@trellis/shared/desktopIdentity";
+import {
+  TRELLIS_DESKTOP_SMOKE_USER_DATA_ENV,
+  trellisDesktopIdentity,
+} from "@trellis/shared/desktopIdentity";
 import type {
   DesktopBetaActionError,
   DesktopBetaActionResult,
@@ -51,7 +54,7 @@ export const BETA_WINDOWS_UNINSTALL_GUID = TRELLIS_BETA_WINDOWS_INSTALLER_GUID;
 const BETA_MAC_APP_NAME = "Trellis Beta.app";
 const BETA_MAC_EXECUTABLE_NAME = "Trellis Beta";
 const BETA_WINDOWS_EXE_NAME = "Trellis Beta.exe";
-const BETA_LINUX_DESKTOP_FILE = "trellis-beta.desktop";
+const BETA_LINUX_DESKTOP_FILE = `${trellisDesktopIdentity("beta").userDataDirectoryName}.desktop`;
 const STABLE_MAC_APP_NAME = "Trellis.app";
 const STABLE_MAC_EXECUTABLE_NAME = "Trellis";
 const STABLE_WINDOWS_EXE_NAME = "Trellis.exe";

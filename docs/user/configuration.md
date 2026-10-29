@@ -11,10 +11,15 @@ persistent project and conversation state.
 | Beta        | `~/.trellis-beta`   | `com.smeltery.trellis.beta`   |
 | Canary      | `~/.trellis-canary` | `com.smeltery.trellis.canary` |
 
-In Beta, open **Settings → Connectors** to connect a remote MCP server. Choose
+In Stable or Beta, open **Settings → Connectors** to connect a remote MCP server. Choose
 a service from the catalog or add a custom server URL, then complete its sign-in
-flow. Connected services expose tools to supported agent sessions. Connectors
-are unavailable in Stable.
+flow. Connected services expose tools to supported agent sessions. Each app
+keeps its connections in its own data home. The native file editor is also
+available in both Stable and Beta.
+
+Language settings support English and Spanish in Stable and Beta. Simplified
+Chinese is available in Beta; Stable ignores a saved Chinese preference and
+falls back to a supported system language or English.
 
 To back up state, stop Trellis and copy the complete data home. Keep repository
 backups separately. Do not delete databases or lock files to force startup.

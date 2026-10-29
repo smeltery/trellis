@@ -38,6 +38,7 @@ export function renderTrellisHarnessPolicy(capabilities: TrellisHarnessCapabilit
         "For thread discovery and diagnosis, use trellis_list_threads, trellis_read_thread, trellis_read_thread_activity, trellis_read_thread_events, trellis_read_thread_runtime_events, and trellis_diagnose_thread before SQLite or process logs. Use host storage only when tool coverage says required evidence is unavailable.",
         "After successfully creating a pull request for the current thread's own deliverable, call trellis_set_thread_pull_request with its URL. Never associate a pull request that the thread only reviews, references, or discusses.",
         "Provider-native subagent or Task tools are implementation details: they do not create Trellis threads and must not substitute for an explicit request to create Trellis threads.",
+        "Hub roles come from the server: the coordinator routes assigned hub work and owns hub automations; workers do their assigned work and cannot create threads or message other threads. Other conversations retain ordinary thread tools.",
         "For a plural thread request, submit one exact trellis_create_threads plan. The array length is the exact requested count.",
         "If trellis_create_threads fails before returning an operationId, correct the rejected plan and reuse its requestId; no durable task was created.",
         "Use trellis_capabilities to select canonical provider, model, and option values. Never guess a model slug or silently substitute a provider or model.",

@@ -106,6 +106,7 @@ export function makeServerRuntimeServicesLayer(
   const checkpointDiffQueryLayer = CheckpointDiffQueryLive.pipe(
     Layer.provideMerge(OrchestrationLayerLive),
     Layer.provideMerge(checkpointStoreLayer),
+    Layer.provide(ProviderRuntimeEventRepositoryLive),
   );
 
   const runtimeServicesLayer = Layer.mergeAll(
@@ -120,6 +121,7 @@ export function makeServerRuntimeServicesLayer(
   );
   const runtimeIngestionLayer = ProviderRuntimeIngestionLive.pipe(
     Layer.provideMerge(runtimeServicesLayer),
+    Layer.provideMerge(GitCoreLive),
     // Share the gateway/deletion manager; a sibling layer cannot satisfy optional services.
     Layer.provideMerge(DeviceServiceLive),
     Layer.provideMerge(ComputerServiceLive),

@@ -10,6 +10,7 @@ import {
   TRELLIS_STABLE_WINDOWS_INSTALLER_GUID,
 } from "@trellis/shared/betaChannel";
 import type { TrellisPackagedDesktopFlavor } from "@trellis/shared/desktopIdentity";
+import { availableUiLocales } from "@trellis/shared/uiLocale";
 
 import {
   createDesktopBundleFilePatterns,
@@ -20,6 +21,9 @@ export const MICROPHONE_USAGE_DESCRIPTION =
   "Trellis needs microphone access so you can record voice notes and transcribe them into the chat composer, and, if you turn it on, to move the chat message trail with your voice.";
 export const AUDIO_CAPTURE_USAGE_DESCRIPTION =
   "Trellis reads how loud your Mac's audio is to animate the chat message trail. The audio itself is never recorded.";
+// Bundle metadata uses the product version; electron-updater compares Darwin releases.
+export const MAC_MINIMUM_SYSTEM_VERSION = "13.0";
+export const MAC_MINIMUM_DARWIN_VERSION = "22.0.0";
 export const MAC_ENTITLEMENTS_PATH = "apps/desktop/resources/entitlements.mac.plist";
 export const MAC_INHERITED_ENTITLEMENTS_PATH =
   "apps/desktop/resources/entitlements.mac.inherit.plist";
@@ -127,6 +131,9 @@ export function createDesktopPlatformBuildConfig(
       target: [input.target],
       icon: MAC_DMG_ICON_PATH,
       category: "public.app-category.developer-tools",
+      // The bundled Claude and Cua native executables require macOS 13.
+      // Keep the app's launch metadata consistent with its complete payload.
+      minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION,
       hardenedRuntime: input.signed === true,
       // The mandatory afterSign hook splits Apple upload/wait timings and
       // staples the app before electron-builder creates either container.
@@ -210,6 +217,14 @@ export function createDesktopPlatformBuildConfig(
           from: MAC_ICON_ASSETS_CAR_STAGE_PATH,
           to: MAC_ICON_ASSETS_CAR_BUNDLE_PATH,
         },
+        // macOS reads permission explanations from the bundle's language folders.
+        ...availableUiLocales(input.flavor ?? "production").map((locale) => {
+          const directory = `${locale === "zh-CN" ? "zh-Hans" : locale}.lproj`;
+          return {
+            from: `apps/desktop/resources/localizations/${directory}`,
+            to: `Resources/${directory}`,
+          };
+        }),
       ],
       mac,
     };

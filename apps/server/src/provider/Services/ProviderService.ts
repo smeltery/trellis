@@ -85,6 +85,24 @@ export interface ProviderSessionStartOutcomeOptions {
   readonly abandonOtherProviderContinuation?: boolean;
 }
 
+/** Durable identity of one Stop; its authority never transfers to a later turn. */
+export interface ProviderRuntimeStopControlReceipt {
+  readonly controlRequestId: string;
+  readonly observedLifecycleGeneration: string | null;
+  readonly turnId: TurnId | null;
+  readonly providerThreadId?: string;
+  readonly retiredLifecycleGeneration?: string;
+}
+
+/** Internal Stop observation, captured with the runtime under its lifecycle lock. */
+export interface ProviderRuntimeSessionStopTarget {
+  readonly session: ProviderSession | null;
+  readonly lifecycleGeneration: string | null;
+  /** Startup-adopted ownership that no operation in this server has touched. */
+  readonly inheritedLifecycleGeneration?: string;
+  readonly stopControlReceipt?: ProviderRuntimeStopControlReceipt;
+}
+
 export interface PersistedProviderSessionProfile {
   readonly provider: ProviderKind;
   readonly modelSelection?: ModelSelection;
@@ -185,7 +203,11 @@ export interface ProviderServiceShape {
    * Interrupt a running provider turn.
    */
   readonly interruptTurn: (
-    input: ProviderInterruptTurnInput,
+    input: ProviderInterruptTurnInput & {
+      /** Internal conditional Stop authority; never part of the wire input. */
+      readonly expectedLifecycleGeneration?: string | null;
+      readonly controlRequestId?: string;
+    },
   ) => Effect.Effect<void, ProviderServiceError>;
 
   /**
@@ -238,7 +260,24 @@ export interface ProviderServiceShape {
     readonly threadId: ThreadId;
     /** Idle reapers must revalidate activity and live ownership under the lifecycle lock. */
     readonly onlyIfIdleSince?: string;
+    /** Internal recovery authority: refuse a new foreground turn under the lifecycle fence. */
+    readonly onlyIfNoActiveTurn?: true;
+    /** A conditional Stop must not tear down a replacement lifecycle epoch. */
+    readonly expectedLifecycleGeneration?: string | null;
+    readonly controlRequestId?: string;
   }) => Effect.Effect<void, ProviderServiceError>;
+
+  /** Observe one Stop target atomically; this is not a transport contract. */
+  readonly getRuntimeSessionStopTarget?: (input: {
+    readonly threadId: ThreadId;
+  }) => Effect.Effect<ProviderRuntimeSessionStopTarget, ProviderServiceError>;
+
+  /** Internal SQL-only recovery mutation under the existing lifecycle lease.
+   * The callback must not start/replay provider work or reacquire this lease. */
+  readonly withRuntimeSessionStopTarget?: <A, E, R>(
+    input: { readonly threadId: ThreadId },
+    use: (target: ProviderRuntimeSessionStopTarget) => Effect.Effect<A, E, R>,
+  ) => Effect.Effect<A, E | ProviderServiceError, R>;
 
   /**
    * Whether provider-native background tasks are currently keeping the
